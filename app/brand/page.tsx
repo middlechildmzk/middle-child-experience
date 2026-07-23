@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import '../launch-kit.css';
 
 export const metadata: Metadata = {
   title: 'Middle Child Brand Kit',
