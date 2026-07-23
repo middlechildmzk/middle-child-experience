@@ -1,25 +1,61 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://middle-child-never-alone.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://middle-child-experience.vercel.app';
+
+export const viewport: Viewport = {
+  themeColor: '#05050a',
+  colorScheme: 'dark',
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'Middle Child — Never Alone',
-  description: 'The official home of Middle Child: emotional electronic music, creator-friendly releases, story, press, and the Never Alone experience.',
+  title: {
+    default: 'Middle Child — Never Alone',
+    template: '%s | Middle Child',
+  },
+  description: 'The official home of Middle Child: emotional electronic music, the story behind Never Alone, creator-friendly releases, lyrics, and press information.',
+  applicationName: 'Middle Child',
+  category: 'music',
   alternates: { canonical: '/' },
-  keywords: ['Middle Child', 'Never Alone', 'melodic bass', 'future bass', 'emotional electronic music', 'creator-friendly music'],
+  keywords: [
+    'Middle Child music',
+    'Never Alone Middle Child',
+    'melodic bass',
+    'future bass',
+    'emotional electronic music',
+    'cinematic electronic music',
+    'music about hope',
+    'creator-friendly music',
+  ],
+  authors: [{ name: 'Dan Larson' }],
+  creator: 'Dan Larson',
+  publisher: 'BVSS FVM',
   openGraph: {
     title: 'Middle Child — Never Alone',
-    description: 'Some songs are released. Some are survived.',
+    description: 'Some songs are released. Some are survived. Discover the new single from Middle Child, arriving July 31, 2026.',
     type: 'website',
     siteName: 'Middle Child',
+    locale: 'en_US',
     url: siteUrl,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Middle Child — Never Alone',
-    description: 'Some songs are released. Some are survived.',
+    description: 'Some songs are released. Some are survived. New single arriving July 31, 2026.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
   },
 };
 
@@ -34,7 +70,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     member: { '@type': 'Person', name: 'Dan Larson' },
     recordLabel: { '@type': 'Organization', name: 'BVSS FVM' },
     url: siteUrl,
-    genre: ['Melodic Bass', 'Future Bass', 'Electronic Music'],
+    genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
+    description: 'Middle Child is the emotional electronic project of Minneapolis artist and producer Dan Larson.',
   };
 
   return (
