@@ -1,10 +1,9 @@
 import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://middle-child-experience.vercel.app';
   return [
     {
-      url: base,
+      url: 'https://middle-child-experience.vercel.app',
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
