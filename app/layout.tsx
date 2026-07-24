@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import '../src/app/globals.css';
 import '../src/app/interactions.css';
 import '../src/app/experience.css';
+import '../src/app/healing-core.css';
 import InteractiveSky from '../src/app/components/InteractiveSky';
 import ExperienceControls from '../src/app/components/ExperienceControls';
+import HealingCore from '../src/app/components/HealingCore';
 
 const siteUrl = 'https://middle-child-experience.vercel.app';
 
@@ -68,6 +70,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
         <InteractiveSky />
+        <HealingCore />
         <ExperienceControls />
         {children}
       </body>
