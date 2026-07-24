@@ -3,19 +3,25 @@
 import { useEffect, useState } from 'react';
 
 const sections = ['top', 'never-alone', 'music', 'story', 'creators'];
+const eraClasses = ['era-never-alone', 'era-mercy', 'era-awaken'];
 
 export default function ExperienceControls() {
   const [active, setActive] = useState('top');
   const [playerOpen, setPlayerOpen] = useState(false);
+  const [activeEra, setActiveEra] = useState('Never Alone');
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const cards = Array.from(document.querySelectorAll<HTMLElement>('.card, .story-card, .feature'));
+    const lyrics = Array.from(document.querySelectorAll<HTMLElement>('.lyric-block'));
+    const releaseCards = Array.from(document.querySelectorAll<HTMLElement>('.catalog .card'));
 
     const revealObserver = new IntersectionObserver(
       (entries) => entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add('is-visible')),
       { threshold: 0.14 },
     );
+
+    const cleanups: Array<() => void> = [];
 
     cards.forEach((card) => {
       card.classList.add('reveal-item');
@@ -37,11 +43,56 @@ export default function ExperienceControls() {
         };
         card.addEventListener('pointermove', move);
         card.addEventListener('pointerleave', leave);
-        return () => {
+        cleanups.push(() => {
           card.removeEventListener('pointermove', move);
           card.removeEventListener('pointerleave', leave);
-        };
+        });
       }
+    });
+
+    lyrics.forEach((block, index) => {
+      block.style.setProperty('--lyric-index', String(index));
+      const enter = () => {
+        lyrics.forEach((item) => item.classList.toggle('is-dimmed', item !== block));
+        block.classList.add('is-reading');
+      };
+      const leave = () => {
+        lyrics.forEach((item) => item.classList.remove('is-dimmed', 'is-reading'));
+      };
+      block.addEventListener('pointerenter', enter);
+      block.addEventListener('pointerleave', leave);
+      block.addEventListener('focusin', enter);
+      block.addEventListener('focusout', leave);
+      cleanups.push(() => {
+        block.removeEventListener('pointerenter', enter);
+        block.removeEventListener('pointerleave', leave);
+        block.removeEventListener('focusin', enter);
+        block.removeEventListener('focusout', leave);
+      });
+    });
+
+    releaseCards.forEach((card, index) => {
+      card.tabIndex = 0;
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', `Enter the ${card.querySelector('h3')?.textContent ?? 'release'} visual world`);
+      const activate = () => {
+        const title = card.querySelector('h3')?.textContent ?? 'Never Alone';
+        document.body.classList.remove(...eraClasses);
+        document.body.classList.add(eraClasses[index % eraClasses.length]);
+        setActiveEra(title);
+      };
+      const key = (event: KeyboardEvent) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activate();
+        }
+      };
+      card.addEventListener('click', activate);
+      card.addEventListener('keydown', key);
+      cleanups.push(() => {
+        card.removeEventListener('click', activate);
+        card.removeEventListener('keydown', key);
+      });
     });
 
     const sectionObserver = new IntersectionObserver(
@@ -62,6 +113,7 @@ export default function ExperienceControls() {
     return () => {
       revealObserver.disconnect();
       sectionObserver.disconnect();
+      cleanups.forEach((cleanup) => cleanup());
     };
   }, []);
 
@@ -74,6 +126,12 @@ export default function ExperienceControls() {
           </a>
         ))}
       </aside>
+
+      <nav className="world-dock" aria-label="Middle Child worlds">
+        <span><i /> {activeEra}</span>
+        <a href="/press">Press</a>
+        <a href="/brand">Brand</a>
+      </nav>
 
       <div className={`release-player ${playerOpen ? 'open' : ''}`}>
         <button className="player-toggle" type="button" onClick={() => setPlayerOpen((value) => !value)} aria-expanded={playerOpen}>
