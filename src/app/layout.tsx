@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import './interactions.css';
+import './experience.css';
 import InteractiveSky from './components/InteractiveSky';
+import ExperienceControls from './components/ExperienceControls';
 
 const siteUrl = 'https://middle-child-experience.vercel.app';
 
@@ -81,6 +83,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
         <InteractiveSky />
+        <ExperienceControls />
         {children}
       </body>
     </html>
