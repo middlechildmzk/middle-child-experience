@@ -3,9 +3,11 @@ import '../src/app/globals.css';
 import '../src/app/interactions.css';
 import '../src/app/experience.css';
 import '../src/app/healing-core.css';
+import '../src/app/immersive-engine.css';
 import InteractiveSky from '../src/app/components/InteractiveSky';
 import ExperienceControls from '../src/app/components/ExperienceControls';
 import HealingCore from '../src/app/components/HealingCore';
+import ImmersiveEngine from '../src/app/components/ImmersiveEngine';
 
 const siteUrl = 'https://middle-child-experience.vercel.app';
 
@@ -67,8 +69,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="en">
-      <body>
+      <body data-world="world-never-alone">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+        <ImmersiveEngine />
         <InteractiveSky />
         <HealingCore />
         <ExperienceControls />
