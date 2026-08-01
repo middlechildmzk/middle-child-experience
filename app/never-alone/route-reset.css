@@ -1,0 +1,10 @@
+body:has(main[data-release-page='never-alone']) .immersive-engine,
+body:has(main[data-release-page='never-alone']) .world-indicator,
+body:has(main[data-release-page='never-alone']) .interactive-sky,
+body:has(main[data-release-page='never-alone']) .living-sky-shell,
+body:has(main[data-release-page='never-alone']) .healing-core-shell,
+body:has(main[data-release-page='never-alone']) .journey-rail,
+body:has(main[data-release-page='never-alone']) .world-dock,
+body:has(main[data-release-page='never-alone']) .release-player {
+  display: none !important;
+}
