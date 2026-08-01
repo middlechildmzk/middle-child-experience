@@ -1,2 +1,5 @@
-// Active production entry for the Middle Child experience.
-export { default } from '../src/app/(experience)/page';
+import { redirect } from 'next/navigation';
+
+export default function Home() {
+  redirect('/never-alone');
+}
