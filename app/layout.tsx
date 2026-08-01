@@ -9,7 +9,9 @@ import ExperienceControls from '../src/app/components/ExperienceControls';
 import HealingCore from '../src/app/components/HealingCore';
 import ImmersiveEngine from '../src/app/components/ImmersiveEngine';
 
-const siteUrl = 'https://middle-child-experience.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://middle-child-experience.vercel.app';
+const releaseUrl = `${siteUrl}/never-alone`;
+const thumbnailUrl = 'https://i.ytimg.com/vi/9bCVDn2P29Q/maxresdefault.jpg';
 
 export const viewport: Viewport = {
   themeColor: '#05050a',
@@ -21,34 +23,52 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Middle Child — Never Alone',
+    default: 'Middle Child - Never Alone',
     template: '%s | Middle Child',
   },
-  description: 'The official home of Middle Child: emotional electronic music, the story behind Never Alone, creator-friendly releases, lyrics, and press information.',
+  description:
+    'The official home of Middle Child, the emotional electronic project of Minneapolis artist and producer Dan Larson. Listen to Never Alone, read the lyrics, and explore the story.',
   applicationName: 'Middle Child',
   category: 'music',
-  alternates: { canonical: '/' },
-  keywords: ['Middle Child music', 'Never Alone Middle Child', 'melodic bass', 'future bass', 'emotional electronic music', 'cinematic electronic music', 'music about hope', 'creator-friendly music'],
-  authors: [{ name: 'Dan Larson' }],
+  alternates: { canonical: releaseUrl },
+  keywords: [
+    'Middle Child music',
+    'Middle Child Never Alone',
+    'Never Alone feat lowly sunday',
+    'melodic bass',
+    'future bass',
+    'emotional electronic music',
+    'cinematic electronic music',
+    'Minneapolis electronic artist',
+  ],
+  authors: [{ name: 'Dan Larson', url: siteUrl }],
   creator: 'Dan Larson',
   publisher: 'BVSS FVM',
   openGraph: {
-    title: 'Middle Child — Never Alone',
-    description: 'Some songs are released. Some are survived. Discover the new single from Middle Child, arriving July 31, 2026.',
+    title: 'Middle Child - Never Alone (feat. lowly sunday)',
+    description: 'Official audio, lyrics, story, credits, and streaming links for Never Alone.',
     type: 'website',
     siteName: 'Middle Child',
     locale: 'en_US',
-    url: siteUrl,
+    url: releaseUrl,
+    images: [{ url: thumbnailUrl, width: 1280, height: 720, alt: 'Middle Child - Never Alone official audio' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Middle Child — Never Alone',
-    description: 'Some songs are released. Some are survived. New single arriving July 31, 2026.',
+    title: 'Middle Child - Never Alone (feat. lowly sunday)',
+    description: 'Official audio, lyrics, story, credits, and streaming links for Never Alone.',
+    images: [thumbnailUrl],
   },
   robots: {
     index: true,
     follow: true,
-    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 },
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
   },
 };
 
@@ -56,15 +76,23 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'MusicGroup',
+    '@id': `${siteUrl}/#artist`,
     name: 'Middle Child',
     alternateName: 'Middle Child Music',
     foundingDate: '2014',
-    foundingLocation: { '@type': 'Place', name: 'Minneapolis, Minnesota' },
+    foundingLocation: { '@type': 'Place', name: 'Minneapolis, Minnesota, United States' },
     member: { '@type': 'Person', name: 'Dan Larson' },
     recordLabel: { '@type': 'Organization', name: 'BVSS FVM' },
     url: siteUrl,
     genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
     description: 'Middle Child is the emotional electronic project of Minneapolis artist and producer Dan Larson.',
+    sameAs: [
+      'https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN',
+      'https://www.instagram.com/middlechildmzk/',
+      'https://x.com/middlechildmzk',
+      'https://www.facebook.com/middlechildmusica/',
+      'https://linktr.ee/middlechild',
+    ],
   };
 
   return (
