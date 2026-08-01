@@ -8,8 +8,8 @@ import InteractiveSky from '../src/app/components/InteractiveSky';
 import ExperienceControls from '../src/app/components/ExperienceControls';
 import HealingCore from '../src/app/components/HealingCore';
 import ImmersiveEngine from '../src/app/components/ImmersiveEngine';
+import { siteUrl } from '../lib/site-url';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://middle-child-experience.vercel.app';
 const releaseUrl = `${siteUrl}/never-alone`;
 const thumbnailUrl = 'https://i.ytimg.com/vi/9bCVDn2P29Q/maxresdefault.jpg';
 
