@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
+import { siteUrl } from '../../lib/site-url';
 import styles from './page.module.css';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://middle-child-experience.vercel.app';
 const pageUrl = `${siteUrl}/never-alone`;
 const smartLink = 'https://lnk.to/MiddlechildNeverAlone';
 const youtubeUrl = 'https://www.youtube.com/watch?v=9bCVDn2P29Q';
@@ -13,6 +13,7 @@ const platforms = [
   ['TIDAL', 'https://tidal.com/track/540359345'],
   ['Qobuz', 'https://www.qobuz.com/no-en/album/never-alone-feat-lowly-sunday-middle-child/s86d5vmdmi1xj'],
   ['iHeartRadio', 'https://www.iheart.com/artist/middle-child-514398/songs/never-alone-feat-lowly-sunday-414578756'],
+  ['Last.fm', 'https://www.last.fm/music/Middle+Child/Never+Alone+(feat.+lowly+sunday)+-+Single'],
   ['YouTube', youtubeUrl],
 ] as const;
 
@@ -25,7 +26,7 @@ const lyrics = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: 'Never Alone (feat. lowly sunday) - Middle Child | Official Audio and Lyrics',
+  title: 'Never Alone (feat. lowly sunday) - Official Audio and Lyrics',
   description:
     'Listen to Never Alone by Middle Child featuring lowly sunday. Explore the official audio, complete lyrics, song story, credits, streaming links, UPC, and ISRC.',
   alternates: { canonical: pageUrl },
@@ -111,7 +112,6 @@ export default function NeverAlonePage() {
     uploadDate: '2026-08-01T00:00:00-05:00',
     duration: 'PT3M5S',
     embedUrl: 'https://www.youtube.com/embed/9bCVDn2P29Q',
-    contentUrl: youtubeUrl,
     isPartOf: { '@id': `${pageUrl}#recording` },
   };
 
@@ -152,7 +152,7 @@ export default function NeverAlonePage() {
   };
 
   return (
-    <main className={styles.page}>
+    <main className={styles.page} data-release-page="never-alone">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(recordingSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(videoSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
