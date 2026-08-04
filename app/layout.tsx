@@ -1,20 +1,10 @@
 import type { Metadata, Viewport } from 'next';
-import '../src/app/globals.css';
-import '../src/app/interactions.css';
-import '../src/app/experience.css';
-import '../src/app/healing-core.css';
-import '../src/app/immersive-engine.css';
-import InteractiveSky from '../src/app/components/InteractiveSky';
-import ExperienceControls from '../src/app/components/ExperienceControls';
-import HealingCore from '../src/app/components/HealingCore';
-import ImmersiveEngine from '../src/app/components/ImmersiveEngine';
+import Link from 'next/link';
+import './globals.css';
 import { siteUrl } from '../lib/site-url';
 
-const releaseUrl = `${siteUrl}/never-alone`;
-const thumbnailUrl = 'https://i.ytimg.com/vi/9bCVDn2P29Q/maxresdefault.jpg';
-
 export const viewport: Viewport = {
-  themeColor: '#05050a',
+  themeColor: '#08090d',
   colorScheme: 'dark',
   width: 'device-width',
   initialScale: 1,
@@ -23,87 +13,96 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Middle Child - Never Alone',
-    template: '%s | Middle Child',
+    default: 'BVSS FVM | Independent Electronic Music',
+    template: '%s | BVSS FVM',
   },
   description:
-    'The official home of Middle Child, the emotional electronic project of Minneapolis artist and producer Dan Larson. Listen to Never Alone, read the lyrics, and explore the story.',
-  applicationName: 'Middle Child',
+    'BVSS FVM is an independent electronic music label and creative home for Middle Child. Explore releases, playlists, creator resources, licensing, and submissions.',
+  applicationName: 'BVSS FVM',
   category: 'music',
-  alternates: { canonical: releaseUrl },
+  alternates: { canonical: '/' },
   keywords: [
+    'BVSS FVM',
     'Middle Child music',
-    'Middle Child Never Alone',
-    'Never Alone feat lowly sunday',
+    'independent electronic music label',
     'melodic bass',
     'future bass',
     'emotional electronic music',
-    'cinematic electronic music',
     'Minneapolis electronic artist',
   ],
-  authors: [{ name: 'Dan Larson', url: siteUrl }],
   creator: 'Dan Larson',
   publisher: 'BVSS FVM',
   openGraph: {
-    title: 'Middle Child - Never Alone (feat. lowly sunday)',
-    description: 'Official audio, lyrics, story, credits, and streaming links for Never Alone.',
+    title: 'BVSS FVM | Independent Electronic Music',
+    description: 'Music for the moments people cannot always put into words.',
     type: 'website',
-    siteName: 'Middle Child',
+    siteName: 'BVSS FVM',
     locale: 'en_US',
-    url: releaseUrl,
-    images: [{ url: thumbnailUrl, width: 1280, height: 720, alt: 'Middle Child - Never Alone official audio' }],
+    url: siteUrl,
+    images: [{ url: 'https://i.ytimg.com/vi/9bCVDn2P29Q/maxresdefault.jpg', width: 1280, height: 720, alt: 'Middle Child - Never Alone' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Middle Child - Never Alone (feat. lowly sunday)',
-    description: 'Official audio, lyrics, story, credits, and streaming links for Never Alone.',
-    images: [thumbnailUrl],
+    title: 'BVSS FVM | Independent Electronic Music',
+    description: 'Music for the moments people cannot always put into words.',
+    images: ['https://i.ytimg.com/vi/9bCVDn2P29Q/maxresdefault.jpg'],
   },
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-      'max-video-preview': -1,
-    },
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 },
   },
 };
 
+const nav = [
+  ['Music', '/music'],
+  ['Artist', '/artists/middle-child'],
+  ['Playlists', '/playlists'],
+  ['Submit', '/submit'],
+] as const;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const schema = {
+  const organizationSchema = {
     '@context': 'https://schema.org',
-    '@type': 'MusicGroup',
-    '@id': `${siteUrl}/#artist`,
-    name: 'Middle Child',
-    alternateName: 'Middle Child Music',
-    foundingDate: '2014',
-    foundingLocation: { '@type': 'Place', name: 'Minneapolis, Minnesota, United States' },
-    member: { '@type': 'Person', name: 'Dan Larson' },
-    recordLabel: { '@type': 'Organization', name: 'BVSS FVM' },
+    '@type': 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: 'BVSS FVM',
     url: siteUrl,
-    genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
-    description: 'Middle Child is the emotional electronic project of Minneapolis artist and producer Dan Larson.',
-    sameAs: [
-      'https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN',
-      'https://www.instagram.com/middlechildmzk/',
-      'https://x.com/middlechildmzk',
-      'https://www.facebook.com/middlechildmusica/',
-      'https://linktr.ee/middlechild',
-    ],
+    description: 'An independent electronic music label and creative home founded by artist and producer Dan Larson.',
+    founder: { '@type': 'Person', name: 'Dan Larson' },
+    subOrganization: {
+      '@type': 'MusicGroup',
+      '@id': `${siteUrl}/artists/middle-child#artist`,
+      name: 'Middle Child',
+      genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
+    },
   };
 
   return (
     <html lang="en">
-      <body data-world="world-never-alone">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-        <ImmersiveEngine />
-        <InteractiveSky />
-        <HealingCore />
-        <ExperienceControls />
+      <body>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+        <header className="site-header">
+          <Link className="wordmark" href="/" aria-label="BVSS FVM home">BVSS FVM</Link>
+          <nav aria-label="Primary navigation">
+            {nav.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+          </nav>
+          <a className="button button-small" href="https://lnk.to/MiddlechildNeverAlone" target="_blank" rel="noreferrer">Listen</a>
+        </header>
         {children}
+        <footer className="site-footer">
+          <div>
+            <Link className="wordmark" href="/">BVSS FVM</Link>
+            <p>Independent electronic music. Minneapolis, Minnesota.</p>
+          </div>
+          <div className="footer-links">
+            <Link href="/music">Music</Link>
+            <Link href="/playlists">Playlists</Link>
+            <Link href="/submit">Submit music</Link>
+            <a href="mailto:hello@bvssfvm.com">Contact</a>
+          </div>
+          <p>© 2026 BVSS FVM. All rights reserved.</p>
+        </footer>
       </body>
     </html>
   );

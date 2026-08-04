@@ -1,4 +1,4 @@
-const fallbackSiteUrl = 'https://middle-child-experience.vercel.app';
+const fallbackSiteUrl = 'https://bvssfvm.com';
 
 const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '');
 
