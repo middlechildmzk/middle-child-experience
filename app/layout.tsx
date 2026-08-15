@@ -20,7 +20,6 @@ export const metadata: Metadata = {
     'BVSS FVM is an independent electronic music label and creative home for Middle Child. Explore releases, playlists, creator resources, licensing, and submissions.',
   applicationName: 'BVSS FVM',
   category: 'music',
-  alternates: { canonical: '/' },
   keywords: [
     'BVSS FVM',
     'Middle Child music',
