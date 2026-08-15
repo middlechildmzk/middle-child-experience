@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: '%s | BVSS FVM',
   },
   description:
-    'BVSS FVM is an independent electronic music label and creative home for Middle Child. Explore releases, playlists, creator resources, licensing, and submissions.',
+    'BVSS FVM is an independent electronic music label and creative home for Middle Child. Explore official releases, lyrics, credits, playlists, creator resources, licensing, and submissions.',
   applicationName: 'BVSS FVM',
   category: 'music',
   keywords: [
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   publisher: 'BVSS FVM',
   openGraph: {
     title: 'BVSS FVM | Independent Electronic Music',
-    description: 'Music for the moments people cannot always put into words.',
+    description: 'Official releases, stories, credits, playlists, and licensing from the creative home of Middle Child.',
     type: 'website',
     siteName: 'BVSS FVM',
     locale: 'en_US',
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'BVSS FVM | Independent Electronic Music',
-    description: 'Music for the moments people cannot always put into words.',
+    description: 'Official releases, stories, credits, playlists, and licensing from the creative home of Middle Child.',
     images: ['https://i.ytimg.com/vi/9bCVDn2P29Q/maxresdefault.jpg'],
   },
   robots: {
@@ -63,18 +63,31 @@ const nav = [
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const organizationSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
-    '@id': `${siteUrl}/#organization`,
-    name: 'BVSS FVM',
-    url: siteUrl,
-    description: 'An independent electronic music label and creative home founded by artist and producer Dan Larson.',
-    founder: { '@type': 'Person', name: 'Dan Larson' },
-    subOrganization: {
-      '@type': 'MusicGroup',
-      '@id': `${siteUrl}/artists/middle-child#artist`,
-      name: 'Middle Child',
-      genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
-    },
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${siteUrl}/#organization`,
+        name: 'BVSS FVM',
+        url: siteUrl,
+        description: 'An independent electronic music label and creative home founded by artist and producer Dan Larson.',
+        founder: { '@type': 'Person', name: 'Dan Larson' },
+      },
+      {
+        '@type': 'MusicGroup',
+        '@id': `${siteUrl}/artists/middle-child#artist`,
+        name: 'Middle Child',
+        url: `${siteUrl}/artists/middle-child`,
+        genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
+        member: { '@type': 'Person', name: 'Dan Larson' },
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${siteUrl}/#website`,
+        name: 'BVSS FVM',
+        url: siteUrl,
+        publisher: { '@id': `${siteUrl}/#organization` },
+      },
+    ],
   };
 
   return (
