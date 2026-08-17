@@ -80,7 +80,7 @@ export default function NeverAlonePage() {
     ],
     byArtist: {
       '@type': 'MusicGroup',
-      '@id': `${siteUrl}/#artist`,
+      '@id': `${siteUrl}/artists/middle-child#artist`,
       name: 'Middle Child',
       alternateName: 'Middle Child Music',
       member: { '@type': 'Person', name: 'Dan Larson' },
@@ -88,7 +88,7 @@ export default function NeverAlonePage() {
       sameAs: artistSameAs,
     },
     contributor: { '@type': 'MusicGroup', name: 'lowly sunday' },
-    recordLabel: { '@type': 'Organization', name: 'BVSS FVM' },
+    recordLabel: { '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: 'BVSS FVM' },
     inAlbum: {
       '@type': 'MusicAlbum',
       name: 'Never Alone (feat. lowly sunday) - Single',
