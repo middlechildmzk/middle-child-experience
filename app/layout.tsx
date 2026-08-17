@@ -56,6 +56,7 @@ export const metadata: Metadata = {
 const nav = [
   ['Music', '/music'],
   ['Artist', '/artists/middle-child'],
+  ['Licensing', '/licensing'],
   ['Playlists', '/playlists'],
   ['Submit', '/submit'],
 ] as const;
@@ -109,6 +110,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </div>
           <div className="footer-links">
             <Link href="/music">Music</Link>
+            <Link href="/licensing">Licensing</Link>
             <Link href="/playlists">Playlists</Link>
             <Link href="/submit">Submit music</Link>
             <a href="mailto:hello@bvssfvm.com">Contact</a>
