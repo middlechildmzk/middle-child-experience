@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/music`, changeFrequency: 'weekly', priority: 0.95 },
     { url: `${siteUrl}/artists/middle-child`, changeFrequency: 'monthly', priority: 0.95 },
     { url: `${siteUrl}/never-alone`, lastModified: new Date('2026-07-31T00:00:00-05:00'), changeFrequency: 'monthly', priority: 0.95 },
+    { url: `${siteUrl}/licensing`, changeFrequency: 'monthly', priority: 0.88 },
     { url: `${siteUrl}/playlists`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${siteUrl}/submit`, changeFrequency: 'monthly', priority: 0.75 },
     { url: `${siteUrl}/press`, changeFrequency: 'monthly', priority: 0.65 },
