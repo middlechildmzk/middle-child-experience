@@ -1,7 +1,9 @@
 import type { MetadataRoute } from 'next';
-import { siteUrl } from '../lib/site-url';
+import { canIndexSite, siteUrl } from '../lib/site-url';
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (!canIndexSite) return [];
+
   return [
     { url: siteUrl, changeFrequency: 'weekly', priority: 1 },
     { url: `${siteUrl}/music`, changeFrequency: 'weekly', priority: 0.95 },
