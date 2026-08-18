@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import './globals.css';
-import { siteUrl } from '../lib/site-url';
+import { canIndexSite, siteUrl } from '../lib/site-url';
 
 export const viewport: Viewport = {
   themeColor: '#08090d',
@@ -46,11 +46,17 @@ export const metadata: Metadata = {
     description: 'Official releases, stories, credits, playlists, and licensing from the creative home of Middle Child.',
     images: ['https://i.ytimg.com/vi/9bCVDn2P29Q/maxresdefault.jpg'],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 },
-  },
+  robots: canIndexSite
+    ? {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 },
+      }
+    : {
+        index: false,
+        follow: false,
+        googleBot: { index: false, follow: false },
+      },
 };
 
 const nav = [
