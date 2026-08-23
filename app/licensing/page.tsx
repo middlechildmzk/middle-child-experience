@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { siteUrl } from '../../lib/site-url';
 
 const pageUrl = `${siteUrl}/licensing`;
-const inquiryHref = 'mailto:hello@bvssfvm.com?subject=Licensing%20Inquiry';
+const inquirySubject = 'Middle Child / BVSS FVM licensing inquiry';
+const inquiryBody = `Track or sound:\nProject / company:\nMedia and intended use:\nTerritory:\nTerm / duration:\nPlacement length and context:\nTimeline / air date:\nBudget range (if known):\n\nAnything else we should know:`;
+const inquiryHref = `mailto:hello@bvssfvm.com?subject=${encodeURIComponent(inquirySubject)}&body=${encodeURIComponent(inquiryBody)}`;
 
 export const metadata: Metadata = {
   title: 'Music Licensing & Sync | Middle Child / BVSS FVM',
@@ -16,6 +18,8 @@ export const metadata: Metadata = {
     'melodic bass sync music',
     'emotional electronic music licensing',
     'electronic music for film and TV',
+    'cinematic electronic music licensing',
+    'music for trailers and branded content',
   ],
   openGraph: {
     title: 'Music Licensing & Sync | Middle Child / BVSS FVM',
@@ -44,6 +48,25 @@ const inquiryFields = [
   'Budget range, if known',
 ];
 
+const faq = [
+  {
+    question: 'Can I license Middle Child music for film, TV, games, trailers, podcasts, YouTube, or branded content?',
+    answer: 'Yes, licensing inquiries are welcome for those uses. Availability is reviewed for the specific track, project, media, territory, term, and placement before any use is approved.',
+  },
+  {
+    question: 'Is Middle Child music one-stop for sync?',
+    answer: 'Do not assume every track is one-stop. Rights can vary by recording because of collaborators, publishing, featured performers, samples, or other agreements. BVSS FVM will confirm the clearance path for the requested track and use.',
+  },
+  {
+    question: 'What should I include in a sync or licensing inquiry?',
+    answer: 'Include the track or sound, project and company, media and intended use, territory, term, placement length and context, timeline or air date, and budget range if known.',
+  },
+  {
+    question: 'Does sending a licensing inquiry give me permission to use the music?',
+    answer: 'No. An inquiry is not a license, quote, approval, or representation that all rights are controlled by BVSS FVM. Use is authorized only after the relevant rights and terms are confirmed in writing.',
+  },
+] as const;
+
 export default function LicensingPage() {
   const webPageSchema = {
     '@context': 'https://schema.org',
@@ -59,9 +82,36 @@ export default function LicensingPage() {
     ],
   };
 
+  const serviceSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    '@id': `${pageUrl}#service`,
+    name: 'Middle Child / BVSS FVM Music Licensing & Sync',
+    serviceType: 'Music licensing and synchronization rights inquiry',
+    url: pageUrl,
+    description: 'Licensing inquiries for Middle Child and BVSS FVM music for film, television, games, trailers, podcasts, branded content, and creator projects. Rights and availability are reviewed per track and use.',
+    provider: { '@id': `${siteUrl}/#organization` },
+    audience: {
+      '@type': 'Audience',
+      audienceType: 'Music supervisors, filmmakers, game teams, trailer editors, agencies, brands, podcasters, and creators',
+    },
+  };
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  };
+
   return (
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       <section className="shell page-hero">
         <p className="eyebrow">Music licensing & sync</p>
@@ -115,7 +165,17 @@ export default function LicensingPage() {
           <div className="grid">
             {inquiryFields.map((field) => <article className="card" key={field}><h3>{field}</h3></article>)}
           </div>
-          <div className="actions"><a className="button" href={inquiryHref}>Email hello@bvssfvm.com</a><Link className="button button-secondary" href="/press">Middle Child press kit</Link></div>
+          <div className="actions"><a className="button" href={inquiryHref}>Open a pre-filled licensing email</a><Link className="button button-secondary" href="/press">Middle Child press kit</Link></div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="shell">
+          <p className="eyebrow">Licensing FAQ</p>
+          <h2>Questions music supervisors and creators usually need answered first.</h2>
+          <div className="grid">
+            {faq.map((item) => <article className="card" key={item.question}><h3>{item.question}</h3><p>{item.answer}</p></article>)}
+          </div>
         </div>
       </section>
 
