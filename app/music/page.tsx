@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Middle Child Music Catalog',
-  description: 'Explore official Middle Child releases from BVSS FVM, including release stories, lyrics, credits, videos, and verified listening links.',
+  description: 'Explore official Middle Child releases from BVSS FVM, including release stories, lyrics, credits, videos, verified listening links, and licensing information.',
   alternates: { canonical: '/music' },
 };
 
@@ -20,6 +20,10 @@ export default function MusicPage() {
         <p className="eyebrow">Middle Child music · BVSS FVM catalog</p>
         <h1>Official Middle Child releases, stories, credits, and listening links.</h1>
         <p className="lead">Start with Never Alone, then explore the growing BVSS FVM catalog of emotional electronic, melodic bass, and future bass music.</p>
+        <div className="actions">
+          <Link className="button" href="/never-alone">Explore Never Alone</Link>
+          <Link className="button button-secondary" href="/licensing">License Middle Child music</Link>
+        </div>
       </section>
       <section className="section">
         <div className="shell">
@@ -35,8 +39,8 @@ export default function MusicPage() {
               </a>
             ))}
           </div>
-          <p className="muted" style={{ marginTop: 32 }}>The full Middle Child discography is being converted into permanent BVSS FVM release pages with verified metadata, credits, lyrics where available, platform links, and original context.</p>
-          <div className="actions"><Link className="button" href="/never-alone">Explore Never Alone</Link></div>
+          <p className="muted" style={{ marginTop: 32 }}>The full Middle Child discography is being converted into permanent BVSS FVM release pages with verified metadata, credits, lyrics where available, platform links, original context, and a clear route for licensing inquiries.</p>
+          <div className="actions"><Link className="button" href="/never-alone">Explore Never Alone</Link><Link className="button button-secondary" href="/licensing">Licensing & sync</Link></div>
         </div>
       </section>
     </main>
