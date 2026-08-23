@@ -29,11 +29,16 @@ export default function MiddleChildPage() {
     foundingLocation: { '@type': 'Place', name: 'Minneapolis, Minnesota, United States' },
     genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
     recordLabel: { '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: 'BVSS FVM', url: siteUrl },
+    track: [
+      { '@type': 'MusicRecording', '@id': `${siteUrl}/mercy#recording`, name: 'mercy (Radio Edit)', url: `${siteUrl}/mercy` },
+      { '@type': 'MusicRecording', '@id': `${siteUrl}/never-alone#recording`, name: 'Never Alone', url: `${siteUrl}/never-alone` },
+    ],
     sameAs: [
       'https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN',
       'https://www.instagram.com/middlechildmzk/',
       'https://x.com/middlechildmzk',
       'https://www.facebook.com/middlechildmusica/',
+      'https://www.youtube.com/@middlechildmusica',
     ],
   };
 
@@ -47,6 +52,7 @@ export default function MiddleChildPage() {
         <div className="actions">
           <a className="button" href="https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN" target="_blank" rel="noreferrer">Listen on Spotify</a>
           <Link className="button button-secondary" href="/music">Explore catalog</Link>
+          <Link className="button button-secondary" href="/licensing">Licensing & sync</Link>
         </div>
       </section>
 
@@ -64,9 +70,21 @@ export default function MiddleChildPage() {
       </section>
 
       <section className="section">
+        <div className="shell">
+          <p className="eyebrow">Official catalog highlights</p>
+          <h2>Permanent first-party release pages.</h2>
+          <div className="grid">
+            <Link className="card" href="/mercy"><p className="eyebrow">2017</p><h3>mercy (Radio Edit)</h3><p>Official release details, streaming links, catalog context, and licensing path.</p></Link>
+            <Link className="card" href="/never-alone"><p className="eyebrow">2026</p><h3>Never Alone</h3><p>Official release page with story, credits, listening links, and release context.</p></Link>
+            <Link className="card" href="/music"><p className="eyebrow">Catalog</p><h3>All Middle Child music</h3><p>Browse the growing BVSS FVM archive as more permanent release pages are added.</p></Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
         <div className="shell section-split">
           <div>
-            <p className="eyebrow">Featured release</p>
+            <p className="eyebrow">Current release</p>
             <h2>Never Alone</h2>
           </div>
           <div>
