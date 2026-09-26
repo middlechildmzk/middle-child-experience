@@ -46,13 +46,20 @@ export default function SubmissionForm({
       is_explicit: form.get('is_explicit') === 'on',
       notes: form.get('notes') || null,
       preferred_playlists: preferred,
+      origin_playlist: initialPlaylist || null,
       website: form.get('website'),
     };
     try {
       fetch(playlistApiBase + '/bvss-event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event_name: 'submit_start', path: '/submit' }),
+        body: JSON.stringify({
+          event_name: 'submit_start',
+          path: '/submit',
+          playlist_slug: initialPlaylist || null,
+          referrer: document.referrer || null,
+          utm: Object.fromEntries(new URLSearchParams(window.location.search)),
+        }),
       }).catch(() => undefined);
 
       const response = await fetch(playlistApiBase + '/bvss-submit', {

@@ -21,10 +21,18 @@ type Dashboard = {
     title: string;
     detail: string;
   }[];
+  playlist_attribution?: any[];
+  traffic_sources?: any[];
+  submission_sources?: any[];
+  legacy_playlists?: any[];
 };
 
 function delta(current: number | null, historic: number | null) {
   return current == null || historic == null ? null : current - historic;
+}
+
+function pct(value: number | null | undefined) {
+  return value == null ? '—' : (value * 100).toFixed(1) + '%';
 }
 
 function Metric({ label, value, note }: { label: string; value: number | string | null; note?: string }) {
@@ -350,9 +358,85 @@ export default function PlaylistOSAdmin() {
       </section>
 
       <section className="os-section">
+        <div className="os-section-head">
+          <div><p className="eyebrow">Growth attribution</p><h2>Which playlist lanes create action</h2></div>
+          <p className="muted">30-day first-party events only. Rates stay blank until a real denominator exists.</p>
+        </div>
+        {(data.playlist_attribution || []).some((row) => row.views || row.spotify_clicks || row.submit_starts || row.submit_completes) ? (
+          <div className="os-table-wrap">
+            <table className="os-table">
+              <thead><tr><th>Playlist</th><th>Views</th><th>Spotify clicks</th><th>Click rate</th><th>Submit starts</th><th>Submissions</th><th>Submission rate</th></tr></thead>
+              <tbody>
+                {(data.playlist_attribution || []).filter((row) => row.views || row.spotify_clicks || row.submit_starts || row.submit_completes).map((row) => (
+                  <tr key={row.playlist_id}>
+                    <td><strong>{row.canonical_name}</strong></td>
+                    <td>{row.views}</td>
+                    <td>{row.spotify_clicks}</td>
+                    <td>{pct(row.spotify_ctr)}</td>
+                    <td>{row.submit_starts}</td>
+                    <td>{row.submit_completes}</td>
+                    <td>{pct(row.submission_rate)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="muted">No attributed playlist traffic yet. The instrumentation is live; this table will populate from real visitor activity.</p>}
+
+        <div className="editorial-columns" style={{ marginTop: 18 }}>
+          <article className="card">
+            <p className="eyebrow">Traffic sources</p>
+            <h3>Where visitors came from</h3>
+            {(data.traffic_sources || []).length ? (
+              <div className="track-list">
+                {(data.traffic_sources || []).slice(0, 8).map((row) => (
+                  <div key={row.source}><strong>{row.source}</strong><small>{row.events} events · {row.spotify_clicks} Spotify clicks</small></div>
+                ))}
+              </div>
+            ) : <p className="muted">Awaiting first-party traffic events.</p>}
+          </article>
+          <article className="card">
+            <p className="eyebrow">Submission sources</p>
+            <h3>What generated artist intake</h3>
+            {(data.submission_sources || []).length ? (
+              <div className="track-list">
+                {(data.submission_sources || []).slice(0, 8).map((row) => (
+                  <div key={row.source}><strong>{row.source}</strong><small>{row.total} submissions · {row.accepted} accepted</small></div>
+                ))}
+              </div>
+            ) : <p className="muted">No submissions recorded in the last 30 days.</p>}
+          </article>
+          <article className="card">
+            <p className="eyebrow">Attribution rules</p>
+            <h3>Traceable, not guessed</h3>
+            <p className="muted">UTM source wins when present; otherwise the referrer host is used. Playlist-origin submissions are stored against their originating playlist page. Direct traffic stays labeled direct / unknown.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="os-section">
         <div className="os-section-head"><div><p className="eyebrow">Review queue</p><h2>{data.queue.length} submissions waiting</h2></div></div>
         <div className="os-review-grid">{data.queue.length ? data.queue.map((s) => <ReviewCard key={s.id} submission={s} playlists={playlistRows} token={session.access_token} refresh={load} />) : <p className="muted">Queue clear.</p>}</div>
       </section>
+
+      {!!data.legacy_playlists?.length && (
+        <section className="os-section">
+          <div className="os-section-head">
+            <div><p className="eyebrow">Recovered archive</p><h2>{data.legacy_playlists.length} legacy BVSS FVM playlists found</h2></div>
+            <p className="muted">Hidden from the public site until you explicitly choose to revive, merge or archive them.</p>
+          </div>
+          <div className="integration-grid">
+            {data.legacy_playlists.map((p) => (
+              <article className="card" key={p.id}>
+                <span className="status-pill">legacy</span>
+                <h3>{p.canonical_name}</h3>
+                <p>{p.description}</p>
+                <a className="card-link" href={p.spotify_url} target="_blank" rel="noreferrer">Open on Spotify →</a>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="os-section">
         <div className="os-section-head"><div><p className="eyebrow">Data connections</p><h2>Integration truth</h2></div></div>

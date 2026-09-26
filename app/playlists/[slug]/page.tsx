@@ -67,9 +67,48 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
     creator: { '@type': 'Organization', name: 'BVSS FVM', url: siteUrl },
   };
 
+  const faq = [
+    {
+      question: 'What kind of music is on ' + playlist.canonical_name + '?',
+      answer: 'This BVSS FVM playlist centers on ' + [playlist.primary_genre, ...playlist.secondary_genres].join(', ') + '. The curation leans ' + playlist.moods.join(', ') + ' and uses artists such as ' + playlist.anchor_artists.slice(0, 5).join(', ') + ' as reference points while leaving room for emerging records.',
+    },
+    {
+      question: 'When is this playlist updated?',
+      answer: 'BVSS FVM reviews and refreshes this playlist on a ' + playlist.update_cadence + ' cadence. Tracks can move in or out as the lane evolves, and placement is based on editorial fit rather than guaranteed rotation.',
+    },
+    {
+      question: 'Can independent artists submit music for this playlist?',
+      answer: playlist.submission_status === 'open'
+        ? 'Yes. Independent artists can submit one Spotify track through the BVSS FVM submission form. The system may suggest likely playlist fits, but a human curator makes the final decision.'
+        : 'Submissions for this playlist are currently paused. BVSS FVM only accepts music for playlists whose submission status is open.',
+    },
+  ];
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'BVSS FVM', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Playlists', item: siteUrl + '/playlists' },
+      { '@type': 'ListItem', position: 3, name: playlist.canonical_name, item: siteUrl + '/playlists/' + playlist.slug },
+    ],
+  };
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  };
+
   return (
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <section className="shell playlist-detail-hero">
         <div>
           <nav className="breadcrumbs" aria-label="Breadcrumb">
@@ -125,7 +164,25 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
         </div>
       </section>
 
-      {highlights.length > 0 && (
+      <section className="section">
+        <div className="shell section-split">
+          <div>
+            <p className="eyebrow">Inside the lane</p>
+            <h2>A playlist with a specific point of view.</h2>
+          </div>
+          <div>
+            <p className="lead compact-lead">
+              {playlist.canonical_name} is built around {playlist.primary_genre.toLowerCase()} with adjacent shades of {playlist.secondary_genres.slice(0, 4).join(', ')}.
+              The goal is not to collect every release in the genre; it is to create a coherent listening experience that feels {playlist.moods.slice(0, 4).join(', ').toLowerCase()} from front to back.
+            </p>
+            <p className="playlist-editorial">
+              It is curated for moments like {playlist.activities.slice(0, 5).join(', ').toLowerCase()}. Artists such as {playlist.anchor_artists.slice(0, 6).join(', ')} help define the lane, while independent and emerging records are judged on the same core question: does the track strengthen the experience of this playlist?
+            </p>
+          </div>
+        </div>
+      </section>
+
+            {highlights.length > 0 && (
         <section className="section">
           <div className="shell">
             <p className="eyebrow">Current highlights</p>
@@ -142,6 +199,21 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
           </div>
         </section>
       )}
+
+      <section className="section">
+        <div className="shell">
+          <p className="eyebrow">Playlist FAQ</p>
+          <h2>Before you listen or submit.</h2>
+          <div className="editorial-columns">
+            {faq.map((item) => (
+              <article className="card" key={item.question}>
+                <h3>{item.question}</h3>
+                <p>{item.answer}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="section">
         <div className="shell">
