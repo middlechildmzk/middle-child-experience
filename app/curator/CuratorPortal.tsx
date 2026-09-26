@@ -33,7 +33,7 @@ export default function CuratorPortal() {
     setStatus('Sending sign-in link…');
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin + '/curator' },
+      options: { emailRedirectTo: 'https://bvssfvm.com/curator' },
     });
     setStatus(error ? error.message : 'Check your email for the secure sign-in link.');
   }
