@@ -107,7 +107,12 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
                 />
               ) : <div className="playlist-art-placeholder" aria-hidden="true" />}
               <div className="playlist-card-body">
-                <p className="eyebrow">{playlist.primary_genre}</p>
+                <p className="eyebrow">
+                  {playlist.primary_genre}
+                  {playlist.network_owner_type === 'partner' && playlist.bvss_curator_profiles?.display_name
+                    ? ' · ' + playlist.bvss_curator_profiles.display_name
+                    : ''}
+                </p>
                 <h3>{playlist.canonical_name}</h3>
                 <p>{playlist.description}</p>
                 <div className="chip-row">
