@@ -55,6 +55,10 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
   const updated = playlist.last_editorial_update_at || playlist.updated_at;
   const updatedLabel = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(updated));
 
+  const curator = playlist.network_owner_type === 'partner' ? playlist.bvss_curator_profiles : null;
+  const curatorLabel = curator?.display_name || 'BVSS FVM';
+  const curatorHref = curator?.handle ? '/curators/' + curator.handle : null;
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'MusicPlaylist',
@@ -72,7 +76,9 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
       byArtist: track.artists.map((name) => ({ '@type': 'MusicGroup', name })),
       url: track.spotify_url || undefined,
     })),
-    creator: { '@id': siteUrl + '/#organization' },
+    creator: curator?.handle
+      ? { '@type': 'Person', name: curator.display_name, url: siteUrl + '/curators/' + curator.handle }
+      : { '@id': siteUrl + '/#organization' },
   };
 
   const faq = [
@@ -82,7 +88,7 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
     },
     {
       question: 'When is this playlist updated?',
-      answer: 'BVSS FVM reviews and refreshes this playlist on a ' + playlist.update_cadence + ' cadence. Tracks can move in or out as the lane evolves, and placement is based on editorial fit rather than guaranteed rotation.',
+      answer: curatorLabel + ' reviews and refreshes this playlist on a ' + playlist.update_cadence + ' cadence. Tracks can move in or out as the lane evolves, and placement is based on editorial fit rather than guaranteed rotation.',
     },
     {
       question: 'Can independent artists submit music for this playlist?',
@@ -133,7 +139,9 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
             <PlaylistAnalytics slug={playlist.slug} spotifyUrl={playlist.spotify_url} />
             {playlist.submission_status === 'open' && <Link className="button button-secondary" href={'/submit?playlist=' + playlist.slug}>Submit a track</Link>}
           </div>
-          <p className="muted playlist-updated">Curated by BVSS FVM · {playlist.update_cadence} updates · Page updated {updatedLabel}</p>
+          <p className="muted playlist-updated">
+            Curated by {curatorHref ? <Link href={curatorHref}>{curatorLabel}</Link> : curatorLabel} · {playlist.update_cadence} updates · Page updated {updatedLabel}
+          </p>
         </div>
         <div className="playlist-player-stack">
           {playlist.cover_asset_url && <img className="playlist-detail-cover" src={playlist.cover_asset_url} alt={'Cover for ' + playlist.canonical_name} />}
