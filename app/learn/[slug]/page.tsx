@@ -21,6 +21,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: guide.description,
       url: '/learn/' + guide.slug,
       type: 'article',
+      publishedTime: '2026-09-26T00:00:00-05:00',
+      modifiedTime: '2026-09-26T00:00:00-05:00',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: guide.title,
+      description: guide.description,
     },
   };
 }
