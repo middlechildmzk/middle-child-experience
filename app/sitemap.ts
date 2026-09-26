@@ -3,11 +3,13 @@ import type { MetadataRoute } from 'next';
 import { canIndexSite, siteUrl } from '../lib/site-url';
 import { getPlaylists } from '../lib/playlist-os';
 import { guides } from '../lib/learn-guides';
+import { getPublicCurators } from '../lib/curator-network';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!canIndexSite) return [];
 
   let playlistEntries: MetadataRoute.Sitemap = [];
+  let curatorEntries: MetadataRoute.Sitemap = [];
   try {
     const playlists = await getPlaylists();
     playlistEntries = playlists.map((playlist) => ({
@@ -16,8 +18,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.76,
     }));
+    const curators = await getPublicCurators();
+    curatorEntries = curators.map((curator) => ({
+      url: siteUrl + '/curators/' + curator.handle,
+      changeFrequency: 'weekly' as const,
+      priority: 0.68,
+    }));
   } catch {
     playlistEntries = [];
+    curatorEntries = [];
   }
 
   return [
@@ -29,6 +38,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: siteUrl + '/licensing', changeFrequency: 'monthly', priority: 0.88 },
     { url: siteUrl + '/playlists', changeFrequency: 'weekly', priority: 0.85 },
     ...playlistEntries,
+    { url: siteUrl + '/curators', changeFrequency: 'weekly', priority: 0.76 },
+    ...curatorEntries,
+    { url: siteUrl + '/curators/apply', changeFrequency: 'monthly', priority: 0.55 },
     { url: siteUrl + '/learn', changeFrequency: 'monthly', priority: 0.82 },
     ...guides.map((guide) => ({
       url: siteUrl + '/learn/' + guide.slug,
