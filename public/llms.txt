@@ -11,6 +11,7 @@ Canonical website: https://bvssfvm.com
 - /never-alone — official release page for Middle Child - Never Alone (feat. lowly sunday)
 - /licensing — music licensing and sync information
 - /playlists — 18 active human-curated electronic playlists
+- /learn — first-party editorial guides on genres, playlist curation, and submissions
 - /submit — first-party artist submission form for the playlist network
 - /press — press and media information
 
@@ -18,6 +19,9 @@ Canonical website: https://bvssfvm.com
 BVSS FVM operates an independent electronic playlist network organized by genre, mood, and listening intent. Current lanes include emotional bass, late-night electronic, liquid and dancefloor drum & bass, deep bass/car music, emo electronic, chillstep, indie electronic, hardwave, UK garage/speed garage, 2010s EDM nostalgia, melodic house & techno, tech house, gaming EDM, downtempo/chillwave, rave classics, dubstep/bass music, and trance.
 
 Each public playlist has a permanent first-party page under /playlists/<slug> with editorial context, Spotify listening links, submission criteria, related playlists, and structured metadata.
+
+## Editorial guides
+BVSS FVM publishes first-party guides at /learn. Initial guides explain emotional bass, the distinction between liquid DnB and dancefloor DnB, late-night electronic playlist curation, and the BVSS FVM playlist-submission review process. These pages describe BVSS FVM's own curation framework rather than claiming universal genre rules.
 
 ## Music identity
 Middle Child makes emotional electronic music spanning melodic bass, future bass, cinematic electronic, and related styles. The project is based in Minneapolis and releases independently through BVSS FVM.

@@ -2,6 +2,7 @@
 import type { MetadataRoute } from 'next';
 import { canIndexSite, siteUrl } from '../lib/site-url';
 import { getPlaylists } from '../lib/playlist-os';
+import { guides } from '../lib/learn-guides';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!canIndexSite) return [];
@@ -28,6 +29,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: siteUrl + '/licensing', changeFrequency: 'monthly', priority: 0.88 },
     { url: siteUrl + '/playlists', changeFrequency: 'weekly', priority: 0.85 },
     ...playlistEntries,
+    { url: siteUrl + '/learn', changeFrequency: 'monthly', priority: 0.82 },
+    ...guides.map((guide) => ({
+      url: siteUrl + '/learn/' + guide.slug,
+      lastModified: new Date('2026-09-26T00:00:00-05:00'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    })),
     { url: siteUrl + '/submit', changeFrequency: 'monthly', priority: 0.78 },
     { url: siteUrl + '/press', changeFrequency: 'monthly', priority: 0.65 },
     { url: siteUrl + '/brand', changeFrequency: 'monthly', priority: 0.5 },
