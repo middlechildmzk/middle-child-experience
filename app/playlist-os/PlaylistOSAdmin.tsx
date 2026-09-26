@@ -24,6 +24,7 @@ type Dashboard = {
   playlist_attribution?: any[];
   traffic_sources?: any[];
   submission_sources?: any[];
+  legacy_playlists?: any[];
 };
 
 function delta(current: number | null, historic: number | null) {
@@ -417,6 +418,25 @@ export default function PlaylistOSAdmin() {
         <div className="os-section-head"><div><p className="eyebrow">Review queue</p><h2>{data.queue.length} submissions waiting</h2></div></div>
         <div className="os-review-grid">{data.queue.length ? data.queue.map((s) => <ReviewCard key={s.id} submission={s} playlists={playlistRows} token={session.access_token} refresh={load} />) : <p className="muted">Queue clear.</p>}</div>
       </section>
+
+      {!!data.legacy_playlists?.length && (
+        <section className="os-section">
+          <div className="os-section-head">
+            <div><p className="eyebrow">Recovered archive</p><h2>{data.legacy_playlists.length} legacy BVSS FVM playlists found</h2></div>
+            <p className="muted">Hidden from the public site until you explicitly choose to revive, merge or archive them.</p>
+          </div>
+          <div className="integration-grid">
+            {data.legacy_playlists.map((p) => (
+              <article className="card" key={p.id}>
+                <span className="status-pill">legacy</span>
+                <h3>{p.canonical_name}</h3>
+                <p>{p.description}</p>
+                <a className="card-link" href={p.spotify_url} target="_blank" rel="noreferrer">Open on Spotify →</a>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="os-section">
         <div className="os-section-head"><div><p className="eyebrow">Data connections</p><h2>Integration truth</h2></div></div>
