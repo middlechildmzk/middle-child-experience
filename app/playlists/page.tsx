@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getPlaylists } from '../../lib/playlist-os';
+import PlaylistBrowser from './PlaylistBrowser';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,24 +48,7 @@ export default async function PlaylistsPage() {
         <div className="shell">
           <p className="eyebrow">Browse by sound</p>
           <h2>Built for discovery, not keyword stuffing.</h2>
-          <div className="playlist-grid">
-            {playlists.map((playlist) => (
-              <Link className="playlist-card" href={'/playlists/' + playlist.slug} key={playlist.id}>
-                {playlist.cover_asset_url ? (
-                  <img src={playlist.cover_asset_url} alt="" loading="lazy" />
-                ) : <div className="playlist-art-placeholder" aria-hidden="true" />}
-                <div className="playlist-card-body">
-                  <p className="eyebrow">{playlist.primary_genre}</p>
-                  <h3>{playlist.canonical_name}</h3>
-                  <p>{playlist.description}</p>
-                  <div className="chip-row">
-                    {playlist.moods.slice(0, 3).map((mood) => <span className="chip" key={mood}>{mood}</span>)}
-                  </div>
-                  <span className="card-link">Open playlist →</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <PlaylistBrowser playlists={playlists} />
         </div>
       </section>
 
