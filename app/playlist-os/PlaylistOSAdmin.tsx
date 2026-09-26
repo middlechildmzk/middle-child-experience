@@ -485,8 +485,10 @@ function QuickUpdate({
 
 export default function PlaylistOSAdmin() {
   const [session, setSession] = useState<Session | null>(null);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('dan@bvssfvm.com');
+  const [password, setPassword] = useState('');
   const [status, setStatus] = useState('');
+  const [signingIn, setSigningIn] = useState(false);
   const [data, setData] = useState<Dashboard | null>(null);
   const [error, setError] = useState('');
 
@@ -497,12 +499,22 @@ export default function PlaylistOSAdmin() {
   }, []);
 
   async function signIn() {
-    setStatus('Sending sign-in link…');
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: 'https://bvssfvm.com/playlist-os', shouldCreateUser: false },
+    if (!email.trim() || !password) {
+      setStatus('Enter your admin email and password.');
+      return;
+    }
+    setSigningIn(true);
+    setStatus('');
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
     });
-    setStatus(error ? error.message : 'Check your email for the secure sign-in link.');
+    setSigningIn(false);
+    if (error) {
+      setStatus(error.message === 'Invalid login credentials'
+        ? 'Email or password is incorrect.'
+        : error.message);
+    }
   }
 
   async function load() {
@@ -530,14 +542,21 @@ export default function PlaylistOSAdmin() {
 
   if (!session) {
     return (
-      <div className="os-login card">
+      <form className="os-login card" onSubmit={(event) => { event.preventDefault(); signIn(); }}>
         <p className="eyebrow">Secure admin</p>
         <h2>Playlist OS sign in</h2>
-        <p className="muted">Use a Supabase-authenticated admin account. The public site cannot read artist emails, review notes or decisions.</p>
-        <div className="field"><label htmlFor="admin-email">Email</label><input id="admin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-        <button className="button" onClick={signIn}>Email me a sign-in link</button>
-        {status && <p className="muted">{status}</p>}
-      </div>
+        <p className="muted">Sign in with your BVSS FVM admin account. Magic-link email is not required.</p>
+        <div className="field">
+          <label htmlFor="admin-email">Email</label>
+          <input id="admin-email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        <div className="field">
+          <label htmlFor="admin-password">Password</label>
+          <input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </div>
+        <button className="button" type="submit" disabled={signingIn}>{signingIn ? 'Signing in…' : 'Sign in'}</button>
+        {status && <p className="muted" role="status">{status}</p>}
+      </form>
     );
   }
 
