@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getPlaylists } from '../../lib/playlist-os';
+import { getPlaylists, playlistApiBase } from '../../lib/playlist-os';
 import SubmissionForm from './SubmissionForm';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +17,14 @@ export default async function SubmitPage({
 }) {
   const playlists = await getPlaylists();
   const { playlist } = await searchParams;
+  let spotifyTextSearchConfigured = false;
+  try {
+    const response = await fetch(playlistApiBase + '/bvss-track-lookup', { cache: 'no-store' });
+    if (response.ok) {
+      const body = await response.json();
+      spotifyTextSearchConfigured = Boolean(body.spotify_text_search_configured);
+    }
+  } catch {}
 
   return (
     <main>
@@ -30,7 +38,11 @@ export default async function SubmitPage({
 
       <section className="section submit-section-v3">
         <div className="shell submit-v3-shell">
-          <SubmissionForm playlists={playlists} initialPlaylist={playlist} />
+          <SubmissionForm
+            playlists={playlists}
+            initialPlaylist={playlist}
+            spotifyTextSearchConfigured={spotifyTextSearchConfigured}
+          />
         </div>
       </section>
 
