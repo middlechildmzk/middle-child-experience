@@ -48,9 +48,11 @@ function isSpotifyTrackUrl(value: string) {
 export default function SubmissionForm({
   playlists,
   initialPlaylist,
+  spotifyTextSearchConfigured = false,
 }: {
   playlists: PlaylistRecord[];
   initialPlaylist?: string;
+  spotifyTextSearchConfigured?: boolean;
 }) {
   const initial = useMemo(() => initialPlaylist ? [initialPlaylist] : [], [initialPlaylist]);
   const [mode, setMode] = useState<'released' | 'unreleased'>('released');
@@ -76,6 +78,12 @@ export default function SubmissionForm({
     if (mode !== 'released') return;
     const value = query.trim();
     if (!value || isSpotifyTrackUrl(value)) return;
+
+    if (!spotifyTextSearchConfigured) {
+      setSearchResults([]);
+      setSearchMessage(value.length >= 2 ? 'Paste the Spotify track link and we will recognize it automatically.' : '');
+      return;
+    }
 
     if (value.length < 2) {
       setSearchResults([]);
@@ -111,7 +119,7 @@ export default function SubmissionForm({
     }, 320);
 
     return () => window.clearTimeout(timer);
-  }, [mode, query]);
+  }, [mode, query, spotifyTextSearchConfigured]);
 
   function chooseTrack(track: TrackIdentity) {
     setSelectedTrack(track);
@@ -319,7 +327,7 @@ export default function SubmissionForm({
                   const value = event.clipboardData.getData('text');
                   if (isSpotifyTrackUrl(value)) window.setTimeout(() => resolveSpotifyUrl(value), 0);
                 }}
-                placeholder="Search song + artist, or paste a Spotify link"
+                placeholder={spotifyTextSearchConfigured ? 'Search song + artist, or paste a Spotify link' : 'Paste a Spotify track link'}
                 autoComplete="off"
               />
               {searching && <span className="song-search-state">Searching…</span>}
@@ -337,6 +345,9 @@ export default function SubmissionForm({
               </div>
             )}
 
+            {!spotifyTextSearchConfigured && !query && (
+              <p className="song-search-message">Paste a Spotify track link and the song card fills itself in automatically.</p>
+            )}
             {searchMessage && (
               <p className="song-search-message">
                 {searchMessage}
