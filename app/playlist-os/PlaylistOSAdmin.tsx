@@ -500,7 +500,7 @@ export default function PlaylistOSAdmin() {
     setStatus('Sending sign-in link…');
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin + '/playlist-os' },
+      options: { emailRedirectTo: 'https://bvssfvm.com/playlist-os', shouldCreateUser: false },
     });
     setStatus(error ? error.message : 'Check your email for the secure sign-in link.');
   }
