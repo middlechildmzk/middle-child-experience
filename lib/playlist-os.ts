@@ -42,6 +42,16 @@ export type PlaylistRecord = {
   submission_criteria: string;
   display_order: number;
   updated_at: string;
+  network_owner_type: 'bvss' | 'partner';
+  curator_id: string | null;
+  verification_status: 'unverified' | 'pending' | 'verified' | 'rejected';
+  network_routing_enabled: boolean;
+  bvss_curator_profiles?: {
+    handle: string;
+    display_name: string;
+    status: string;
+    public_profile: boolean;
+  } | null;
 };
 
 export type PlaylistTrack = {

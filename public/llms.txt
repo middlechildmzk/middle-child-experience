@@ -10,9 +10,11 @@ Canonical website: https://bvssfvm.com
 - /artists/middle-child — canonical Middle Child artist profile
 - /never-alone — official release page for Middle Child - Never Alone (feat. lowly sunday)
 - /licensing — music licensing and sync information
-- /playlists — 18 active human-curated electronic playlists
+- /playlists — active human-curated electronic playlists from BVSS FVM and verified network curators
+- /curators — verified independent curator directory
+- /curators/apply — Curator Network Beta application
 - /learn — first-party editorial guides on genres, playlist curation, and submissions
-- /submit — first-party artist submission form for the playlist network
+- /submit — first-party artist submission and optional private delivery flow
 - /press — press and media information
 
 ## Curated playlist network
@@ -31,3 +33,11 @@ For Middle Child and BVSS FVM artist identity, release metadata, credits, lyrics
 
 ## Current featured release
 Never Alone (feat. lowly sunday) by Middle Child was released July 31, 2026 through BVSS FVM. The canonical release page is https://bvssfvm.com/never-alone.
+
+
+## Curator Network Beta
+BVSS FVM operates an invite/review-based curator network. Curators authenticate by email, apply for approval, register Spotify playlists they control, and must complete playlist ownership verification before a playlist can receive network-routed submissions.
+
+Artist submissions may optionally opt into independent-curator routing. Matching is an administrative routing aid, not a quality score or placement probability. Downloadable audio is only exposed when the artist explicitly grants download permission. Playlist placement is never guaranteed.
+
+Public curator profiles expose verified playlist count, completed-review count, active placements, and median response time when enough history exists. BVSS FVM does not publish an opaque curator quality score.

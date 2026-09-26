@@ -285,7 +285,7 @@ export default function PlaylistOSAdmin() {
 
   return (
     <div className="playlist-os">
-      <div className="os-toolbar"><div><p className="eyebrow">BVSS FVM internal</p><h1>Playlist OS</h1></div><div className="actions"><button className="button button-secondary" onClick={load}>Refresh</button><button className="button button-secondary" onClick={() => supabase.auth.signOut()}>Sign out</button></div></div>
+      <div className="os-toolbar"><div><p className="eyebrow">BVSS FVM internal</p><h1>Playlist OS</h1></div><div className="actions"><a className="button button-secondary" href="/playlist-os/network">Curator network</a><button className="button button-secondary" onClick={load}>Refresh</button><button className="button button-secondary" onClick={() => supabase.auth.signOut()}>Sign out</button></div></div>
 
       <div className="os-metrics-grid">
         <Metric label="Active playlists" value={totals.playlists || 0} />
