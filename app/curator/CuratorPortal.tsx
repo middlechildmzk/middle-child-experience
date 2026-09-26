@@ -84,7 +84,6 @@ export default function CuratorPortal() {
       spotify_profile_url: form.get('spotify_profile_url') || null,
       genres: String(form.get('genres') || '').split(',').map((v) => v.trim()).filter(Boolean),
       moods: String(form.get('moods') || '').split(',').map((v) => v.trim()).filter(Boolean),
-      public_profile: form.get('public_profile') === 'on',
     });
     if (result) setStatus('Curator profile updated.');
   }
@@ -222,8 +221,8 @@ export default function CuratorPortal() {
             <div className="field"><label>Moods</label><input name="moods" defaultValue={(profile.moods || []).join(', ')} /></div>
             <div className="field span-2"><label>Website</label><input name="website_url" type="url" defaultValue={profile.website_url || ''} /></div>
             {profile.status === 'approved' && (
-              <div className="field span-2 checkbox-field">
-                <label><input name="public_profile" type="checkbox" defaultChecked={profile.public_profile} /> Show my verified curator profile publicly</label>
+              <div className="field span-2">
+                <p className="muted">Approved curator profiles are public while participating in the network so artists can see who is reviewing submissions.</p>
               </div>
             )}
           </div>
