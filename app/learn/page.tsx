@@ -45,6 +45,23 @@ export default function LearnPage() {
       </section>
 
       <section className="section">
+        <div className="shell section-split">
+          <div>
+            <p className="eyebrow">Why this exists</p>
+            <h2>Curation should be explainable.</h2>
+          </div>
+          <div>
+            <p className="lead compact-lead">
+              BVSS FVM uses these guides to document how our playlist lanes are actually defined: what separates similar genres, how mood-based playlists are sequenced, and what happens when an artist submits a track.
+            </p>
+            <p className="muted">
+              They are written from our own curation practice rather than pretending every electronic-music label uses the same taxonomy. When a playlist evolves, the corresponding guide can evolve with it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
         <div className="shell">
           <p className="eyebrow">Guides</p>
           <h2>Useful context, not keyword filler.</h2>
