@@ -16,3 +16,9 @@
 
 
 .playlist-card-meta{margin:2px 0 0!important;color:var(--accent)!important;font-size:11px!important;font-weight:700;text-transform:capitalize}.playlist-card-sounds{display:block;color:var(--muted);font-size:11px;line-height:1.45;margin:6px 0 18px}
+
+
+/* BVSS FVM editorial guides */
+.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.guide-hero{padding:88px 0 54px;max-width:920px}.guide-hero h1{font-size:clamp(52px,8vw,104px);line-height:.9;letter-spacing:-.06em;margin:14px 0 24px;text-wrap:balance}.guide-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:64px;align-items:start;padding-bottom:72px}.guide-body{max-width:760px}.guide-section{padding:48px 0;border-top:1px solid var(--line)}.guide-section:first-child{border-top:0;padding-top:18px}.guide-section h2{font-size:clamp(30px,4vw,52px);line-height:1;letter-spacing:-.045em;margin:0 0 20px}.guide-section p{font-size:17px;line-height:1.82;color:#d6d2dc}.guide-section ul{display:grid;gap:10px;padding-left:22px;color:#d6d2dc;line-height:1.65}.guide-related{position:sticky;top:104px;display:grid;gap:12px}.guide-related .card{min-height:0}.guide-related h3{font-size:19px}.guide-related p{font-size:13px}.guide-related .eyebrow{margin-bottom:2px}
+@media(max-width:900px){.guide-grid{grid-template-columns:1fr}.guide-layout{grid-template-columns:1fr;gap:28px}.guide-related{position:static;grid-template-columns:1fr 1fr}.site-header nav{gap:16px}}
+@media(max-width:640px){.guide-related{grid-template-columns:1fr}.guide-hero{padding-top:64px}.guide-section p{font-size:16px}}
