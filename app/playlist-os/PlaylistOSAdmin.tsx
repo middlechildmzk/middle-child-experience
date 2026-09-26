@@ -82,11 +82,39 @@ function ReviewCard({ submission, playlists, token, refresh }: { submission: any
     refresh();
   }
 
+  async function download() {
+    setBusy(true);
+    try {
+      const response = await fetch(playlistApiBase + '/bvss-media', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ action: 'download', submission_id: submission.id }),
+      });
+      const body = await response.json();
+      if (response.ok && body.url) window.open(body.url, '_blank', 'noopener,noreferrer');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <article className="os-review-card">
       <div className="os-review-head">
-        <div><span className="eyebrow">{submission.genre}</span><h3>{submission.song_title}</h3><p>{submission.artist_name} · {submission.email}</p></div>
-        <a className="button button-secondary button-small" href={submission.spotify_url} target="_blank" rel="noreferrer">Listen</a>
+        <div>
+          <span className="eyebrow">{submission.release_state === 'unreleased' ? 'unreleased · ' : ''}{submission.genre}</span>
+          <h3>{submission.song_title}</h3>
+          <p>{submission.artist_name} · {submission.email}</p>
+        </div>
+        <div className="actions">
+          {submission.spotify_url ? (
+            <a className="button button-secondary button-small" href={submission.spotify_url} target="_blank" rel="noreferrer">Listen on Spotify</a>
+          ) : submission.private_stream_url ? (
+            <a className="button button-secondary button-small" href={submission.private_stream_url} target="_blank" rel="noreferrer">Open private stream</a>
+          ) : null}
+          {submission.download_permission && (
+            <button className="button button-secondary button-small" disabled={busy} onClick={download}>Download master</button>
+          )}
+        </div>
       </div>
       <div className="chip-row">{(submission.moods || []).map((m: string) => <span className="chip" key={m}>{m}</span>)}</div>
       {submission.notes && <p>{submission.notes}</p>}

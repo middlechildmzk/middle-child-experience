@@ -34,7 +34,11 @@ export default function SubmissionStatus({ token }: { token?: string }) {
         <p className="muted">
           Submitted {new Date(data.submission.submitted_at).toLocaleString()} · {data.submission.genre}
         </p>
-        <a className="button button-secondary" href={data.submission.spotify_url} target="_blank" rel="noreferrer">Open track on Spotify</a>
+        {data.submission.spotify_url ? (
+          <a className="button button-secondary" href={data.submission.spotify_url} target="_blank" rel="noreferrer">Open track on Spotify</a>
+        ) : (
+          <span className="status-pill">unreleased submission</span>
+        )}
       </div>
 
       <section className="os-section">
