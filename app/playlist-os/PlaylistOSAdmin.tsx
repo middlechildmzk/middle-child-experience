@@ -12,15 +12,39 @@ type Dashboard = {
   playlists: any[];
   queue: any[];
   integrations: any[];
-  metrics_history?: any[];
+  metrics_history?: Record<string, { metric_date: string; followers: number | null; track_count: number | null; source: string; observed_at: string }[]>;
 };
 
 function delta(current: number | null, historic: number | null) {
   return current == null || historic == null ? null : current - historic;
 }
 
-function Metric({ label, value }: { label: string; value: number | string | null }) {
-  return <div className="os-metric"><span>{label}</span><strong>{value == null ? '—' : typeof value === 'number' ? value.toLocaleString() : value}</strong></div>;
+function Metric({ label, value, note }: { label: string; value: number | string | null; note?: string }) {
+  return <div className="os-metric"><span>{label}</span><strong>{value == null ? '—' : typeof value === 'number' ? value.toLocaleString() : value}</strong>{note && <small>{note}</small>}</div>;
+}
+
+function Sparkline({ points }: { points: { metric_date: string; followers: number | null; source: string }[] }) {
+  const measured = points.filter((point) => point.followers != null);
+  if (measured.length < 2) return <span className="sparkline-empty">Awaiting history</span>;
+  const values = measured.map((point) => Number(point.followers));
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(1, max - min);
+  const width = 126;
+  const height = 34;
+  const coords = values.map((value, index) => {
+    const x = values.length === 1 ? width / 2 : (index / (values.length - 1)) * width;
+    const y = height - 3 - ((value - min) / span) * (height - 6);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+  return (
+    <div className="sparkline-wrap" title={measured[measured.length - 1]?.source || 'Follower history'}>
+      <svg className="sparkline" viewBox={'0 0 ' + width + ' ' + height} role="img" aria-label="Follower growth over the last 90 days">
+        <polyline points={coords} fill="none" stroke="currentColor" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+      </svg>
+      <small>{measured.length} measured points</small>
+    </div>
+  );
 }
 
 function ReviewCard({ submission, playlists, token, refresh }: { submission: any; playlists: any[]; token: string; refresh: () => void }) {
@@ -135,9 +159,13 @@ export default function PlaylistOSAdmin() {
 
       <div className="os-metrics-grid">
         <Metric label="Active playlists" value={totals.playlists || 0} />
-        <Metric label="Known followers" value={totals.followers || 0} />
+        <Metric
+          label="Measured followers"
+          value={totals.followers_known_playlists ? totals.followers : null}
+          note={(totals.followers_known_playlists || 0) + ' / ' + (totals.playlists || 0) + ' playlists connected'}
+        />
         <Metric label="Waiting submissions" value={data.queue.length} />
-        <Metric label="Active placements" value={totals.active_placements || 0} />
+        <Metric label="Active placements" value={totals.active_placements || 0} note={(totals.own_artist_placements || 0) + ' Middle Child / SUBFLOWER tracks'} />
         <Metric label="30d pageviews" value={totals.pageviews_30d || 0} />
         <Metric label="30d Spotify clicks" value={totals.spotify_clicks_30d || 0} />
         <Metric label="Search impressions" value={totals.search_impressions_30d || 0} />
@@ -148,7 +176,7 @@ export default function PlaylistOSAdmin() {
         <div className="os-section-head"><div><p className="eyebrow">Network</p><h2>Playlist operating view</h2></div><p className="muted">Missing metrics render as missing — never estimated.</p></div>
         <div className="os-table-wrap">
           <table className="os-table">
-            <thead><tr><th>Playlist</th><th>Followers</th><th>7d</th><th>30d</th><th>90d</th><th>Tracks</th><th>Queue</th><th>Placements</th><th>Traffic 30d</th><th>Search 30d</th><th>Data health</th></tr></thead>
+            <thead><tr><th>Playlist</th><th>Followers</th><th>90d growth</th><th>7d</th><th>30d</th><th>90d</th><th>Tracks</th><th>Queue</th><th>Placements</th><th>Own artists</th><th>Traffic 30d</th><th>Search 30d</th><th>Data health</th></tr></thead>
             <tbody>{playlistRows.map((p) => {
               const d7=delta(p.current_follower_count,p.followers_7d_ago);
               const d30=delta(p.current_follower_count,p.followers_30d_ago);
@@ -157,12 +185,14 @@ export default function PlaylistOSAdmin() {
               return <tr key={p.playlist_id}>
                 <td><strong>{p.canonical_name}</strong></td>
                 <td>{p.current_follower_count?.toLocaleString() ?? '—'}</td>
+                <td><Sparkline points={data.metrics_history?.[p.playlist_id] || []} /></td>
                 <td>{d7==null?'—':(d7>0?'+':'')+d7}</td>
                 <td>{d30==null?'—':(d30>0?'+':'')+d30}</td>
                 <td>{d90==null?'—':(d90>0?'+':'')+d90}</td>
                 <td>{p.current_track_count ?? '—'}</td>
                 <td>{p.submissions_waiting}</td>
                 <td>{p.active_placements}</td>
+                <td>{p.own_artist_placements ?? 0}</td>
                 <td>{p.pageviews_30d} / {p.spotify_clicks_30d}</td>
                 <td>{p.search_impressions_30d} / {p.search_clicks_30d}</td>
                 <td><span className="status-pill">{health}</span></td>
