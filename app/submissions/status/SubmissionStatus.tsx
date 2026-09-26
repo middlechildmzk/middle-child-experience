@@ -28,7 +28,7 @@ export default function SubmissionStatus({ token }: { token?: string }) {
   return (
     <div className="submission-status">
       <div className="card">
-        <span className="status-pill">{data.submission.status}</span>
+        <span className="status-pill">{data.submission.display_status || data.submission.status}</span>
         <h2>{data.submission.song_title}</h2>
         <p className="lead compact-lead">{data.submission.artist_name}</p>
         <p className="muted">
