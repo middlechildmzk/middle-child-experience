@@ -101,6 +101,24 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="section">
+        <div className="shell section-split">
+          <div>
+            <p className="eyebrow">Curator Network Beta</p>
+            <h2>Playlist owners can plug into the same operating system.</h2>
+          </div>
+          <div>
+            <p className="lead compact-lead">
+              Verified independent curators can add playlists, define fit, receive matched submissions, review tracks, and build transparent response history without giving up editorial control.
+            </p>
+            <div className="actions">
+              <Link className="button" href="/curators">Explore curators</Link>
+              <Link className="button button-secondary" href="/curators/apply">Apply for the beta</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="section artist-cta">
         <div className="shell section-split">
           <div>
