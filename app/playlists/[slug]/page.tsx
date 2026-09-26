@@ -72,7 +72,7 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
       byArtist: track.artists.map((name) => ({ '@type': 'MusicGroup', name })),
       url: track.spotify_url || undefined,
     })),
-    creator: { '@type': 'Organization', name: 'BVSS FVM', url: siteUrl },
+    creator: { '@id': siteUrl + '/#organization' },
   };
 
   const faq = [
