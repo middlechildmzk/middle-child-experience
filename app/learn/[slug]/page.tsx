@@ -12,6 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const guide = guideBySlug.get(slug);
   if (!guide) return { title: 'Guide not found' };
+  const imageUrl = '/learn/' + guide.slug + '/opengraph-image';
   return {
     title: guide.seoTitle,
     description: guide.description,
@@ -23,11 +24,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: 'article',
       publishedTime: '2026-09-26T00:00:00-05:00',
       modifiedTime: '2026-09-26T00:00:00-05:00',
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: guide.title }],
     },
     twitter: {
       card: 'summary_large_image',
       title: guide.title,
       description: guide.description,
+      images: [imageUrl],
     },
   };
 }
@@ -47,6 +50,7 @@ export default async function LearnGuidePage({ params }: { params: Promise<{ slu
     url: pageUrl,
     datePublished: '2026-09-26',
     dateModified: '2026-09-26',
+    image: pageUrl + '/opengraph-image',
     author: { '@id': siteUrl + '/#organization' },
     publisher: { '@id': siteUrl + '/#organization' },
     mainEntityOfPage: pageUrl,
