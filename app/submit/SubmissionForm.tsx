@@ -410,7 +410,11 @@ export default function SubmissionForm({
                   placeholder="SoundCloud, Dropbox, Google Drive, DISCO…"
                 />
               </div>
-              {!!(audioFile || privateLink) && (
+              {audioFile ? (
+                <p className="field span-2 song-search-message">
+                  Uploading this master grants approved curators private access to it for review. Access is logged and delivered with short-lived links.
+                </p>
+              ) : privateLink ? (
                 <div className="field span-2 checkbox-field compact-consent">
                   <label>
                     <input
@@ -418,10 +422,10 @@ export default function SubmissionForm({
                       checked={downloadPermission}
                       onChange={(event) => setDownloadPermission(event.target.checked)}
                     />
-                    Allow approved curators to download this file/link for review.
+                    This private link may also be downloaded by approved curators.
                   </label>
                 </div>
-              )}
+              ) : null}
             </div>
           </>
         )}
