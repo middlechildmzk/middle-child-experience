@@ -73,6 +73,22 @@ export default function CuratorPortal() {
     }
   }
 
+  async function updateProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const result = await post({
+      action: 'update_profile',
+      display_name: form.get('display_name'),
+      bio: form.get('bio'),
+      website_url: form.get('website_url') || null,
+      spotify_profile_url: form.get('spotify_profile_url') || null,
+      genres: String(form.get('genres') || '').split(',').map((v) => v.trim()).filter(Boolean),
+      moods: String(form.get('moods') || '').split(',').map((v) => v.trim()).filter(Boolean),
+      public_profile: form.get('public_profile') === 'on',
+    });
+    if (result) setStatus('Curator profile updated.');
+  }
+
   async function addPlaylist(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -195,6 +211,28 @@ export default function CuratorPortal() {
 
       <section className="os-section">
         <div className="os-section-head">
+          <div><p className="eyebrow">Profile settings</p><h2>How artists see your curation</h2></div>
+        </div>
+        <form className="card submission-form" onSubmit={updateProfile}>
+          <div className="form-grid">
+            <div className="field"><label>Display name</label><input name="display_name" defaultValue={profile.display_name} /></div>
+            <div className="field"><label>Spotify curator profile</label><input name="spotify_profile_url" type="url" defaultValue={profile.spotify_profile_url || ''} /></div>
+            <div className="field span-2"><label>Bio / curation philosophy</label><textarea name="bio" maxLength={1200} defaultValue={profile.bio || ''} /></div>
+            <div className="field"><label>Genres</label><input name="genres" defaultValue={(profile.genres || []).join(', ')} /></div>
+            <div className="field"><label>Moods</label><input name="moods" defaultValue={(profile.moods || []).join(', ')} /></div>
+            <div className="field span-2"><label>Website</label><input name="website_url" type="url" defaultValue={profile.website_url || ''} /></div>
+            {profile.status === 'approved' && (
+              <div className="field span-2 checkbox-field">
+                <label><input name="public_profile" type="checkbox" defaultChecked={profile.public_profile} /> Show my verified curator profile publicly</label>
+              </div>
+            )}
+          </div>
+          <button className="button" disabled={busy}>{busy ? 'Saving…' : 'Save curator profile'}</button>
+        </form>
+      </section>
+
+      <section className="os-section">
+        <div className="os-section-head">
           <div><p className="eyebrow">Your playlists</p><h2>Ownership + verification</h2></div>
         </div>
         {data.playlists.length ? (
@@ -207,6 +245,21 @@ export default function CuratorPortal() {
                   <h3>{playlist.canonical_name}</h3>
                   <p>{playlist.primary_genre} · submissions {playlist.submission_status}</p>
                   <a className="card-link" href={playlist.spotify_url} target="_blank" rel="noreferrer">Open on Spotify →</a>
+                  {playlist.verification_status === 'verified' && profile.status === 'approved' && (
+                    <div className="actions">
+                      <button
+                        className="button button-secondary button-small"
+                        disabled={busy}
+                        onClick={() => post({
+                          action: 'set_playlist_status',
+                          playlist_id: playlist.id,
+                          submission_status: playlist.submission_status === 'open' ? 'paused' : 'open',
+                        })}
+                      >
+                        {playlist.submission_status === 'open' ? 'Pause submissions' : 'Open submissions'}
+                      </button>
+                    </div>
+                  )}
                   {claim?.status === 'pending' && (
                     <div className="verification-box">
                       <strong>Verification code: {claim.verification_code}</strong>
