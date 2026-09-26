@@ -315,11 +315,17 @@ export default function CuratorPortal() {
                 <article className="os-review-card" key={route.id}>
                   <div className="os-review-head">
                     <div>
-                      <span className="eyebrow">{submission?.genre} · match {route.match_score ?? '—'}</span>
+                      <span className="eyebrow">{submission?.release_state === 'unreleased' ? 'unreleased · ' : ''}{submission?.genre} · match {route.match_score ?? '—'}</span>
                       <h3>{submission?.song_title}</h3>
                       <p>{submission?.artist_name} · routed to {route.bvss_playlists?.canonical_name}</p>
                     </div>
-                    <a className="button button-secondary button-small" href={submission?.spotify_url} target="_blank" rel="noreferrer">Listen on Spotify</a>
+                    {submission?.spotify_url ? (
+                      <a className="button button-secondary button-small" href={submission.spotify_url} target="_blank" rel="noreferrer">Listen on Spotify</a>
+                    ) : submission?.private_stream_url ? (
+                      <a className="button button-secondary button-small" href={submission.private_stream_url} target="_blank" rel="noreferrer">Open private stream</a>
+                    ) : (
+                      <span className="status-pill">unreleased upload</span>
+                    )}
                   </div>
                   <div className="chip-row">{(submission?.moods || []).map((m: string) => <span className="chip" key={m}>{m}</span>)}</div>
                   {route.match_reasons?.length ? <p className="muted">Routing reasons: {route.match_reasons.join(' · ')}</p> : null}
