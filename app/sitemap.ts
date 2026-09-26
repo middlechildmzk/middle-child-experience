@@ -18,6 +18,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.76,
     }));
+  } catch {
+    playlistEntries = [];
+  }
+  try {
     const curators = await getPublicCurators();
     curatorEntries = curators.map((curator) => ({
       url: siteUrl + '/curators/' + curator.handle,
@@ -25,7 +29,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.68,
     }));
   } catch {
-    playlistEntries = [];
     curatorEntries = [];
   }
 
