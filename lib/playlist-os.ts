@@ -56,7 +56,7 @@ export type PlaylistTrack = {
 
 export async function getPlaylists(): Promise<PlaylistRecord[]> {
   const response = await fetch(playlistApiBase + '/bvss-playlists', {
-    next: { revalidate: 300 },
+    cache: 'no-store',
   });
   if (!response.ok) throw new Error('Playlist registry unavailable');
   const body = await response.json();
@@ -65,7 +65,7 @@ export async function getPlaylists(): Promise<PlaylistRecord[]> {
 
 export async function getPlaylist(slug: string): Promise<{ playlist: PlaylistRecord; highlights: PlaylistTrack[] } | null> {
   const response = await fetch(playlistApiBase + '/bvss-playlists?slug=' + encodeURIComponent(slug), {
-    next: { revalidate: 300 },
+    cache: 'no-store',
   });
   if (response.status === 404) return null;
   if (!response.ok) throw new Error('Playlist unavailable');

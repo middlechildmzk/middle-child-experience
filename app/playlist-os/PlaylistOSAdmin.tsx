@@ -13,6 +13,14 @@ type Dashboard = {
   queue: any[];
   integrations: any[];
   metrics_history?: Record<string, { metric_date: string; followers: number | null; track_count: number | null; source: string; observed_at: string }[]>;
+  actions?: {
+    priority: 'high' | 'medium' | 'low';
+    type: string;
+    playlist_slug: string | null;
+    playlist_name: string | null;
+    title: string;
+    detail: string;
+  }[];
 };
 
 function delta(current: number | null, historic: number | null) {
@@ -85,6 +93,120 @@ function ReviewCard({ submission, playlists, token, refresh }: { submission: any
         <button disabled={busy} onClick={() => review('hold')}>Hold</button>
         <button disabled={busy} onClick={() => review('reject')}>Reject</button>
       </div>
+    </article>
+  );
+}
+
+function QuickUpdate({
+  playlists,
+  token,
+  refresh,
+}: {
+  playlists: any[];
+  token: string;
+  refresh: () => void;
+}) {
+  const [slug, setSlug] = useState('');
+  const [followers, setFollowers] = useState('');
+  const [trackCount, setTrackCount] = useState('');
+  const [status, setStatus] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const selected = playlists.find((p) => p.slug === slug);
+
+  useEffect(() => {
+    if (!slug && playlists.length) {
+      const firstMissing = playlists.find((p) => p.current_follower_count == null || p.current_track_count == null) || playlists[0];
+      setSlug(firstMissing.slug);
+    }
+  }, [playlists, slug]);
+
+  useEffect(() => {
+    if (!selected) return;
+    setFollowers(selected.current_follower_count == null ? '' : String(selected.current_follower_count));
+    setTrackCount(selected.current_track_count == null ? '' : String(selected.current_track_count));
+  }, [selected?.playlist_id]);
+
+  async function post(body: Record<string, unknown>) {
+    setBusy(true);
+    setStatus('');
+    try {
+      const response = await fetch(playlistApiBase + '/bvss-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setStatus(result.error || 'Update failed.');
+        return;
+      }
+      setStatus('Saved. History and operating view are updated.');
+      refresh();
+    } catch {
+      setStatus('Update failed. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function recordMetric() {
+    if (!slug) return;
+    if (!followers.trim() && !trackCount.trim()) {
+      setStatus('Enter a follower count, track count, or both.');
+      return;
+    }
+    post({
+      action: 'record_metric',
+      playlist_slug: slug,
+      followers: followers.trim() || null,
+      track_count: trackCount.trim() || null,
+    });
+  }
+
+  function markUpdated() {
+    if (!slug) return;
+    post({ action: 'mark_updated', playlist_slug: slug });
+  }
+
+  return (
+    <article className="card">
+      <p className="eyebrow">Quick update</p>
+      <h3>Record what you can measure today</h3>
+      <p className="muted">
+        Use this until automated providers are connected. Every entry becomes a dated snapshot, so history starts now instead of waiting on an API.
+      </p>
+      <div className="os-review-controls">
+        <select value={slug} onChange={(e) => setSlug(e.target.value)}>
+          {playlists.map((p) => <option value={p.slug} key={p.slug}>{p.canonical_name}</option>)}
+        </select>
+        <input
+          inputMode="numeric"
+          min="0"
+          type="number"
+          value={followers}
+          onChange={(e) => setFollowers(e.target.value)}
+          placeholder="Followers"
+          aria-label="Observed follower count"
+        />
+        <input
+          inputMode="numeric"
+          min="0"
+          type="number"
+          value={trackCount}
+          onChange={(e) => setTrackCount(e.target.value)}
+          placeholder="Track count"
+          aria-label="Observed track count"
+        />
+        <button disabled={busy} onClick={recordMetric}>{busy ? 'Saving…' : 'Record snapshot'}</button>
+        <button disabled={busy} onClick={markUpdated}>Mark playlist refreshed</button>
+      </div>
+      {selected && (
+        <p className="muted">
+          Current stored values: {selected.current_follower_count ?? 'no follower baseline'} followers · {selected.current_track_count ?? 'no track baseline'} tracks.
+        </p>
+      )}
+      {status && <p className="muted" role="status">{status}</p>}
     </article>
   );
 }
@@ -171,6 +293,31 @@ export default function PlaylistOSAdmin() {
         <Metric label="Search impressions" value={totals.search_impressions_30d || 0} />
         <Metric label="Search clicks" value={totals.search_clicks_30d || 0} />
       </div>
+
+      <section className="os-section">
+        <div className="os-section-head">
+          <div><p className="eyebrow">Next actions</p><h2>What needs attention now</h2></div>
+          <p className="muted">Deterministic operating flags only — no invented health score.</p>
+        </div>
+        <div className="integration-grid">
+          {(data.actions || []).slice(0, 12).map((action, index) => (
+            <article className="card" key={action.type + ':' + (action.playlist_slug || 'network') + ':' + index}>
+              <span className="status-pill">{action.priority}</span>
+              <h3>{action.title}</h3>
+              {action.playlist_name && <strong>{action.playlist_name}</strong>}
+              <p>{action.detail}</p>
+            </article>
+          ))}
+          {!(data.actions || []).length && <p className="muted">No operating actions are currently flagged.</p>}
+        </div>
+      </section>
+
+      <section className="os-section">
+        <div className="os-section-head">
+          <div><p className="eyebrow">Baseline & maintenance</p><h2>Start the history now</h2></div>
+        </div>
+        <QuickUpdate playlists={playlistRows} token={session.access_token} refresh={load} />
+      </section>
 
       <section className="os-section">
         <div className="os-section-head"><div><p className="eyebrow">Network</p><h2>Playlist operating view</h2></div><p className="muted">Missing metrics render as missing — never estimated.</p></div>
