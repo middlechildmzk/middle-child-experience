@@ -25,11 +25,12 @@ export default function HomePage() {
         <div className="hero-copy">
           <p className="eyebrow">Independent electronic music · Minneapolis</p>
           <h1 className="display">BVSS<br />FVM</h1>
-          <p className="lead">The creative home of Middle Child — emotional electronic music built for the moments people cannot always put into words.</p>
-          <p className="hero-note">Official releases, artist stories, credits, playlists, licensing, and submissions — all from one independent home.</p>
+          <p className="lead">The independent home of Middle Child and a human-curated electronic music discovery network.</p>
+          <p className="hero-note">Listen to new music, explore 18 curated playlists, submit a track, or discover the story behind Middle Child.</p>
           <div className="actions">
-            <a className="button" href={smartLink} target="_blank" rel="noreferrer">Listen to Never Alone</a>
-            <Link className="button button-secondary" href="/artists/middle-child">Meet Middle Child</Link>
+            <a className="button" href={smartLink} target="_blank" rel="noreferrer">Listen</a>
+            <Link className="button button-secondary" href="/playlists">Explore playlists</Link>
+            <Link className="button button-secondary" href="/submit">Submit music</Link>
           </div>
         </div>
 
@@ -52,8 +53,8 @@ export default function HomePage() {
       <section className="proof-strip" aria-label="BVSS FVM overview">
         <div className="shell proof-grid">
           <div><span>Artist</span><strong>Middle Child</strong></div>
-          <div><span>Sound</span><strong>Melodic · Cinematic · Emotional</strong></div>
-          <div><span>Home</span><strong>Minneapolis, Minnesota</strong></div>
+          <div><span>Playlist network</span><strong>18 active playlists</strong></div>
+          <div><span>Curation</span><strong>Human reviewed · submissions open</strong></div>
         </div>
       </section>
 
@@ -75,32 +76,26 @@ export default function HomePage() {
 
       <section className="section">
         <div className="shell">
-          <p className="eyebrow">Explore BVSS FVM</p>
-          <h2>Music first. Everything around it connected.</h2>
+          <p className="eyebrow">Start here</p>
+          <h2>Listen. Discover. Submit.</h2>
           <div className="grid feature-grid">
             <Link className="card card-feature" href="/music">
               <span className="card-index">01</span>
-              <h3>Official music</h3>
-              <p>Explore Middle Child releases with verified listening links, credits, lyrics, stories, and release context.</p>
-              <span className="card-link">Explore catalog →</span>
-            </Link>
-            <Link className="card card-feature" href="/artists/middle-child">
-              <span className="card-index">02</span>
-              <h3>Middle Child</h3>
-              <p>Meet the emotional electronic project behind the music — its sound, story, catalog, and creative identity.</p>
-              <span className="card-link">Artist profile →</span>
-            </Link>
-            <Link className="card card-feature" href="/licensing">
-              <span className="card-index">03</span>
-              <h3>Licensing & sync</h3>
-              <p>Explore Middle Child music for film, TV, games, trailers, podcasts, branded content, and creator work.</p>
-              <span className="card-link">Licensing info →</span>
+              <h3>Listen</h3>
+              <p>Explore official Middle Child releases with verified listening links, credits, stories, and release context.</p>
+              <span className="card-link">Explore the music →</span>
             </Link>
             <Link className="card card-feature" href="/playlists">
-              <span className="card-index">04</span>
-              <h3>Playlists</h3>
-              <p>Curated electronic music organized by mood, genre, and the moments where it belongs.</p>
-              <span className="card-link">Explore playlists →</span>
+              <span className="card-index">02</span>
+              <h3>Discover playlists</h3>
+              <p>Browse 18 human-curated electronic playlists by genre, mood, and listening moment — from emotional bass to trance, DnB, house, UK garage, and more.</p>
+              <span className="card-link">Find your playlist →</span>
+            </Link>
+            <Link className="card card-feature" href="/submit">
+              <span className="card-index">03</span>
+              <h3>Submit music</h3>
+              <p>Send one Spotify track for independent editorial consideration across the BVSS FVM playlist network. No guaranteed placements.</p>
+              <span className="card-link">Submit a track →</span>
             </Link>
           </div>
         </div>
