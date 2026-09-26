@@ -94,9 +94,10 @@ function filterRange(points: ChartPoint[], range: RangeKey) {
   return points.filter((point) => Date.parse(point.date + 'T00:00:00Z') >= cutoff);
 }
 
-function buildNetworkSeries(history: Dashboard['metrics_history']): ChartPoint[] {
+function buildNetworkSeries(history: Dashboard['metrics_history'], allowedPlaylistIds?: Set<string>): ChartPoint[] {
   const dayChanges = new Map<string, Map<string, number>>();
   Object.entries(history || {}).forEach(([playlistId, points]) => {
+    if (allowedPlaylistIds && !allowedPlaylistIds.has(playlistId)) return;
     const latestByDay = new Map<string, { value: number; observed: string }>();
     for (const point of points || []) {
       if (point.followers == null) continue;
@@ -188,7 +189,8 @@ function NetworkIntelligence({ data, playlists }: { data: Dashboard; playlists: 
   const [range, setRange] = useState<RangeKey>('30D');
   const [focus, setFocus] = useState('network');
   const history = data.metrics_history || {};
-  const networkAll = useMemo(() => buildNetworkSeries(history), [history]);
+  const activePlaylistIds = useMemo(() => new Set(playlists.map((playlist) => String(playlist.playlist_id))), [playlists]);
+  const networkAll = useMemo(() => buildNetworkSeries(history, activePlaylistIds), [history, activePlaylistIds]);
   const focusedPlaylist = playlists.find((playlist) => playlist.playlist_id === focus) || null;
   const playlistAll: ChartPoint[] = focusedPlaylist
     ? (history[focusedPlaylist.playlist_id] || [])
@@ -222,7 +224,7 @@ function NetworkIntelligence({ data, playlists }: { data: Dashboard; playlists: 
         <div><p className="eyebrow">Playlist Intelligence</p><h2>Network growth</h2></div>
         <div className="os-source-state">
           <span className={'status-pill ' + (followerProvider ? 'ready' : '')}>{followerProvider ? 'automatic feed ready' : 'feed pending'}</span>
-          <small>{followerProvider ? followerProvider.provider + ' is the follower source of truth.' : 'Manual snapshots are live; automated follower data is not configured yet.'}</small>
+          <small>{followerProvider ? (followerProvider.provider === 'soundcharts' ? 'Soundcharts' : followerProvider.provider) + ' is the follower source of truth.' : 'Manual snapshots are live; automated follower data is not configured yet.'}</small>
         </div>
       </div>
 
@@ -243,7 +245,7 @@ function NetworkIntelligence({ data, playlists }: { data: Dashboard; playlists: 
           <div>
             <p className="eyebrow">{focusedPlaylist ? 'Playlist history' : 'Measured network history'}</p>
             <h3>{focusedPlaylist ? focusedPlaylist.canonical_name : 'BVSS FVM Network'}</h3>
-            <p className="muted">{focusedPlaylist ? 'Follower observations from the permanent snapshot ledger.' : 'Sum of measured playlist followers; coverage grows as feeds come online.'}</p>
+            <p className="muted">{focusedPlaylist ? 'Follower observations from the permanent snapshot ledger.' : 'Active-playlist follower history only. Earlier dates include only playlists Soundcharts was already tracking; coverage expands as new playlists begin accumulating history.'}</p>
           </div>
           <div className="os-chart-controls">
             <select value={focus} onChange={(event) => setFocus(event.target.value)} aria-label="Chart playlist">
@@ -539,6 +541,9 @@ export default function PlaylistOSAdmin() {
 
   const totals = data?.totals || {};
   const playlistRows = useMemo(() => data?.playlists || [], [data]);
+  const automatedFollowerFeed = Boolean(data?.integrations?.some((integration) =>
+    ['soundcharts', 'spotontrack', 'chartmetric'].includes(integration.provider) && integration.status === 'ready'
+  ));
 
   if (!session) {
     return (
@@ -605,12 +610,14 @@ export default function PlaylistOSAdmin() {
         </div>
       </section>
 
-      <section className="os-section">
-        <div className="os-section-head">
-          <div><p className="eyebrow">Baseline & maintenance</p><h2>Start the history now</h2></div>
-        </div>
-        <QuickUpdate playlists={playlistRows} token={session.access_token} refresh={load} />
-      </section>
+      {!automatedFollowerFeed && (
+        <section className="os-section">
+          <div className="os-section-head">
+            <div><p className="eyebrow">Baseline & maintenance</p><h2>Start the history now</h2></div>
+          </div>
+          <QuickUpdate playlists={playlistRows} token={session.access_token} refresh={load} />
+        </section>
+      )}
 
       <section className="os-section">
         <div className="os-section-head"><div><p className="eyebrow">Network</p><h2>Playlist operating view</h2></div><p className="muted">Missing metrics render as missing — never estimated.</p></div>
