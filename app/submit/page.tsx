@@ -6,8 +6,8 @@ import SubmissionForm from './SubmissionForm';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Submit Music',
-  description: 'Submit one Spotify track to BVSS FVM for independent editorial consideration across its electronic playlist network.',
+  title: 'Submit Music to Spotify Playlists',
+  description: 'Submit one Spotify track to the BVSS FVM electronic playlist network. Genre and mood routing helps match your song to relevant human-curated playlists.',
   alternates: { canonical: '/submit' },
 };
 

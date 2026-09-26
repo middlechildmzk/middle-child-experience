@@ -6,7 +6,7 @@ const pageUrl = `${siteUrl}/artists/middle-child`;
 
 export const metadata: Metadata = {
   title: 'Middle Child — Emotional Electronic Artist',
-  description: 'Official artist profile for Middle Child, the Minneapolis electronic project of producer Dan Larson. Explore the sound, story, releases, and official listening links.',
+  description: 'Official Middle Child artist profile: emotional electronic music, melodic bass, releases, story, credits, listening links, and BVSS FVM catalog.',
   alternates: { canonical: pageUrl },
   openGraph: {
     title: 'Middle Child — Emotional Electronic Artist',
@@ -28,7 +28,7 @@ export default function MiddleChildPage() {
     foundingDate: '2014',
     foundingLocation: { '@type': 'Place', name: 'Minneapolis, Minnesota, United States' },
     genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
-    recordLabel: { '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: 'BVSS FVM', url: siteUrl },
+    recordLabel: { '@id': `${siteUrl}/#organization` },
     track: [
       { '@type': 'MusicRecording', '@id': `${siteUrl}/mercy#recording`, name: 'mercy (Radio Edit)', url: `${siteUrl}/mercy` },
       { '@type': 'MusicRecording', '@id': `${siteUrl}/never-alone#recording`, name: 'Never Alone', url: `${siteUrl}/never-alone` },

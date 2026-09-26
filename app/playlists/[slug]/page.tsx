@@ -13,8 +13,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const result = await getPlaylist(slug);
   if (!result) return { title: 'Playlist not found' };
   const p = result.playlist;
-  const title = p.canonical_name + ' — Spotify Playlist';
-  const description = p.description;
+  const shortName = p.canonical_name.split('|')[0].trim();
+  const title = shortName + ' Spotify Playlist';
+  const secondary = p.secondary_genres.slice(0, 2).join(' & ');
+  const moments = p.activities.slice(0, 2).join(' & ').toLowerCase();
+  const description = [
+    'Listen to ' + shortName + ': human-curated ' + p.primary_genre.toLowerCase(),
+    secondary ? secondary : null,
+    moments ? 'for ' + moments : null,
+    'Updated ' + p.update_cadence + '.',
+  ].filter(Boolean).join(', ').replace(', Updated', '. Updated');
   return {
     title,
     description,
@@ -64,7 +72,7 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
       byArtist: track.artists.map((name) => ({ '@type': 'MusicGroup', name })),
       url: track.spotify_url || undefined,
     })),
-    creator: { '@type': 'Organization', name: 'BVSS FVM', url: siteUrl },
+    creator: { '@id': siteUrl + '/#organization' },
   };
 
   const faq = [

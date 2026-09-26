@@ -100,7 +100,11 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
           {filtered.map((playlist) => (
             <Link className="playlist-card" href={'/playlists/' + playlist.slug} key={playlist.id}>
               {playlist.cover_asset_url ? (
-                <img src={playlist.cover_asset_url} alt="" loading="lazy" />
+                <img
+                  src={playlist.cover_asset_url}
+                  alt={playlist.canonical_name + ' playlist cover'}
+                  loading="lazy"
+                />
               ) : <div className="playlist-art-placeholder" aria-hidden="true" />}
               <div className="playlist-card-body">
                 <p className="eyebrow">{playlist.primary_genre}</p>
@@ -109,6 +113,14 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
                 <div className="chip-row">
                   {playlist.moods.slice(0, 3).map((value) => <span className="chip" key={value}>{value}</span>)}
                 </div>
+                <p className="playlist-card-meta">
+                  Updated {playlist.update_cadence} · Submissions {playlist.submission_status}
+                </p>
+                {!!playlist.anchor_artists.length && (
+                  <small className="playlist-card-sounds">
+                    Sounds like: {playlist.anchor_artists.slice(0, 3).join(', ')}
+                  </small>
+                )}
                 <span className="card-link">Open playlist →</span>
               </div>
             </Link>

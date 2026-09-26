@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: '%s | BVSS FVM',
   },
   description:
-    'BVSS FVM is an independent electronic music label and creative home for Middle Child. Explore official releases, lyrics, credits, playlists, creator resources, licensing, and submissions.',
+    'BVSS FVM is the independent home of Middle Child, electronic releases, curated playlists, music submissions, licensing, credits, and artist stories.',
   applicationName: 'BVSS FVM',
   category: 'music',
   keywords: [
@@ -31,6 +31,10 @@ export const metadata: Metadata = {
   ],
   creator: 'Dan Larson',
   publisher: 'BVSS FVM',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+  },
   openGraph: {
     title: 'BVSS FVM | Independent Electronic Music',
     description: 'Official releases, stories, credits, playlists, and licensing from the creative home of Middle Child.',
@@ -76,8 +80,20 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         '@id': `${siteUrl}/#organization`,
         name: 'BVSS FVM',
         url: siteUrl,
-        description: 'An independent electronic music label and creative home founded by artist and producer Dan Larson.',
+        description: 'An independent electronic music label, curator network, and creative home founded by artist and producer Dan Larson.',
+        logo: {
+          '@type': 'ImageObject',
+          url: `${siteUrl}/icon.svg`,
+          contentUrl: `${siteUrl}/icon.svg`,
+          caption: 'BVSS FVM',
+        },
+        image: `${siteUrl}/icon.svg`,
         founder: { '@type': 'Person', name: 'Dan Larson' },
+        sameAs: [
+          'https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN',
+          'https://www.instagram.com/middlechildmzk/',
+          'https://www.youtube.com/@middlechildmusica',
+        ],
       },
       {
         '@type': 'MusicGroup',
