@@ -25,6 +25,8 @@ type Dashboard = {
   traffic_sources?: any[];
   submission_sources?: any[];
   legacy_playlists?: any[];
+  track_events?: any[];
+  sync_runs?: any[];
 };
 
 function delta(current: number | null, historic: number | null) {
@@ -60,6 +62,240 @@ function Sparkline({ points }: { points: { metric_date: string; followers: numbe
       </svg>
       <small>{measured.length} measured points</small>
     </div>
+  );
+}
+
+
+type RangeKey = '7D' | '30D' | '90D' | '1Y' | 'ALL';
+type ChartPoint = { date: string; value: number; coverage?: number };
+
+const RANGE_DAYS: Record<RangeKey, number | null> = {
+  '7D': 7,
+  '30D': 30,
+  '90D': 90,
+  '1Y': 365,
+  'ALL': null,
+};
+
+function formatDelta(value: number | null) {
+  if (value == null) return '—';
+  return (value > 0 ? '+' : '') + value.toLocaleString();
+}
+
+function growthPercent(current: number | null, historic: number | null) {
+  if (current == null || historic == null || historic <= 0) return null;
+  return (current - historic) / historic;
+}
+
+function filterRange(points: ChartPoint[], range: RangeKey) {
+  const days = RANGE_DAYS[range];
+  if (days == null || !points.length) return points;
+  const cutoff = Date.now() - days * 86400000;
+  return points.filter((point) => Date.parse(point.date + 'T00:00:00Z') >= cutoff);
+}
+
+function buildNetworkSeries(history: Dashboard['metrics_history']): ChartPoint[] {
+  const dayChanges = new Map<string, Map<string, number>>();
+  Object.entries(history || {}).forEach(([playlistId, points]) => {
+    const latestByDay = new Map<string, { value: number; observed: string }>();
+    for (const point of points || []) {
+      if (point.followers == null) continue;
+      const previous = latestByDay.get(point.metric_date);
+      if (!previous || String(point.observed_at) >= previous.observed) {
+        latestByDay.set(point.metric_date, { value: Number(point.followers), observed: String(point.observed_at || '') });
+      }
+    }
+    latestByDay.forEach((point, date) => {
+      const changes = dayChanges.get(date) || new Map<string, number>();
+      changes.set(playlistId, point.value);
+      dayChanges.set(date, changes);
+    });
+  });
+
+  const latest = new Map<string, number>();
+  return Array.from(dayChanges.keys()).sort().map((date) => {
+    dayChanges.get(date)?.forEach((value, playlistId) => latest.set(playlistId, value));
+    return {
+      date,
+      value: Array.from(latest.values()).reduce((sum, value) => sum + value, 0),
+      coverage: latest.size,
+    };
+  });
+}
+
+function aggregateGrowth(playlists: any[], historicKey: string) {
+  let current = 0;
+  let historic = 0;
+  let coverage = 0;
+  for (const playlist of playlists) {
+    const now = playlist.current_follower_count;
+    const then = playlist[historicKey];
+    if (now == null || then == null) continue;
+    current += Number(now);
+    historic += Number(then);
+    coverage += 1;
+  }
+  return coverage ? {
+    delta: current - historic,
+    pct: historic > 0 ? (current - historic) / historic : null,
+    coverage,
+  } : { delta: null, pct: null, coverage: 0 };
+}
+
+function nextMilestone(current: number | null | undefined) {
+  if (current == null) return null;
+  const levels = [25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000];
+  const target = levels.find((level) => level > current) || Math.ceil((current + 1) / 100000) * 100000;
+  const previous = [...levels].reverse().find((level) => level <= current) || 0;
+  return {
+    target,
+    remaining: Math.max(0, target - current),
+    progress: target === previous ? 1 : Math.max(0, Math.min(1, (current - previous) / (target - previous))),
+  };
+}
+
+function HistoryChart({ points, label }: { points: ChartPoint[]; label: string }) {
+  if (points.length < 2) {
+    return <div className="os-chart-empty"><strong>History starts with the first two observations.</strong><span>Once daily snapshots arrive, {label.toLowerCase()} will chart here automatically.</span></div>;
+  }
+  const width = 820;
+  const height = 230;
+  const padX = 14;
+  const padY = 18;
+  const values = points.map((point) => point.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(1, max - min);
+  const coords = points.map((point, index) => {
+    const x = padX + (index / Math.max(1, points.length - 1)) * (width - padX * 2);
+    const y = height - padY - ((point.value - min) / span) * (height - padY * 2);
+    return { x, y, point };
+  });
+  const path = coords.map((coord, index) => (index ? 'L' : 'M') + coord.x.toFixed(1) + ' ' + coord.y.toFixed(1)).join(' ');
+  const latest = points[points.length - 1];
+  return (
+    <div className="os-history-chart">
+      <div className="os-chart-scale"><span>{max.toLocaleString()}</span><span>{min.toLocaleString()}</span></div>
+      <svg viewBox={'0 0 ' + width + ' ' + height} role="img" aria-label={label + ' history'}>
+        <path d={path} fill="none" stroke="currentColor" strokeWidth="3" vectorEffect="non-scaling-stroke" />
+      </svg>
+      <div className="os-chart-axis"><span>{points[0].date}</span><strong>{latest.value.toLocaleString()}</strong><span>{latest.date}</span></div>
+    </div>
+  );
+}
+
+function NetworkIntelligence({ data, playlists }: { data: Dashboard; playlists: any[] }) {
+  const [range, setRange] = useState<RangeKey>('30D');
+  const [focus, setFocus] = useState('network');
+  const history = data.metrics_history || {};
+  const networkAll = useMemo(() => buildNetworkSeries(history), [history]);
+  const focusedPlaylist = playlists.find((playlist) => playlist.playlist_id === focus) || null;
+  const playlistAll: ChartPoint[] = focusedPlaylist
+    ? (history[focusedPlaylist.playlist_id] || [])
+      .filter((point) => point.followers != null)
+      .map((point) => ({ date: point.metric_date, value: Number(point.followers), coverage: 1 }))
+    : [];
+  const series = filterRange(focusedPlaylist ? playlistAll : networkAll, range);
+
+  const d1 = aggregateGrowth(playlists, 'followers_1d_ago');
+  const d7 = aggregateGrowth(playlists, 'followers_7d_ago');
+  const d30 = aggregateGrowth(playlists, 'followers_30d_ago');
+  const d90 = aggregateGrowth(playlists, 'followers_90d_ago');
+  const followerProvider = data.integrations.find((integration) =>
+    ['soundcharts', 'spotontrack', 'chartmetric'].includes(integration.provider) && integration.status === 'ready'
+  );
+  const measured = Number(data.totals.followers_known_playlists || 0);
+  const totalPlaylists = Number(data.totals.playlists || 0);
+  const ranking7 = playlists
+    .map((playlist) => ({ playlist, value: delta(playlist.current_follower_count, playlist.followers_7d_ago) }))
+    .filter((row) => row.value != null)
+    .sort((a, b) => Number(b.value) - Number(a.value));
+  const ranking30 = playlists
+    .map((playlist) => ({ playlist, value: delta(playlist.current_follower_count, playlist.followers_30d_ago) }))
+    .filter((row) => row.value != null)
+    .sort((a, b) => Number(b.value) - Number(a.value));
+  const milestone = nextMilestone(focusedPlaylist?.current_follower_count);
+
+  return (
+    <section className="os-section os-intelligence">
+      <div className="os-section-head">
+        <div><p className="eyebrow">Playlist Intelligence</p><h2>Network growth</h2></div>
+        <div className="os-source-state">
+          <span className={'status-pill ' + (followerProvider ? 'ready' : '')}>{followerProvider ? 'automatic feed ready' : 'feed pending'}</span>
+          <small>{followerProvider ? followerProvider.provider + ' is the follower source of truth.' : 'Manual snapshots are live; automated follower data is not configured yet.'}</small>
+        </div>
+      </div>
+
+      <div className="os-intelligence-grid">
+        <Metric
+          label="Total followers"
+          value={measured ? data.totals.followers : null}
+          note={measured + ' / ' + totalPlaylists + ' playlists measured'}
+        />
+        <Metric label="Today" value={d1.delta == null ? null : formatDelta(d1.delta)} note={d1.coverage + ' playlists with comparable history'} />
+        <Metric label="Last 7 days" value={d7.delta == null ? null : formatDelta(d7.delta)} note={d7.pct == null ? d7.coverage + ' comparable' : pct(d7.pct) + ' · ' + d7.coverage + ' comparable'} />
+        <Metric label="Last 30 days" value={d30.delta == null ? null : formatDelta(d30.delta)} note={d30.pct == null ? d30.coverage + ' comparable' : pct(d30.pct) + ' · ' + d30.coverage + ' comparable'} />
+        <Metric label="Last 90 days" value={d90.delta == null ? null : formatDelta(d90.delta)} note={d90.pct == null ? d90.coverage + ' comparable' : pct(d90.pct) + ' · ' + d90.coverage + ' comparable'} />
+      </div>
+
+      <article className="card os-chart-card">
+        <div className="os-chart-toolbar">
+          <div>
+            <p className="eyebrow">{focusedPlaylist ? 'Playlist history' : 'Measured network history'}</p>
+            <h3>{focusedPlaylist ? focusedPlaylist.canonical_name : 'BVSS FVM Network'}</h3>
+            <p className="muted">{focusedPlaylist ? 'Follower observations from the permanent snapshot ledger.' : 'Sum of measured playlist followers; coverage grows as feeds come online.'}</p>
+          </div>
+          <div className="os-chart-controls">
+            <select value={focus} onChange={(event) => setFocus(event.target.value)} aria-label="Chart playlist">
+              <option value="network">Entire network</option>
+              {playlists.map((playlist) => <option key={playlist.playlist_id} value={playlist.playlist_id}>{playlist.canonical_name}</option>)}
+            </select>
+            <div className="os-range-tabs" aria-label="Chart date range">
+              {(Object.keys(RANGE_DAYS) as RangeKey[]).map((item) => (
+                <button key={item} type="button" className={range === item ? 'active' : ''} onClick={() => setRange(item)}>{item}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <HistoryChart points={series} label={focusedPlaylist ? focusedPlaylist.canonical_name : 'BVSS FVM network followers'} />
+        {focusedPlaylist && (
+          <div className="os-playlist-detail-strip">
+            <div><span>Followers</span><strong>{focusedPlaylist.current_follower_count?.toLocaleString() ?? '—'}</strong></div>
+            <div><span>30d</span><strong>{formatDelta(delta(focusedPlaylist.current_follower_count, focusedPlaylist.followers_30d_ago))}</strong></div>
+            <div><span>30d growth</span><strong>{pct(growthPercent(focusedPlaylist.current_follower_count, focusedPlaylist.followers_30d_ago))}</strong></div>
+            <div><span>Tracks</span><strong>{focusedPlaylist.current_track_count ?? '—'}</strong></div>
+            <div>
+              <span>Next milestone</span>
+              <strong>{milestone ? milestone.target.toLocaleString() : '—'}</strong>
+              {milestone && <small>{milestone.remaining.toLocaleString()} to go · {Math.round(milestone.progress * 100)}%</small>}
+            </div>
+          </div>
+        )}
+      </article>
+
+      <div className="os-leaderboard">
+        <article className="card">
+          <p className="eyebrow">7-day leaders</p>
+          <h3>Fastest growth</h3>
+          {ranking7.length ? ranking7.slice(0, 5).map((row, index) => (
+            <div className="os-rank-row" key={row.playlist.playlist_id}><span>{index + 1}</span><strong>{row.playlist.canonical_name}</strong><b>{formatDelta(row.value)}</b></div>
+          )) : <p className="muted">Needs at least two observations seven days apart.</p>}
+        </article>
+        <article className="card">
+          <p className="eyebrow">30-day leaders</p>
+          <h3>Monthly momentum</h3>
+          {ranking30.length ? ranking30.slice(0, 5).map((row, index) => (
+            <div className="os-rank-row" key={row.playlist.playlist_id}><span>{index + 1}</span><strong>{row.playlist.canonical_name}</strong><b>{formatDelta(row.value)}</b></div>
+          )) : <p className="muted">Monthly rankings will appear when 30-day history exists.</p>}
+        </article>
+        <article className="card">
+          <p className="eyebrow">Metric integrity</p>
+          <h3>What we will not fake</h3>
+          <p className="muted">Spotify does not provide a clean playlist-listener or playlist-stream count here. Followers, first-party traffic, Spotify outbound clicks, track changes and defensible provider reach stay separate.</p>
+          <small>{(data.track_events || []).length} track-change events stored · {(data.sync_runs || []).length} sync runs stored</small>
+        </article>
+      </div>
+    </section>
   );
 }
 
@@ -330,6 +566,8 @@ export default function PlaylistOSAdmin() {
         <Metric label="Search clicks" value={totals.search_clicks_30d || 0} />
       </div>
 
+      <NetworkIntelligence data={data} playlists={playlistRows} />
+
       <section className="os-section">
         <div className="os-section-head">
           <div><p className="eyebrow">Next actions</p><h2>What needs attention now</h2></div>
@@ -359,19 +597,23 @@ export default function PlaylistOSAdmin() {
         <div className="os-section-head"><div><p className="eyebrow">Network</p><h2>Playlist operating view</h2></div><p className="muted">Missing metrics render as missing — never estimated.</p></div>
         <div className="os-table-wrap">
           <table className="os-table">
-            <thead><tr><th>Playlist</th><th>Followers</th><th>90d growth</th><th>7d</th><th>30d</th><th>90d</th><th>Tracks</th><th>Queue</th><th>Placements</th><th>Own artists</th><th>Traffic 30d</th><th>Search 30d</th><th>Data health</th></tr></thead>
+            <thead><tr><th>Playlist</th><th>Followers</th><th>Trend</th><th>1d</th><th>7d</th><th>30d</th><th>30d %</th><th>90d</th><th>Tracks</th><th>Queue</th><th>Placements</th><th>Own artists</th><th>Traffic 30d</th><th>Search 30d</th><th>Data health</th></tr></thead>
             <tbody>{playlistRows.map((p) => {
+              const d1=delta(p.current_follower_count,p.followers_1d_ago);
               const d7=delta(p.current_follower_count,p.followers_7d_ago);
               const d30=delta(p.current_follower_count,p.followers_30d_ago);
               const d90=delta(p.current_follower_count,p.followers_90d_ago);
+              const p30=growthPercent(p.current_follower_count,p.followers_30d_ago);
               const health=p.current_follower_count==null?'Follower feed pending':(d7!=null&&d7<0?'Follower decline':'Measured');
               return <tr key={p.playlist_id}>
                 <td><strong>{p.canonical_name}</strong></td>
                 <td>{p.current_follower_count?.toLocaleString() ?? '—'}</td>
                 <td><Sparkline points={data.metrics_history?.[p.playlist_id] || []} /></td>
-                <td>{d7==null?'—':(d7>0?'+':'')+d7}</td>
-                <td>{d30==null?'—':(d30>0?'+':'')+d30}</td>
-                <td>{d90==null?'—':(d90>0?'+':'')+d90}</td>
+                <td>{formatDelta(d1)}</td>
+                <td>{formatDelta(d7)}</td>
+                <td>{formatDelta(d30)}</td>
+                <td>{pct(p30)}</td>
+                <td>{formatDelta(d90)}</td>
                 <td>{p.current_track_count ?? '—'}</td>
                 <td>{p.submissions_waiting}</td>
                 <td>{p.active_placements}</td>
@@ -440,6 +682,43 @@ export default function PlaylistOSAdmin() {
             <p className="muted">UTM source wins when present; otherwise the referrer host is used. Playlist-origin submissions are stored against their originating playlist page. Direct traffic stays labeled direct / unknown.</p>
           </article>
         </div>
+      </section>
+
+
+      <section className="os-section">
+        <div className="os-section-head">
+          <div><p className="eyebrow">Playlist change history</p><h2>Track activity & sync receipts</h2></div>
+          <p className="muted">The ledger is ready now; it only records observed changes from a real inventory source.</p>
+        </div>
+        {(data.track_events || []).length ? (
+          <div className="os-table-wrap">
+            <table className="os-table os-table-compact">
+              <thead><tr><th>When</th><th>Playlist</th><th>Change</th><th>Spotify track</th><th>Position</th><th>Source</th></tr></thead>
+              <tbody>{(data.track_events || []).slice(0, 50).map((event) => (
+                <tr key={event.id}>
+                  <td>{new Date(event.event_at).toLocaleString()}</td>
+                  <td><strong>{event.bvss_playlists?.canonical_name || event.playlist_id}</strong></td>
+                  <td>{event.event_type}</td>
+                  <td>{event.spotify_track_id}</td>
+                  <td>{event.old_position ?? '—'} → {event.new_position ?? '—'}</td>
+                  <td>{event.source}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="card os-chart-empty">
+            <strong>No track-change observations yet.</strong>
+            <span>When Spotify or Soundcharts inventory sync is connected, additions, removals, moves and metadata changes will appear here without turning unknown data into zero.</span>
+          </div>
+        )}
+        {!!(data.sync_runs || []).length && (
+          <div className="os-sync-strip">
+            {(data.sync_runs || []).slice(0, 8).map((run) => (
+              <div key={run.id}><span>{run.provider} · {run.sync_type}</span><strong>{run.status}</strong><small>{run.records_written ?? 0} written · {new Date(run.requested_at).toLocaleString()}</small></div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="os-section">
