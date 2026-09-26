@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import {
   playlistApiBase,
@@ -12,10 +12,21 @@ import {
 const supabase = createClient(supabaseUrl, supabasePublishableKey);
 const audioBucket = 'bvss-submission-audio';
 
+type TrackIdentity = {
+  source: 'spotify';
+  spotify_track_id: string;
+  spotify_url: string;
+  title: string | null;
+  artist_name: string | null;
+  artwork_url: string | null;
+  release_date: string | null;
+  is_explicit: boolean | null;
+  album_name?: string | null;
+};
+
 type Result = {
   ok: boolean;
-  submission?: { id: string; status: string };
-  status_token?: string;
+  submission?: { id: string; status: string; release_state?: 'released' | 'unreleased' };
   status_url?: string;
   routed_to?: { bvss: number; partner_curators: number };
   suggested_playlists?: {
@@ -30,6 +41,10 @@ type Result = {
   message?: string;
 };
 
+function isSpotifyTrackUrl(value: string) {
+  return /^https:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?track\/[A-Za-z0-9]{22}(?:\?.*)?$/i.test(value.trim());
+}
+
 export default function SubmissionForm({
   playlists,
   initialPlaylist,
@@ -37,14 +52,115 @@ export default function SubmissionForm({
   playlists: PlaylistRecord[];
   initialPlaylist?: string;
 }) {
+  const initial = useMemo(() => initialPlaylist ? [initialPlaylist] : [], [initialPlaylist]);
+  const [mode, setMode] = useState<'released' | 'unreleased'>('released');
+  const [query, setQuery] = useState('');
+  const [selectedTrack, setSelectedTrack] = useState<TrackIdentity | null>(null);
+  const [searchResults, setSearchResults] = useState<TrackIdentity[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchMessage, setSearchMessage] = useState('');
+  const [artist, setArtist] = useState('');
+  const [title, setTitle] = useState('');
+  const [releaseDate, setReleaseDate] = useState('');
+  const [isExplicit, setIsExplicit] = useState(false);
+  const [preferred, setPreferred] = useState<string[]>(initial);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [privateLink, setPrivateLink] = useState('');
+  const [downloadPermission, setDownloadPermission] = useState(false);
+  const [networkOptIn, setNetworkOptIn] = useState(false);
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState('');
   const [result, setResult] = useState<Result | null>(null);
-  const initial = useMemo(() => initialPlaylist ? [initialPlaylist] : [], [initialPlaylist]);
-  const [preferred, setPreferred] = useState<string[]>(initial);
-  const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [downloadPermission, setDownloadPermission] = useState(false);
-  const [networkOptIn, setNetworkOptIn] = useState(false);
+
+  useEffect(() => {
+    if (mode !== 'released') return;
+    const value = query.trim();
+    if (!value || isSpotifyTrackUrl(value)) return;
+
+    if (value.length < 2) {
+      setSearchResults([]);
+      setSearchMessage('');
+      return;
+    }
+
+    const timer = window.setTimeout(async () => {
+      setSearching(true);
+      setSearchMessage('');
+      try {
+        const response = await fetch(
+          playlistApiBase + '/bvss-track-lookup?q=' + encodeURIComponent(value),
+          { cache: 'no-store' },
+        );
+        const body = await response.json();
+        if (response.ok) {
+          setSearchResults(body.results || []);
+          setSearchMessage((body.results || []).length ? '' : 'No Spotify tracks found. You can paste the track URL instead.');
+        } else if (body.error === 'spotify_search_unconfigured') {
+          setSearchResults([]);
+          setSearchMessage('Song-name search is being activated. For now, paste the Spotify track link and we will recognize it automatically.');
+        } else {
+          setSearchResults([]);
+          setSearchMessage('Could not search Spotify. Paste the track URL instead.');
+        }
+      } catch {
+        setSearchResults([]);
+        setSearchMessage('Could not search Spotify. Paste the track URL instead.');
+      } finally {
+        setSearching(false);
+      }
+    }, 320);
+
+    return () => window.clearTimeout(timer);
+  }, [mode, query]);
+
+  function chooseTrack(track: TrackIdentity) {
+    setSelectedTrack(track);
+    setArtist(track.artist_name || '');
+    setTitle(track.title || '');
+    setReleaseDate((track.release_date || '').slice(0, 10));
+    setIsExplicit(Boolean(track.is_explicit));
+    setQuery(track.spotify_url);
+    setSearchResults([]);
+    setSearchMessage('');
+  }
+
+  async function resolveSpotifyUrl(value: string) {
+    if (!isSpotifyTrackUrl(value)) return;
+    setSearching(true);
+    setSearchMessage('');
+    try {
+      const response = await fetch(
+        playlistApiBase + '/bvss-track-lookup?url=' + encodeURIComponent(value.trim()),
+        { cache: 'no-store' },
+      );
+      const body = await response.json();
+      if (!response.ok || !body.track) {
+        setSearchMessage('We could not recognize that Spotify link. Check the URL and try again.');
+        return;
+      }
+      chooseTrack(body.track);
+    } catch {
+      setSearchMessage('We could not recognize that Spotify link. Check the URL and try again.');
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function changeMode(next: 'released' | 'unreleased') {
+    setMode(next);
+    setResult(null);
+    setSearchMessage('');
+    setSearchResults([]);
+    setSelectedTrack(null);
+    setQuery('');
+    setArtist('');
+    setTitle('');
+    setReleaseDate('');
+    setIsExplicit(false);
+    setAudioFile(null);
+    setPrivateLink('');
+    setDownloadPermission(false);
+  }
 
   function toggle(slug: string) {
     setPreferred((current) =>
@@ -55,7 +171,7 @@ export default function SubmissionForm({
   }
 
   async function uploadMaster(file: File) {
-    setStage('Preparing private audio upload…');
+    setStage('Uploading your private master…');
     const init = await fetch(playlistApiBase + '/bvss-media', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -69,7 +185,6 @@ export default function SubmissionForm({
     const slot = await init.json();
     if (!init.ok) throw new Error(slot.error || 'upload_slot_failed');
 
-    setStage('Uploading master securely…');
     const { error } = await supabase.storage
       .from(audioBucket)
       .uploadToSignedUrl(slot.path, slot.token, file, {
@@ -84,49 +199,50 @@ export default function SubmissionForm({
     event.preventDefault();
     const formEl = event.currentTarget;
     setBusy(true);
-    setStage('Validating submission…');
+    setStage('Preparing submission…');
     setResult(null);
 
     try {
+      if (mode === 'released' && !selectedTrack?.spotify_url) {
+        setResult({ ok: false, error: 'track_required', message: 'Choose a Spotify track or paste its Spotify URL first.' });
+        return;
+      }
+
+      if (mode === 'unreleased' && !audioFile && !privateLink.trim()) {
+        setResult({ ok: false, error: 'delivery_required', message: 'Add a private file or listening link for an unreleased song.' });
+        return;
+      }
+
       const form = new FormData(formEl);
       let downloadObjectPath: string | null = null;
 
       if (audioFile) {
-        if (!downloadPermission) {
-          setResult({
-            ok: false,
-            error: 'download_permission_required',
-            message: 'Check the download-permission box before uploading a master.',
-          });
-          return;
-        }
         downloadObjectPath = await uploadMaster(audioFile);
       }
 
+      const externalLink = privateLink.trim() || null;
       const payload = {
-        artist_name: form.get('artist_name'),
+        release_state: mode,
+        artist_name: artist,
         email: form.get('email'),
-        song_title: form.get('song_title'),
-        spotify_url: form.get('spotify_url'),
-        release_date: form.get('release_date') || null,
+        song_title: title,
+        spotify_url: mode === 'released' ? selectedTrack?.spotify_url : null,
+        release_date: releaseDate || null,
         genre: form.get('genre'),
         moods: String(form.get('moods') || '').split(',').map((v) => v.trim()).filter(Boolean),
         comparable_artists: String(form.get('comparable_artists') || '').split(',').map((v) => v.trim()).filter(Boolean),
-        is_explicit: form.get('is_explicit') === 'on',
+        is_explicit: isExplicit,
         notes: form.get('notes') || null,
         preferred_playlists: preferred,
         origin_playlist: initialPlaylist || null,
-        private_stream_url: form.get('private_stream_url') || null,
-        download_external_url: form.get('download_external_url') || null,
+        private_stream_url: externalLink && !downloadPermission ? externalLink : null,
+        download_external_url: externalLink && downloadPermission ? externalLink : null,
         download_object_path: downloadObjectPath,
-        download_permission: downloadPermission,
+        download_permission: Boolean(audioFile) || (Boolean(externalLink) && downloadPermission),
         network_opt_in: networkOptIn,
-        artist_socials: {
-          instagram: form.get('instagram_url') || null,
-          tiktok: form.get('tiktok_url') || null,
-          soundcloud: form.get('soundcloud_url') || null,
-          website: form.get('artist_website') || null,
-        },
+        artwork_url: selectedTrack?.artwork_url || null,
+        identified_track: selectedTrack || {},
+        artist_socials: {},
         website: form.get('website'),
       };
 
@@ -142,7 +258,7 @@ export default function SubmissionForm({
         }),
       }).catch(() => undefined);
 
-      setStage('Routing to likely playlist fits…');
+      setStage('Matching playlist fit…');
       const response = await fetch(playlistApiBase + '/bvss-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,6 +271,7 @@ export default function SubmissionForm({
         formEl.reset();
         setPreferred(initial);
         setAudioFile(null);
+        setPrivateLink('');
         setDownloadPermission(false);
         setNetworkOptIn(false);
       }
@@ -170,191 +287,208 @@ export default function SubmissionForm({
     }
   }
 
+  const readyForDetails = mode === 'unreleased' ? Boolean(artist && title && (audioFile || privateLink.trim())) : Boolean(selectedTrack);
+
   return (
-    <form className="submission-form" onSubmit={submit}>
-      <div className="form-grid">
-        <div className="field">
-          <label htmlFor="artist_name">Artist</label>
-          <input id="artist_name" name="artist_name" required maxLength={160} />
+    <form className="submission-form submission-form-v3" onSubmit={submit}>
+      <section className="song-source-card">
+        <div className="source-tabs" role="tablist" aria-label="Release status">
+          <button type="button" className={mode === 'released' ? 'source-tab active' : 'source-tab'} onClick={() => changeMode('released')}>
+            Released
+          </button>
+          <button type="button" className={mode === 'unreleased' ? 'source-tab active' : 'source-tab'} onClick={() => changeMode('unreleased')}>
+            Unreleased
+          </button>
         </div>
-        <div className="field">
-          <label htmlFor="email">Email</label>
-          <input id="email" name="email" type="email" required maxLength={254} />
-        </div>
-        <div className="field">
-          <label htmlFor="song_title">Song title</label>
-          <input id="song_title" name="song_title" required maxLength={200} />
-        </div>
-        <div className="field">
-          <label htmlFor="release_date">Release date</label>
-          <input id="release_date" name="release_date" type="date" />
-        </div>
-        <div className="field span-2">
-          <label htmlFor="spotify_url">Spotify track URL</label>
-          <input id="spotify_url" name="spotify_url" type="url" required placeholder="https://open.spotify.com/track/…" />
-        </div>
-        <div className="field">
-          <label htmlFor="genre">Primary genre</label>
-          <input id="genre" name="genre" required placeholder="Melodic bass" />
-        </div>
-        <div className="field">
-          <label htmlFor="moods">Moods</label>
-          <input id="moods" name="moods" placeholder="emotional, euphoric, cinematic" />
-        </div>
-        <div className="field span-2">
-          <label htmlFor="comparable_artists">Comparable artists</label>
-          <input id="comparable_artists" name="comparable_artists" placeholder="Dabin, San Holo, ODESZA" />
-        </div>
-        <div className="field">
-          <label htmlFor="instagram_url">Instagram <span className="muted">(optional)</span></label>
-          <input id="instagram_url" name="instagram_url" type="url" placeholder="https://instagram.com/…" />
-        </div>
-        <div className="field">
-          <label htmlFor="tiktok_url">TikTok <span className="muted">(optional)</span></label>
-          <input id="tiktok_url" name="tiktok_url" type="url" placeholder="https://tiktok.com/@…" />
-        </div>
-        <div className="field">
-          <label htmlFor="soundcloud_url">SoundCloud <span className="muted">(optional)</span></label>
-          <input id="soundcloud_url" name="soundcloud_url" type="url" placeholder="https://soundcloud.com/…" />
-        </div>
-        <div className="field">
-          <label htmlFor="artist_website">Artist website <span className="muted">(optional)</span></label>
-          <input id="artist_website" name="artist_website" type="url" placeholder="https://…" />
-        </div>
-        <div className="field span-2 checkbox-field">
-          <label><input name="is_explicit" type="checkbox" /> Explicit lyrics/content</label>
-        </div>
-        <div className="field span-2">
-          <label htmlFor="notes">Notes for the curator</label>
-          <textarea id="notes" name="notes" maxLength={4000} placeholder="What makes this record a fit?" />
-        </div>
-        <div className="field span-2 honeypot" aria-hidden="true">
-          <label htmlFor="website">Website</label>
-          <input id="website" name="website" tabIndex={-1} autoComplete="off" />
-        </div>
-      </div>
 
-      <fieldset className="playlist-selector">
-        <legend>Preferred playlists <span>(optional · choose up to 8)</span></legend>
-        <p className="muted">
-          You do not need to guess perfectly. Routing uses genre, mood, comparable artists and your preferences to suggest likely fits.
-        </p>
-        <div className="playlist-choice-grid">
-          {playlists.filter((p) => p.submission_status === 'open').map((playlist) => (
-            <label className={preferred.includes(playlist.slug) ? 'playlist-choice selected' : 'playlist-choice'} key={playlist.id}>
-              <input type="checkbox" checked={preferred.includes(playlist.slug)} onChange={() => toggle(playlist.slug)} />
-              <strong>{playlist.canonical_name}</strong>
-              <small>{playlist.subtitle}</small>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
-      <fieldset className="playlist-selector">
-        <legend>Private delivery <span>(optional)</span></legend>
-        <p className="muted">
-          Spotify remains the required listening link. You can also provide a private stream or a downloadable master for approved curators.
-        </p>
-        <div className="form-grid compact-form-grid">
-          <div className="field span-2">
-            <label htmlFor="private_stream_url">Private stream link</label>
-            <input id="private_stream_url" name="private_stream_url" type="url" placeholder="Private SoundCloud, Disco, Dropbox preview, etc." />
-          </div>
-          <div className="field span-2">
-            <label htmlFor="master_file">Upload WAV / MP3 / FLAC <span className="muted">(max 100 MB)</span></label>
-            <input
-              id="master_file"
-              type="file"
-              accept=".wav,.mp3,.flac,.m4a,.aac,audio/*"
-              onChange={(event) => setAudioFile(event.target.files?.[0] || null)}
-            />
-          </div>
-          <div className="field span-2">
-            <label htmlFor="download_external_url">Or external download link</label>
-            <input id="download_external_url" name="download_external_url" type="url" placeholder="https://…" />
-          </div>
-          <div className="field span-2 checkbox-field">
-            <label>
+        {mode === 'released' ? (
+          <>
+            <label className="song-search-label" htmlFor="song-search">What song are you submitting?</label>
+            <div className="song-search-wrap">
               <input
-                type="checkbox"
-                checked={downloadPermission}
-                onChange={(event) => setDownloadPermission(event.target.checked)}
+                id="song-search"
+                className="song-search-input"
+                value={query}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setQuery(value);
+                  if (selectedTrack && value !== selectedTrack.spotify_url) setSelectedTrack(null);
+                  if (isSpotifyTrackUrl(value)) resolveSpotifyUrl(value);
+                }}
+                onPaste={(event) => {
+                  const value = event.clipboardData.getData('text');
+                  if (isSpotifyTrackUrl(value)) window.setTimeout(() => resolveSpotifyUrl(value), 0);
+                }}
+                placeholder="Search song + artist, or paste a Spotify link"
+                autoComplete="off"
               />
-              I grant approved BVSS FVM/network curators permission to download the supplied master for review and playlist operations.
-            </label>
+              {searching && <span className="song-search-state">Searching…</span>}
+            </div>
+
+            {!!searchResults.length && (
+              <div className="song-search-results">
+                {searchResults.map((track) => (
+                  <button type="button" className="song-search-result" key={track.spotify_track_id} onClick={() => chooseTrack(track)}>
+                    {track.artwork_url ? <img src={track.artwork_url} alt="" /> : <span className="song-art-placeholder" />}
+                    <span><strong>{track.title}</strong><small>{track.artist_name}{track.album_name ? ' · ' + track.album_name : ''}</small></span>
+                    <em>Choose</em>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {searchMessage && (
+              <p className="song-search-message">
+                {searchMessage}
+                {query && !isSpotifyTrackUrl(query) && (
+                  <> <a href={'https://open.spotify.com/search/' + encodeURIComponent(query)} target="_blank" rel="noreferrer">Search Spotify ↗</a></>
+                )}
+              </p>
+            )}
+
+            {selectedTrack && (
+              <div className="selected-song-card">
+                {selectedTrack.artwork_url ? <img src={selectedTrack.artwork_url} alt="" /> : <span className="song-art-placeholder" />}
+                <div>
+                  <span className="eyebrow">Recognized on Spotify</span>
+                  <strong>{title || selectedTrack.title}</strong>
+                  <small>{artist || selectedTrack.artist_name || 'Artist name needed below'}</small>
+                </div>
+                <button type="button" className="text-button" onClick={() => { setSelectedTrack(null); setQuery(''); setArtist(''); setTitle(''); }}>Change</button>
+              </div>
+            )}
+
+            {selectedTrack && (!artist || !title) && (
+              <div className="identity-fallback">
+                <div className="field"><label htmlFor="released_artist">Artist</label><input id="released_artist" value={artist} onChange={(e) => setArtist(e.target.value)} required /></div>
+                <div className="field"><label htmlFor="released_title">Song title</label><input id="released_title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="unreleased-heading">
+              <div><span className="eyebrow">Private submission</span><h3>Share an unreleased song.</h3></div>
+              <p>Upload the audio or paste a private SoundCloud, Dropbox, Google Drive, DISCO or similar link.</p>
+            </div>
+
+            <div className="form-grid compact-form-grid">
+              <div className="field"><label htmlFor="unreleased_artist">Artist</label><input id="unreleased_artist" value={artist} onChange={(e) => setArtist(e.target.value)} required /></div>
+              <div className="field"><label htmlFor="unreleased_title">Song title</label><input id="unreleased_title" value={title} onChange={(e) => setTitle(e.target.value)} required /></div>
+              <div className="field span-2 private-delivery-choice">
+                <label htmlFor="master_file">Upload audio <span className="muted">WAV, MP3, FLAC, M4A · max 100 MB</span></label>
+                <input
+                  id="master_file"
+                  type="file"
+                  accept=".wav,.mp3,.flac,.m4a,.aac,audio/*"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] || null;
+                    setAudioFile(file);
+                    if (file) setDownloadPermission(true);
+                  }}
+                />
+              </div>
+              <div className="delivery-or"><span>or</span></div>
+              <div className="field span-2">
+                <label htmlFor="private_link">Private listening / download link</label>
+                <input
+                  id="private_link"
+                  type="url"
+                  value={privateLink}
+                  onChange={(event) => setPrivateLink(event.target.value)}
+                  placeholder="SoundCloud, Dropbox, Google Drive, DISCO…"
+                />
+              </div>
+              {!!(audioFile || privateLink) && (
+                <div className="field span-2 checkbox-field compact-consent">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={downloadPermission}
+                      onChange={(event) => setDownloadPermission(event.target.checked)}
+                    />
+                    Allow approved curators to download this file/link for review.
+                  </label>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </section>
+
+      {readyForDetails && (
+        <section className="submission-details-card">
+          <div className="submission-details-heading">
+            <div><span className="eyebrow">Almost done</span><h3>Help us route it.</h3></div>
+            <p>Only email and genre are required here.</p>
           </div>
-        </div>
-      </fieldset>
 
-      <div className="network-opt-in">
-        <label className="network-opt-in-control">
-          <input
-            type="checkbox"
-            checked={networkOptIn}
-            onChange={(event) => setNetworkOptIn(event.target.checked)}
-          />
-          <span>
-            <strong>Curator Network Beta</strong>
-            <small>
-              Allow BVSS FVM to route this submission to approved independent curators when their verified playlist is a strong fit.
-              This is optional and never guarantees placement.
-            </small>
-          </span>
-        </label>
-      </div>
+          <div className="form-grid">
+            <div className="field"><label htmlFor="email">Email</label><input id="email" name="email" type="email" required maxLength={254} /></div>
+            <div className="field"><label htmlFor="genre">Primary genre</label><input id="genre" name="genre" required placeholder="Melodic bass" /></div>
+            <div className="field"><label htmlFor="moods">Moods <span className="muted">(optional)</span></label><input id="moods" name="moods" placeholder="emotional, euphoric" /></div>
+            <div className="field"><label htmlFor="comparable_artists">Sounds like <span className="muted">(optional)</span></label><input id="comparable_artists" name="comparable_artists" placeholder="Dabin, San Holo" /></div>
+          </div>
 
-      <div className="submission-policy">
-        <strong>Editorial independence</strong>
-        <p>
-          Submission, matching, network routing, or paid third-party review never guarantees placement. Every playlist decision remains editorial.
-        </p>
-      </div>
+          <label className="network-opt-in-control compact-network-opt-in">
+            <input type="checkbox" checked={networkOptIn} onChange={(event) => setNetworkOptIn(event.target.checked)} />
+            <span><strong>Also send to matched independent curators</strong><small>Only approved, verified curator playlists. Optional. No guaranteed placement.</small></span>
+          </label>
 
-      <button className="button" type="submit" disabled={busy}>
-        {busy ? (stage || 'Submitting…') : 'Submit for consideration'}
-      </button>
+          <details className="submission-more">
+            <summary>Optional details</summary>
+            <div className="submission-more-body">
+              <div className="form-grid">
+                <div className="field"><label htmlFor="release_date">Release date</label><input id="release_date" type="date" value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} /></div>
+                <div className="field checkbox-field"><label><input type="checkbox" checked={isExplicit} onChange={(e) => setIsExplicit(e.target.checked)} /> Explicit lyrics/content</label></div>
+                <div className="field span-2"><label htmlFor="notes">Note for curators</label><textarea id="notes" name="notes" maxLength={4000} placeholder="Anything useful about the record or fit." /></div>
+              </div>
+
+              <fieldset className="playlist-selector compact-playlist-selector">
+                <legend>Preferred playlists <span>(optional)</span></legend>
+                <div className="playlist-choice-grid">
+                  {playlists.filter((p) => p.submission_status === 'open').map((playlist) => (
+                    <label className={preferred.includes(playlist.slug) ? 'playlist-choice selected' : 'playlist-choice'} key={playlist.id}>
+                      <input type="checkbox" checked={preferred.includes(playlist.slug)} onChange={() => toggle(playlist.slug)} />
+                      <strong>{playlist.canonical_name}</strong>
+                      <small>{playlist.subtitle}</small>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+          </details>
+
+          <div className="field honeypot" aria-hidden="true">
+            <label htmlFor="website">Website</label>
+            <input id="website" name="website" tabIndex={-1} autoComplete="off" />
+          </div>
+
+          <button className="button submit-primary" type="submit" disabled={busy}>
+            {busy ? (stage || 'Submitting…') : 'Submit track'}
+          </button>
+          <p className="submission-microcopy">Human reviewed. Editorial decisions only. No guaranteed placement.</p>
+        </section>
+      )}
 
       {result && (
         <div className={result.ok ? 'submission-result success' : 'submission-result error'} role="status">
           {result.ok ? (
             <>
               <h3>Submission received.</h3>
-              <p>Your track is in the BVSS FVM review system.</p>
+              <p>Your track is now in the BVSS FVM review system.</p>
               {result.routed_to && (
                 <p>
                   Routed to <strong>{result.routed_to.bvss}</strong> BVSS FVM lane{result.routed_to.bvss === 1 ? '' : 's'}
-                  {networkOptIn && <> and <strong>{result.routed_to.partner_curators}</strong> approved partner curator lane{result.routed_to.partner_curators === 1 ? '' : 's'}</>}.
+                  {networkOptIn && <> and <strong>{result.routed_to.partner_curators}</strong> partner-curator lane{result.routed_to.partner_curators === 1 ? '' : 's'}</>}.
                 </p>
               )}
-              {!!result.suggested_playlists?.length && (
-                <div>
-                  <strong>Likely fits</strong>
-                  <ul>
-                    {result.suggested_playlists.map((item) => (
-                      <li key={item.slug}>
-                        {item.name} — {item.reasons.join(', ')}
-                        {item.network_owner_type === 'partner' ? ' · independent curator' : ''}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {result.status_url && (
-                <p>
-                  <a className="button button-secondary" href={result.status_url}>View private submission status</a>
-                </p>
-              )}
-              <p className="muted">{result.editorial_notice}</p>
+              {result.status_url && <a className="button button-secondary" href={result.status_url}>View submission status</a>}
             </>
           ) : (
             <>
               <h3>Submission not sent.</h3>
-              <p>
-                {result.message ||
-                  (result.error === 'duplicate_submission'
-                    ? 'This track has already been submitted from this email.'
-                    : 'Please check the form and try again.')}
-              </p>
+              <p>{result.message || (result.error === 'duplicate_submission' ? 'This song has already been submitted from this email.' : 'Please check the submission and try again.')}</p>
             </>
           )}
         </div>
