@@ -1,3 +1,52 @@
+
 import type { Metadata } from 'next';
-export const metadata:Metadata={title:'Submit Music',description:'Submit music to BVSS FVM for playlist consideration, collaboration, and future opportunities.'};
-export default function SubmitPage(){return <main><section className="shell page-hero"><p className="eyebrow">Music submissions</p><h1>Send something real.</h1><p className="lead">BVSS FVM is accepting artist introductions and music for playlist consideration, collaboration, and future creative opportunities.</p></section><section className="section"><div className="shell"><div className="grid"><article className="card"><h3>Playlist consideration</h3><p>Electronic, melodic bass, future bass, cinematic, emotional, atmospheric, and adjacent independent music.</p></article><article className="card"><h3>Artist introductions</h3><p>Tell us who you are, what you are building, and why your music belongs in the BVSS FVM world.</p></article><article className="card"><h3>Creator and sync</h3><p>Introduce music that may fit visual creators, independent campaigns, or future licensing opportunities.</p></article></div><div className="card" style={{marginTop:24}}><p className="eyebrow">Submission checklist</p><h3>Include one focused pitch.</h3><div className="list"><div><span>Public or private streaming link</span><span>Required</span></div><div><span>Artist, track title, release date, and genre</span><span>Required</span></div><div><span>Two or three comparable artists</span><span>Helpful</span></div><div><span>What you want us to consider it for</span><span>Required</span></div></div><div className="actions"><a className="button" href="mailto:submissions@bvssfvm.com?subject=BVSS%20FVM%20Music%20Submission&body=Artist%20name%3A%0ATrack%20title%3A%0AStreaming%20link%3A%0ARelease%20date%3A%0AGenre%3A%0ASimilar%20artists%3A%0AConsideration%20type%3A%0AShort%20pitch%3A">Start submission</a></div><p className="muted">Submission does not guarantee review, feedback, placement, release, representation, or response. Only submit material you are authorized to share. Do not attach large audio files.</p></div></div></section></main>}
+import { getPlaylists } from '../../lib/playlist-os';
+import SubmissionForm from './SubmissionForm';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Submit Music',
+  description: 'Submit one Spotify track to BVSS FVM for independent editorial consideration across its electronic playlist network.',
+  alternates: { canonical: '/submit' },
+};
+
+export default async function SubmitPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ playlist?: string }>;
+}) {
+  const playlists = await getPlaylists();
+  const { playlist } = await searchParams;
+
+  return (
+    <main>
+      <section className="shell page-hero">
+        <p className="eyebrow">Music submissions</p>
+        <h1>Submit once. We route the fit.</h1>
+        <p className="lead">
+          One focused submission can be considered across the BVSS FVM playlist network. Matching helps organize the review queue; humans make every placement decision.
+        </p>
+      </section>
+      <section className="section">
+        <div className="shell submit-layout">
+          <div>
+            <p className="eyebrow">What we need</p>
+            <h2>A real song, a Spotify link and useful context.</h2>
+            <p className="muted">
+              Genre, moods and comparable artists help route the track to the right curator queue. You may also choose preferred playlists, but you do not need to know the exact lane.
+            </p>
+            <div className="card submission-principles">
+              <h3>How review works</h3>
+              <p>1. Input is validated and obvious duplicates are blocked.</p>
+              <p>2. The system proposes likely playlist matches.</p>
+              <p>3. A curator listens and chooses accept, reject or hold.</p>
+              <p>4. Accepted placements are recorded with history and rotation notes.</p>
+            </div>
+          </div>
+          <SubmissionForm playlists={playlists} initialPlaylist={playlist} />
+        </div>
+      </section>
+    </main>
+  );
+}
