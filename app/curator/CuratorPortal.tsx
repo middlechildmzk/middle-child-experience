@@ -12,6 +12,8 @@ type Dashboard = {
   claims: any[];
   routes: any[];
   facts: any;
+  entitlement?: any;
+  usage?: any;
 };
 
 export default function CuratorPortal() {
@@ -167,6 +169,18 @@ export default function CuratorPortal() {
         <div className="os-metric">
           <span>Median response</span>
           <strong>{data.facts?.median_response_hours == null ? '—' : Math.round(data.facts.median_response_hours) + 'h'}</strong>
+        </div>
+        <div className="os-metric">
+          <span>Plan</span>
+          <strong>{data.entitlement?.plan || profile.plan || 'beta'}</strong>
+        </div>
+        <div className="os-metric">
+          <span>Playlist allowance</span>
+          <strong>{data.usage?.registered_playlists ?? data.playlists.length} / {data.entitlement?.max_registered_playlists ?? 5}</strong>
+        </div>
+        <div className="os-metric">
+          <span>Routes this month</span>
+          <strong>{data.usage?.routes_this_month ?? 0} / {data.entitlement?.max_monthly_routes ?? 500}</strong>
         </div>
       </div>
 
