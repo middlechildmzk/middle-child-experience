@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: '%s | BVSS FVM',
   },
   description:
-    'BVSS FVM is the independent home of Middle Child, electronic releases, curated playlists, music submissions, licensing, credits, and artist stories.',
+    'BVSS FVM is an independent electronic music label, curator network, and discovery platform for releases, playlists, submissions, licensing, and artist development.',
   applicationName: 'BVSS FVM',
   category: 'music',
   keywords: [
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'BVSS FVM | Independent Electronic Music',
-    description: 'Official releases, stories, credits, playlists, and licensing from the creative home of Middle Child.',
+    description: 'Independent electronic releases, human-curated playlists, artist discovery, submissions, and licensing.',
     type: 'website',
     siteName: 'BVSS FVM',
     locale: 'en_US',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'BVSS FVM | Independent Electronic Music',
-    description: 'Official releases, stories, credits, playlists, and licensing from the creative home of Middle Child.',
+    description: 'Independent electronic releases, human-curated playlists, artist discovery, submissions, and licensing.',
     images: ['https://i.ytimg.com/vi/9bCVDn2P29Q/maxresdefault.jpg'],
   },
   robots: canIndexSite
@@ -69,6 +69,7 @@ const nav = [
   ['Licensing', '/licensing'],
   ['Playlists', '/playlists'],
   ['Curators', '/curators'],
+  ['About', '/about'],
   ['Learn', '/learn'],
   ['Submit', '/submit'],
 ] as const;
@@ -92,9 +93,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         image: `${siteUrl}/icon.svg`,
         founder: { '@type': 'Person', name: 'Dan Larson' },
         sameAs: [
-          'https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN',
-          'https://www.instagram.com/middlechildmzk/',
-          'https://www.youtube.com/@middlechildmusica',
+          'https://open.spotify.com/user/larsunmusic',
+          'https://www.instagram.com/bvssfvm/',
+          'https://www.facebook.com/bvssfam',
+          'https://x.com/BVSSFAM',
         ],
       },
       {
@@ -104,6 +106,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         url: `${siteUrl}/artists/middle-child`,
         genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
         member: { '@type': 'Person', name: 'Dan Larson' },
+        sameAs: [
+          'https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN',
+          'https://www.instagram.com/middlechildmzk/',
+          'https://www.youtube.com/@middlechildmusica',
+        ],
       },
       {
         '@type': 'WebSite',
@@ -137,6 +144,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Link href="/licensing">Licensing</Link>
             <Link href="/playlists">Playlists</Link>
             <Link href="/curators">Curators</Link>
+            <Link href="/about">About</Link>
             <Link href="/learn">Learn</Link>
             <Link href="/submit">Submit music</Link>
             <a href="mailto:hello@bvssfvm.com">Contact</a>
