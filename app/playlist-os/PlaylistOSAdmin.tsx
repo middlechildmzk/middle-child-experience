@@ -219,9 +219,9 @@ function NetworkIntelligence({ data, playlists }: { data: Dashboard; playlists: 
   const milestone = nextMilestone(focusedPlaylist?.current_follower_count);
 
   return (
-    <section className="os-section os-intelligence">
+    <section className="os-section os-intelligence" id="growth">
       <div className="os-section-head">
-        <div><p className="eyebrow">Playlist Intelligence</p><h2>Network growth</h2></div>
+        <div><p className="eyebrow">Playlist Growth Engine</p><h2>Network growth</h2></div>
         <div className="os-source-state">
           <span className={'status-pill ' + (followerProvider ? 'ready' : '')}>{followerProvider ? 'automatic feed ready' : 'feed pending'}</span>
           <small>{followerProvider ? (followerProvider.provider === 'soundcharts' ? 'Soundcharts' : followerProvider.provider) + ' is the follower source of truth.' : 'Manual snapshots are live; automated follower data is not configured yet.'}</small>
@@ -573,7 +573,7 @@ export default function PlaylistOSAdmin() {
 
   return (
     <div className="playlist-os">
-      <div className="os-toolbar"><div><p className="eyebrow">BVSS FVM internal</p><h1>Playlist OS</h1></div><div className="actions"><a className="button button-secondary" href="/playlist-os/network">Curator network</a><button className="button button-secondary" onClick={load}>Refresh</button><button className="button button-secondary" onClick={() => supabase.auth.signOut()}>Sign out</button></div></div>
+      <div className="os-toolbar"><div><p className="eyebrow">BVSS FVM internal</p><h1>Playlist OS</h1></div><div className="actions"><a className="button button-secondary" href="#growth">Growth</a><a className="button button-secondary" href="/playlists" target="_blank" rel="noreferrer">Public network</a><a className="button button-secondary" href="/playlist-os/network">Curator network</a><button className="button button-secondary" onClick={load}>Refresh</button><button className="button button-secondary" onClick={() => supabase.auth.signOut()}>Sign out</button></div></div>
 
       <div className="os-metrics-grid">
         <Metric label="Active playlists" value={totals.playlists || 0} />

@@ -42,6 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: siteUrl + '/playlists', changeFrequency: 'weekly', priority: 0.85 },
     ...playlistEntries,
     { url: siteUrl + '/curators', changeFrequency: 'weekly', priority: 0.76 },
+    { url: siteUrl + '/about', changeFrequency: 'monthly', priority: 0.82 },
     ...curatorEntries,
     { url: siteUrl + '/curators/apply', changeFrequency: 'monthly', priority: 0.55 },
     { url: siteUrl + '/learn', changeFrequency: 'monthly', priority: 0.82 },

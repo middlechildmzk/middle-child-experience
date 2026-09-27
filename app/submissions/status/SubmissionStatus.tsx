@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { playlistApiBase } from '../../../lib/playlist-os';
+import PlacementShareButton from './PlacementShareButton';
 
 export default function SubmissionStatus({ token }: { token?: string }) {
   const [data, setData] = useState<any>(null);
@@ -75,6 +76,16 @@ export default function SubmissionStatus({ token }: { token?: string }) {
                     ? 'Decision recorded: ' + route.decision
                     : 'No placement decision has been recorded yet.'}
                 </small>
+                {route.decision === 'accept' && (
+                  <div className="placement-share-actions">
+                    <PlacementShareButton
+                      artist={data.submission.artist_name}
+                      song={data.submission.song_title}
+                      playlist={route.playlist_name}
+                      playlistSlug={route.playlist_slug || null}
+                    />
+                  </div>
+                )}
               </article>
             ))}
           </div>

@@ -1,16 +1,20 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getPlaylists } from '../lib/playlist-os';
 import { siteUrl } from '../lib/site-url';
 
 const smartLink = 'https://lnk.to/MiddlechildNeverAlone';
 const artwork = 'https://i.ytimg.com/vi/9bCVDn2P29Q/maxresdefault.jpg';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   alternates: { canonical: siteUrl },
   openGraph: {
     title: 'BVSS FVM | Independent Electronic Music',
-    description: 'The independent creative home of Middle Child: emotional electronic releases, official credits, licensing, playlists, and artist resources.',
+    description:
+      'Independent electronic releases, a human-curated playlist network, artist submissions, licensing, and music discovery.',
     url: siteUrl,
     type: 'website',
     siteName: 'BVSS FVM',
@@ -18,15 +22,42 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('en-US').format(value);
+}
+
+export default async function HomePage() {
+  const playlists = await getPlaylists().catch(() => []);
+  const activePlaylists = playlists.filter((playlist) => playlist.lifecycle_state === 'active');
+  const network = activePlaylists.length ? activePlaylists : playlists;
+  const measured = network.filter((playlist) => playlist.current_follower_count != null);
+  const measuredFollowers = measured.reduce(
+    (sum, playlist) => sum + Number(playlist.current_follower_count || 0),
+    0,
+  );
+  const featured = [...network]
+    .sort(
+      (a, b) =>
+        Number(b.current_follower_count || 0) - Number(a.current_follower_count || 0)
+        || a.display_order - b.display_order,
+    )
+    .slice(0, 4);
+  const networkCount = network.length || 18;
+
   return (
     <main>
       <section className="shell hero">
         <div className="hero-copy">
           <p className="eyebrow">Independent electronic music · Minneapolis</p>
           <h1 className="display">BVSS<br />FVM</h1>
-          <p className="lead">The independent home of Middle Child and a human-curated electronic music discovery network.</p>
-          <p className="hero-note">Listen to new music, explore 18 curated playlists, submit a track, or discover the story behind Middle Child.</p>
+          <p className="lead">
+            An independent electronic music label and human-curated discovery network built for listeners,
+            artists, and records with a real point of view.
+          </p>
+          <p className="hero-note">
+            Listen to new music, explore {networkCount} curated playlists, submit a track, or discover the
+            story behind Middle Child.
+          </p>
           <div className="actions">
             <a className="button" href={smartLink} target="_blank" rel="noreferrer">Listen</a>
             <Link className="button button-secondary" href="/playlists">Explore playlists</Link>
@@ -52,11 +83,69 @@ export default function HomePage() {
 
       <section className="proof-strip" aria-label="BVSS FVM overview">
         <div className="shell proof-grid">
-          <div><span>Artist</span><strong>Middle Child</strong></div>
-          <div><span>Playlist network</span><strong>18 active playlists</strong></div>
+          <div><span>Playlist network</span><strong>{networkCount} active playlists</strong></div>
+          <div>
+            <span>Measured audience</span>
+            <strong>{measuredFollowers ? formatNumber(measuredFollowers) + ' followers' : 'Follower telemetry live'}</strong>
+          </div>
           <div><span>Curation</span><strong>Human reviewed · submissions open</strong></div>
         </div>
       </section>
+
+      {!!featured.length && (
+        <section className="section network-feature">
+          <div className="shell">
+            <div className="section-split network-feature-heading">
+              <div>
+                <p className="eyebrow">Growing now</p>
+                <h2>The BVSS FVM playlist network.</h2>
+              </div>
+              <div>
+                <p className="lead compact-lead">
+                  Genre-focused playlists with live follower measurement, clear editorial lanes, and
+                  direct artist submission paths.
+                </p>
+                <div className="actions">
+                  <Link className="button button-secondary" href="/playlists">Browse all playlists</Link>
+                </div>
+              </div>
+            </div>
+
+            <div className="network-feature-grid">
+              {featured.map((playlist) => (
+                <Link className="network-feature-card" href={'/playlists/' + playlist.slug} key={playlist.id}>
+                  {playlist.cover_asset_url ? (
+                    <img
+                      src={playlist.cover_asset_url}
+                      alt={playlist.canonical_name + ' playlist cover'}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="playlist-art-placeholder" aria-hidden="true" />
+                  )}
+                  <div>
+                    <p className="eyebrow">{playlist.primary_genre}</p>
+                    <h3>{playlist.canonical_name}</h3>
+                    <p>{playlist.subtitle}</p>
+                    <div className="network-feature-meta">
+                      <strong>
+                        {playlist.current_follower_count != null
+                          ? formatNumber(playlist.current_follower_count) + ' followers'
+                          : 'Follower feed connecting'}
+                      </strong>
+                      <span>
+                        {playlist.current_track_count != null
+                          ? formatNumber(playlist.current_track_count) + ' tracks'
+                          : playlist.update_cadence + ' updates'}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="section">
         <div className="shell section-split">
@@ -65,7 +154,10 @@ export default function HomePage() {
             <h2>Never Alone</h2>
           </div>
           <div>
-            <p className="lead compact-lead">A wounded but hopeful melodic bass record about feeling invisible and discovering that even in the hardest season, you were never truly alone.</p>
+            <p className="lead compact-lead">
+              A wounded but hopeful melodic bass record about feeling invisible and discovering that even
+              in the hardest season, you were never truly alone.
+            </p>
             <div className="actions">
               <Link className="button" href="/never-alone">Lyrics, story & credits</Link>
               <a className="button button-secondary" href={smartLink} target="_blank" rel="noreferrer">Listen everywhere</a>
@@ -88,7 +180,10 @@ export default function HomePage() {
             <Link className="card card-feature" href="/playlists">
               <span className="card-index">02</span>
               <h3>Discover playlists</h3>
-              <p>Browse 18 human-curated electronic playlists by genre, mood, and listening moment — from emotional bass to trance, DnB, house, UK garage, and more.</p>
+              <p>
+                Browse {networkCount} human-curated electronic playlists by genre, mood, and listening
+                moment — from emotional bass to trance, DnB, house, UK garage, and more.
+              </p>
               <span className="card-link">Find your playlist →</span>
             </Link>
             <Link className="card card-feature" href="/submit">
@@ -96,6 +191,12 @@ export default function HomePage() {
               <h3>Submit music</h3>
               <p>Send one Spotify track for independent editorial consideration across the BVSS FVM playlist network. No guaranteed placements.</p>
               <span className="card-link">Submit a track →</span>
+            </Link>
+            <Link className="card card-feature" href="/about">
+              <span className="card-index">04</span>
+              <h3>How BVSS FVM works</h3>
+              <p>Read the label story, curation standards, editorial policy, and the principles behind the network.</p>
+              <span className="card-link">About BVSS FVM →</span>
             </Link>
           </div>
         </div>
@@ -109,7 +210,8 @@ export default function HomePage() {
           </div>
           <div>
             <p className="lead compact-lead">
-              Verified independent curators can add playlists, define fit, receive matched submissions, review tracks, and build transparent response history without giving up editorial control.
+              Verified independent curators can add playlists, define fit, receive matched submissions,
+              review tracks, and build transparent response history without giving up editorial control.
             </p>
             <div className="actions">
               <Link className="button" href="/curators">Explore curators</Link>
@@ -126,7 +228,10 @@ export default function HomePage() {
             <h2>Middle Child</h2>
           </div>
           <div>
-            <p className="lead compact-lead">Melodic bass, future bass, cinematic space, guitar warmth, intimate songwriting, and drops that bloom instead of attack.</p>
+            <p className="lead compact-lead">
+              Melodic bass, future bass, cinematic space, guitar warmth, intimate songwriting, and drops
+              that bloom instead of attack.
+            </p>
             <div className="actions">
               <Link className="button" href="/artists/middle-child">Explore the artist</Link>
               <a className="button button-secondary" href="https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN" target="_blank" rel="noreferrer">Spotify</a>

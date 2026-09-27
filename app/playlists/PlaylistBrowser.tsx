@@ -118,6 +118,18 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
                 <div className="chip-row">
                   {playlist.moods.slice(0, 3).map((value) => <span className="chip" key={value}>{value}</span>)}
                 </div>
+                <div className="playlist-card-proof">
+                  <strong>
+                    {playlist.current_follower_count != null
+                      ? playlist.current_follower_count.toLocaleString() + ' followers'
+                      : 'Follower feed connecting'}
+                  </strong>
+                  <span>
+                    {playlist.current_track_count != null
+                      ? playlist.current_track_count.toLocaleString() + ' tracks'
+                      : 'Track count syncing'}
+                  </span>
+                </div>
                 <p className="playlist-card-meta">
                   Updated {playlist.update_cadence} · Submissions {playlist.submission_status}
                 </p>

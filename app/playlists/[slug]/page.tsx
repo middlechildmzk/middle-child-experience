@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { getPlaylist, getPlaylists, relatedPlaylists } from '../../../lib/playlist-os';
 import { siteUrl } from '../../../lib/site-url';
 import PlaylistAnalytics from '../PlaylistAnalytics';
+import PlaylistShareButton from '../PlaylistShareButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,6 +67,7 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
     name: playlist.canonical_name,
     description: playlist.description,
     url: siteUrl + '/playlists/' + playlist.slug,
+    sameAs: playlist.spotify_url,
     image: playlist.cover_asset_url || undefined,
     genre: [playlist.primary_genre, ...playlist.secondary_genres],
     numTracks: playlist.current_track_count || highlights.length || undefined,
@@ -135,12 +137,27 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
           <div className="chip-row">
             {[...playlist.secondary_genres, ...playlist.moods].slice(0, 8).map((tag) => <span className="chip" key={tag}>{tag}</span>)}
           </div>
+          <div className="playlist-live-proof" aria-label="Current playlist facts">
+            <div>
+              <span>Followers</span>
+              <strong>{playlist.current_follower_count != null ? playlist.current_follower_count.toLocaleString() : 'Measuring'}</strong>
+            </div>
+            <div>
+              <span>Tracks</span>
+              <strong>{playlist.current_track_count != null ? playlist.current_track_count.toLocaleString() : 'Syncing'}</strong>
+            </div>
+            <div>
+              <span>Updates</span>
+              <strong>{playlist.update_cadence}</strong>
+            </div>
+          </div>
           <div className="actions">
             <PlaylistAnalytics slug={playlist.slug} spotifyUrl={playlist.spotify_url} />
+            <PlaylistShareButton slug={playlist.slug} name={playlist.canonical_name} />
             {playlist.submission_status === 'open' && <Link className="button button-secondary" href={'/submit?playlist=' + playlist.slug}>Submit a track</Link>}
           </div>
           <p className="muted playlist-updated">
-            Curated by {curatorHref ? <Link href={curatorHref}>{curatorLabel}</Link> : curatorLabel} · {playlist.update_cadence} updates · Page updated {updatedLabel}
+            Curated by {curatorHref ? <Link href={curatorHref}>{curatorLabel}</Link> : curatorLabel} · follower source {playlist.follower_count_source || 'pending'} · page updated {updatedLabel}
           </p>
         </div>
         <div className="playlist-player-stack">
@@ -175,7 +192,9 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
             <p className="eyebrow">Artist submissions</p>
             <h3>Selection criteria</h3>
             <p>{playlist.submission_criteria}</p>
-            <Link className="card-link" href={'/submit?playlist=' + playlist.slug}>Submit for consideration →</Link>
+            {playlist.submission_status === 'open'
+              ? <Link className="card-link" href={'/submit?playlist=' + playlist.slug}>Submit for consideration →</Link>
+              : <span className="muted">Submissions are currently {playlist.submission_status}.</span>}
           </article>
         </div>
       </section>
