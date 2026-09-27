@@ -43,7 +43,7 @@ export default function PlaylistAnalytics({
       rel="noreferrer"
       onClick={() => send('spotify_click', slug, window.location.pathname)}
     >
-      Open in Spotify
+      Follow / listen on Spotify
     </a>
   );
 }
