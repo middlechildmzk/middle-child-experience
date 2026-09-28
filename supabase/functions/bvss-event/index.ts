@@ -18,7 +18,7 @@ function db(){
   if(!key) throw new Error("Supabase secret key unavailable");
   return createClient(Deno.env.get("SUPABASE_URL")!,key,{auth:{persistSession:false}});
 }
-const valid=new Set(["playlist_view","spotify_click","submit_start"]);
+const valid=new Set(["playlist_view","spotify_click","submit_start","submit_complete","playlist_share"]);
 
 Deno.serve(async(req)=>{
   const h=cors(req.headers.get("origin"));
