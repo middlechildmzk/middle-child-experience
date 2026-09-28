@@ -73,7 +73,11 @@ export function normalize<T>(
  * Returns `undefined` for unmapped values — callers must NOT fall back to a
  * guess; use `submissionWithUnknownStatus` instead.
  */
-export type StatusSource = 'bvss' | 'curatorfit' | 'artistos';
+export type StatusSource =
+  | 'bvss'
+  | 'curatorfit'
+  | 'artistos'
+  | 'artistos_campaign_target';
 
 /** BVSS submission statuses — repo-inferred, unconfirmed live 2026-09-28. */
 const BVSS_STATUS_MAP: Record<string, NormalizedStatus> = {
@@ -125,17 +129,39 @@ const ARTISTOS_STATUS_MAP: Record<string, NormalizedStatus> = {
   completed: 'placement_live',
 };
 
+/**
+ * ArtistOS `campaign_targets.status` — a SEPARATE vocabulary from
+ * `campaign_submissions.status` in the same system. CHECK values verified
+ * against the live constraint `campaign_targets_status_check`
+ * (queued|pitched|replied|accepted|declined|placed) 2026-09-28. Kept in its
+ * own namespace so the two ArtistOS lifecycles never share a map.
+ */
+const ARTISTOS_CAMPAIGN_TARGET_STATUS_MAP: Record<string, NormalizedStatus> = {
+  /** added to the campaign, not yet pitched */
+  queued: 'shortlisted',
+  pitched: 'pitched_submitted',
+  replied: 'responded',
+  accepted: 'accepted',
+  declined: 'declined',
+  placed: 'placement_live',
+};
+
 const STATUS_MAPS: Record<StatusSource, Record<string, NormalizedStatus>> = {
   bvss: BVSS_STATUS_MAP,
   curatorfit: CURATORFIT_STATUS_MAP,
   artistos: ARTISTOS_STATUS_MAP,
+  artistos_campaign_target: ARTISTOS_CAMPAIGN_TARGET_STATUS_MAP,
 };
 
 export function mapNativeStatus(
   native: string,
   source: StatusSource,
 ): NormalizedStatus | undefined {
-  return STATUS_MAPS[source][native.toLowerCase()];
+  const map = STATUS_MAPS[source];
+  const key = native.toLowerCase();
+  // Own-property check: a native value like "constructor" must not resolve
+  // to an Object.prototype member — unknown stays unknown.
+  return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
 }
 
 /**
