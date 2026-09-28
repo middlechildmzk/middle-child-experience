@@ -75,16 +75,36 @@ export function normalize<T>(
  */
 export type StatusSource =
   | 'bvss'
+  | 'bvss_route'
   | 'curatorfit'
   | 'artistos'
   | 'artistos_campaign_target';
 
-/** BVSS submission statuses — repo-inferred, unconfirmed live 2026-09-28. */
+/**
+ * BVSS `bvss_submissions.status` — verified from the recovered production
+ * migration/source on 2026-09-28.
+ */
 const BVSS_STATUS_MAP: Record<string, NormalizedStatus> = {
-  waiting: 'pitched_submitted',
+  pending: 'pitched_submitted',
+  in_review: 'reviewing',
+  hold: 'reviewing',
   accepted: 'accepted',
-  held: 'reviewing',
   rejected: 'declined',
+  withdrawn: 'declined',
+};
+
+/**
+ * BVSS `bvss_submission_routes.status` — a separate curator-inbox
+ * lifecycle. Verified from the recovered production migration and
+ * bvss-submission-status function on 2026-09-28.
+ */
+const BVSS_ROUTE_STATUS_MAP: Record<string, NormalizedStatus> = {
+  queued: 'pitched_submitted',
+  opened: 'reviewing',
+  hold: 'reviewing',
+  accepted: 'accepted',
+  rejected: 'declined',
+  withdrawn: 'declined',
 };
 
 /** CuratorFit `submission_status` 12-state enum — from supabase/schema.sql. */
@@ -148,6 +168,7 @@ const ARTISTOS_CAMPAIGN_TARGET_STATUS_MAP: Record<string, NormalizedStatus> = {
 
 const STATUS_MAPS: Record<StatusSource, Record<string, NormalizedStatus>> = {
   bvss: BVSS_STATUS_MAP,
+  bvss_route: BVSS_ROUTE_STATUS_MAP,
   curatorfit: CURATORFIT_STATUS_MAP,
   artistos: ARTISTOS_STATUS_MAP,
   artistos_campaign_target: ARTISTOS_CAMPAIGN_TARGET_STATUS_MAP,
