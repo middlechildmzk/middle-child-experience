@@ -40,3 +40,5 @@ export {
   normalize,
   submissionWithUnknownStatus,
 } from './helpers';
+
+export type { StatusSource } from './helpers';

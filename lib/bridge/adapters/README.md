@@ -15,8 +15,11 @@ Reads from the deployed BVSS edge functions on `artistos-core`
   Curator directory; underlying tables are schema-only (0 rows live),
   so response stats may be zero.
 - `bvss-track-lookup` — intentionally public GET (`/?q=`, `/?url=`).
-  Response shape unconfirmed; normalized defensively, authority
-  `unresolved` (no canonical track table exists).
+  Response shape confirmed against the repo's own client type
+  (SubmissionForm.tsx): singular `artist_name`, artwork, release date,
+  explicit flag, album name — no `artists: string[]`. Artist credit maps
+  to `Track.artist_credit`, never to `tags`. Authority `unresolved`
+  (no canonical track table exists).
 - `bvss-submission-status` — tokenized-public GET (`/?token=`). Schema
   unconfirmed; returned verbatim with provenance, NOT mapped to
   `SubmissionPitch` in tranche one.
@@ -29,6 +32,17 @@ Reads from the deployed BVSS edge functions on `artistos-core`
 (authenticated), `bvss-submit` / `bvss-event` / `bvss-media` (writes),
 `bvss-soundcharts-sync` (service endpoint). See the module docstring for
 the read-only guarantee.
+
+**Server-only:** `bvss.ts` imports `../server-only`, which throws at
+module evaluation in any client bundle — a Client Component cannot
+accidentally pull the adapter (and future submission-status tokens /
+service-role reads) into the browser. Deliberate stand-in for the
+`server-only` npm package to avoid a new dependency in tranche one.
+
+**Status mapping:** source-namespaced via `mapNativeStatus(native, source)`
+in `bridge-contract` — BVSS / CuratorFit / ArtistOS vocabularies are
+disjoint. ArtistOS values verified against the live migration DDL
+(2026-09-28). Unknown stays unknown.
 
 **Open items:** per-route rate-limit enforcement on the public endpoints
 is PENDING-SOURCE (function source not exposed by the Management API).

@@ -2,8 +2,10 @@
  * Tiny pure helpers for the bridge contract. Zero runtime dependencies.
  *
  * - `makeProvenance` builds the provenance envelope every adapter attaches.
- * - `mapNativeStatus` is the initial repo-derived native→normalized mapping
- *   (Architecture Pack §3). It must be revalidated on first live rows.
+ * - `mapNativeStatus(native, source)` maps a native status into the
+ *   normalized lifecycle using the mapping namespaced to its source
+ *   system ('bvss' | 'curatorfit' | 'artistos'). Never guess across
+ *   systems: unmapped values return undefined.
  * - `submissionWithUnknownStatus` constructs the fail-safe shape for
  *   unmapped native values: native preserved, normalized unset ('unknown'),
  *   provenance label `unknown` — never guessed.
@@ -59,21 +61,30 @@ export function normalize<T>(
 }
 
 /**
- * Initial native→normalized status mapping, repo-derived (Pack §3).
- * BVSS statuses are repo-inferred (`waiting|accepted|held|rejected` —
- * unconfirmed live 2026-09-28); CuratorFit's 12-state enum comes from
- * supabase/schema.sql; ArtistOS values from repo migrations.
+ * Source-namespaced native→normalized status mappings (Pack §3).
+ *
+ * One global namespace was wrong: the three systems use disjoint status
+ * vocabularies, and the first cut's ArtistOS values did not match the
+ * live DDL. Each map is keyed by its source system; callers must pass
+ * the source. Mappings that are judgment calls are marked `inferred` —
+ * the native value is always preserved verbatim in `status_native` /
+ * `raw`, so re-mapping later is lossless.
  *
  * Returns `undefined` for unmapped values — callers must NOT fall back to a
  * guess; use `submissionWithUnknownStatus` instead.
  */
-const NATIVE_STATUS_MAP: Record<string, NormalizedStatus> = {
-  // BVSS (repo-inferred)
+export type StatusSource = 'bvss' | 'curatorfit' | 'artistos';
+
+/** BVSS submission statuses — repo-inferred, unconfirmed live 2026-09-28. */
+const BVSS_STATUS_MAP: Record<string, NormalizedStatus> = {
   waiting: 'pitched_submitted',
   accepted: 'accepted',
   held: 'reviewing',
   rejected: 'declined',
-  // CuratorFit submission_status enum
+};
+
+/** CuratorFit `submission_status` 12-state enum — from supabase/schema.sql. */
+const CURATORFIT_STATUS_MAP: Record<string, NormalizedStatus> = {
   saved: 'identified',
   researching: 'identified',
   pitch_drafted: 'identified',
@@ -86,15 +97,45 @@ const NATIVE_STATUS_MAP: Record<string, NormalizedStatus> = {
   not_a_fit: 'declined',
   do_not_contact: 'declined',
   expired: 'declined',
-  // ArtistOS campaign_submissions (repo migrations; unconfirmed live)
-  submitted: 'pitched_submitted',
-  under_review: 'reviewing',
-  approved: 'accepted',
-  declined: 'declined',
 };
 
-export function mapNativeStatus(native: string): NormalizedStatus | undefined {
-  return NATIVE_STATUS_MAP[native.toLowerCase()];
+/**
+ * ArtistOS `campaign_submissions.status` — CHECK values verified against
+ * the live migration DDL
+ * (20260729003724_artistos_marketplace_identity.sql:238) 2026-09-28.
+ */
+const ARTISTOS_STATUS_MAP: Record<string, NormalizedStatus> = {
+  /** created, not yet pitched */
+  draft: 'identified',
+  /** invited to pitch a property */
+  invited: 'shortlisted',
+  /** pitched, awaiting curator triage */
+  pending_review: 'pitched_submitted',
+  /** curator actively reviewing */
+  in_review: 'reviewing',
+  /** curator responded with feedback but no decision */
+  feedback_submitted: 'responded',
+  accepted: 'accepted',
+  /** committed to promote — post-acceptance; native kept verbatim */
+  promotion_committed: 'accepted',
+  declined: 'declined',
+  /** submitter-withdrawn; directionality preserved in the native value */
+  withdrawn: 'declined',
+  /** promotion ran to completion */
+  completed: 'placement_live',
+};
+
+const STATUS_MAPS: Record<StatusSource, Record<string, NormalizedStatus>> = {
+  bvss: BVSS_STATUS_MAP,
+  curatorfit: CURATORFIT_STATUS_MAP,
+  artistos: ARTISTOS_STATUS_MAP,
+};
+
+export function mapNativeStatus(
+  native: string,
+  source: StatusSource,
+): NormalizedStatus | undefined {
+  return STATUS_MAPS[source][native.toLowerCase()];
 }
 
 /**

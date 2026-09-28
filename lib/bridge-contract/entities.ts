@@ -62,6 +62,14 @@ export interface Track {
   /** → Release.id, when known. */
   release_id?: string;
   title: string;
+  /**
+   * Display artist credit. bvss-track-lookup returns a singular
+   * `artist_name` string (verified against the repo's SubmissionForm
+   * client type 2026-09-28) — it does NOT return `artists: string[]`.
+   * Never put artist data in `tags`: tags are genre/mood descriptors
+   * and artist names there would contaminate future fit logic.
+   */
+  artist_credit?: string | null;
   isrc?: string;
   /** cf. ArtistOS release_platform_links.external_track_id */
   spotify_track_id?: string;

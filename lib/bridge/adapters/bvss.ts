@@ -25,6 +25,10 @@
  * server-side per §7.2) and are never fetched from the client.
  */
 
+// Mechanical server-only guard: importing this module from a Client
+// Component throws at evaluation time. See ../server-only.ts.
+import '../server-only';
+
 import {
   makeProvenance,
   mapNativeStatus,
@@ -157,9 +161,13 @@ export async function fetchPlaylistDetail(
           // (confirmed 404 live 2026-09-28) — authority stays unresolved.
           id: track.spotify_track_id,
           title: track.track_name ?? 'Unknown title',
+          // Playlist highlights carry a native `artists: string[]`
+          // (repo type PlaylistTrack). Joined into the display credit —
+          // never into `tags`, which are genre/mood descriptors for
+          // future fit logic. The native array is preserved in `raw`.
+          artist_credit: track.artists.join(', ') || undefined,
           spotify_track_id: track.spotify_track_id,
           spotify_url: track.spotify_url ?? undefined,
-          tags: track.artists,
         },
         makeProvenance({
           source_system: 'bvss',
@@ -279,14 +287,20 @@ export async function fetchPublicCurator(
 /* ------------------------------------------------------------------ */
 /* Track lookup — via bvss-track-lookup (public GET). Resolves a       */
 /* query/URL to a contract-level Track (authority unresolved).        */
-/* Response shape unconfirmed — normalize defensively.                */
+/* Response shape confirmed against the repo's own client type         */
+/* (SubmissionForm.tsx): singular `artist_name`, plus artwork,         */
+/* release date, explicit flag, album name — no `artists: string[]`.   */
 /* ------------------------------------------------------------------ */
 
 interface TrackLookupHit {
   spotify_track_id?: string;
   title?: string;
   track_name?: string;
-  artists?: string[];
+  artist_name?: string | null;
+  artwork_url?: string | null;
+  release_date?: string | null;
+  is_explicit?: boolean | null;
+  album_name?: string | null;
   spotify_url?: string;
 }
 
@@ -306,16 +320,17 @@ export async function fetchTrackLookup(
         {
           id: hit.spotify_track_id ?? `lookup-${hit.title ?? hit.track_name}`,
           title: hit.title ?? hit.track_name ?? 'Unknown title',
+          // Artist credit is a singular display string — never `tags`.
+          artist_credit: hit.artist_name ?? undefined,
           spotify_track_id: hit.spotify_track_id,
           spotify_url: hit.spotify_url,
-          tags: hit.artists,
         },
         makeProvenance({
           source_system: 'bvss',
           source_id: hit.spotify_track_id ?? hit.title ?? hit.track_name ?? query,
           source_ref: 'bvss-track-lookup',
           authority: 'unresolved',
-          note: 'track-lookup response shape unconfirmed; defensive mapping',
+          note: 'shape confirmed against repo client type; no canonical track table',
         }),
         hit as unknown as Record<string, unknown>,
       ),
@@ -360,7 +375,7 @@ export async function fetchSubmissionStatus(
 export function mapBvssSubmissionStatus(
   native: string,
 ): NormalizedStatus | undefined {
-  return mapNativeStatus(native);
+  return mapNativeStatus(native, 'bvss');
 }
 
 /**
@@ -377,7 +392,7 @@ export function normalizeBvssSubmission(input: {
   submitted_at?: string;
   raw?: Record<string, unknown>;
 }): Normalized<SubmissionPitch> {
-  const mapped = mapNativeStatus(input.status_native);
+  const mapped = mapNativeStatus(input.status_native, 'bvss');
   if (mapped === undefined) {
     return submissionWithUnknownStatus({
       ...input,
@@ -432,14 +447,19 @@ export interface BvssMetricSnapshotRow {
 export function normalizeMetricSnapshot(
   row: BvssMetricSnapshotRow,
 ): Normalized<Metric>[] {
+  // Provenance cleanup: source_id is the native row ID; the normalized
+  // Metric id carries the `:followers` / `:track_count` suffix.
   const provenance = (measure: string): Provenance =>
     makeProvenance({
       source_system: 'bvss',
-      source_id: `${row.id}:${measure}`,
+      source_id: row.id,
       source_ref: 'bvss_playlist_metric_snapshots',
       authority: 'source-of-record',
       updated_at: row.observed_at,
-      note: row.source === 'soundcharts' ? undefined : `source: ${row.source}`,
+      note:
+        row.source === 'soundcharts'
+          ? `measure: ${measure}`
+          : `source: ${row.source}; measure: ${measure}`,
     });
   const out: Normalized<Metric>[] = [];
   if (row.followers !== null) {
