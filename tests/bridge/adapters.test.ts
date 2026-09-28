@@ -36,6 +36,8 @@ import {
 } from '../../lib/bridge/adapters/curatorfit';
 import {
   fetchPlaylists,
+  mapBvssRouteStatus,
+  mapBvssSubmissionStatus,
   normalizeMetricSnapshot,
   normalizePlaylist,
   parseMetricSnapshotRows,
@@ -216,6 +218,8 @@ test('CuratorFit: targets normalize as external, unresolved, trust kept out of c
   assert.deepEqual(t.data.genres, ['melodic bass'], 'falls back to single genre when array empty');
   assert.equal(t.data.status, 'seed', 'native target_status verbatim');
   assert.equal(t.provenance.authority, 'unresolved');
+  assert.equal(t.data.trust_score, 50);
+  assert.equal(t.data.risk_level, 'review');
   assert.equal(t.provenance.confidence, undefined, 'trust_score is not source confidence');
   assert.equal(t.raw!.trust_score, 50);
 });
@@ -298,6 +302,23 @@ test('BVSS: live playlist row validates; fetchPlaylists validates the response',
 
   mockFetch(() => ({ playlists: [{ ...B.playlist, submission_status: 'maybe' }] }));
   await assert.rejects(fetchPlaylists('https://example.test/functions/v1'), BridgeValidationError);
+});
+
+test('BVSS: submission and curator-route statuses stay in separate namespaces', () => {
+  assert.equal(mapBvssSubmissionStatus('pending'), 'pitched_submitted');
+  assert.equal(mapBvssSubmissionStatus('in_review'), 'reviewing');
+  assert.equal(mapBvssSubmissionStatus('hold'), 'reviewing');
+  assert.equal(mapBvssSubmissionStatus('withdrawn'), 'declined');
+  assert.equal(mapBvssSubmissionStatus('queued'), undefined, 'route status must not bleed into submission map');
+
+  assert.equal(mapBvssRouteStatus('queued'), 'pitched_submitted');
+  assert.equal(mapBvssRouteStatus('opened'), 'reviewing');
+  assert.equal(mapBvssRouteStatus('hold'), 'reviewing');
+  assert.equal(mapBvssRouteStatus('withdrawn'), 'declined');
+  assert.equal(mapBvssRouteStatus('pending'), undefined, 'submission status must not bleed into route map');
+
+  assert.equal(mapNativeStatus('constructor', 'bvss'), undefined);
+  assert.equal(mapNativeStatus('constructor', 'bvss_route'), undefined);
 });
 
 test('BVSS: snapshot rows validate; NULL track_count yields no fabricated metric', () => {
