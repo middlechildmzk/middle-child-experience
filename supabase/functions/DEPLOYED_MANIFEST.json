@@ -4,30 +4,6 @@
   "policy": "Source-parity manifest for deployed BVSS Edge Functions. Update after every reviewed production deploy; compare version/hash before subsequent deploys.",
   "functions": [
     {
-      "slug": "bvss-playlists",
-      "version": 4,
-      "ezbr_sha256": "c24f87c613735c53034a32df98c103d527d22b6b0fef3fe384173c68281c647c",
-      "verify_jwt": false,
-      "access": "public GET",
-      "writes": false
-    },
-    {
-      "slug": "bvss-submit",
-      "version": 7,
-      "ezbr_sha256": "2ee333e692e13355815adfc56abc0e367717d58d96a9960fa27f0d993f49a49e",
-      "verify_jwt": false,
-      "access": "public POST; IP/UA-hash rate limited",
-      "writes": true
-    },
-    {
-      "slug": "bvss-event",
-      "version": 3,
-      "ezbr_sha256": "6714eae56f0abf82a6f7191b2eacce400212af877ef8752be6377c31b7a7b2af",
-      "verify_jwt": false,
-      "access": "public POST analytics event",
-      "writes": true
-    },
-    {
       "slug": "bvss-admin",
       "version": 8,
       "ezbr_sha256": "e451f5c67687a4e6c8d4d92cf6f8b392becd2c3e28a14a2dc84c3ecea14651c4",
@@ -36,11 +12,11 @@
       "writes": true
     },
     {
-      "slug": "bvss-media",
-      "version": 4,
-      "ezbr_sha256": "152191a6720be75c8f7d530af7ef8c4dfca44be5d980cc8f704bf1eea5e420ea",
+      "slug": "bvss-admin-password-setup",
+      "version": 1,
+      "ezbr_sha256": "2666943bab7888e1e1d0e97101f2b917d028b66a387fe69d8d55850a7fbbfe88",
       "verify_jwt": false,
-      "access": "mixed: public rate-limited upload slot; authenticated/authorized download",
+      "access": "POST gated by allowed origin + one-time setup token + admin membership",
       "writes": true
     },
     {
@@ -60,12 +36,20 @@
       "writes": false
     },
     {
-      "slug": "bvss-submission-status",
-      "version": 4,
-      "ezbr_sha256": "5942545f9e90379b9f032c9d92526165c46f2eccafe414eccb57331ca43d8708",
+      "slug": "bvss-event",
+      "version": 3,
+      "ezbr_sha256": "6714eae56f0abf82a6f7191b2eacce400212af877ef8752be6377c31b7a7b2af",
       "verify_jwt": false,
-      "access": "public GET gated by UUID artist_status_token",
-      "writes": false
+      "access": "public POST analytics event",
+      "writes": true
+    },
+    {
+      "slug": "bvss-media",
+      "version": 4,
+      "ezbr_sha256": "152191a6720be75c8f7d530af7ef8c4dfca44be5d980cc8f704bf1eea5e420ea",
+      "verify_jwt": false,
+      "access": "mixed: public rate-limited upload slot; authenticated/authorized download",
+      "writes": true
     },
     {
       "slug": "bvss-network-admin",
@@ -76,11 +60,19 @@
       "writes": true
     },
     {
-      "slug": "bvss-track-lookup",
-      "version": 2,
-      "ezbr_sha256": "8fdb04c72bd461030a8d02a84a1862b5f9f690ebff67fee7d37e40fac0c8f5d7",
+      "slug": "bvss-one-campaign",
+      "version": 1,
+      "ezbr_sha256": "03205dd016c2d091d9eb7915946409b9ab0300f735f736dc02d8c74cc6a6011b",
       "verify_jwt": false,
-      "access": "public GET; server-side Spotify API credentials",
+      "access": "Supabase user bearer token + bvss_admin_users membership; GET only",
+      "writes": false
+    },
+    {
+      "slug": "bvss-playlists",
+      "version": 4,
+      "ezbr_sha256": "c24f87c613735c53034a32df98c103d527d22b6b0fef3fe384173c68281c647c",
+      "verify_jwt": false,
+      "access": "public GET",
       "writes": false
     },
     {
@@ -92,12 +84,28 @@
       "writes": true
     },
     {
-      "slug": "bvss-admin-password-setup",
-      "version": 1,
-      "ezbr_sha256": "2666943bab7888e1e1d0e97101f2b917d028b66a387fe69d8d55850a7fbbfe88",
+      "slug": "bvss-submission-status",
+      "version": 4,
+      "ezbr_sha256": "5942545f9e90379b9f032c9d92526165c46f2eccafe414eccb57331ca43d8708",
       "verify_jwt": false,
-      "access": "POST gated by allowed origin + one-time setup token + admin membership",
+      "access": "public GET gated by UUID artist_status_token",
+      "writes": false
+    },
+    {
+      "slug": "bvss-submit",
+      "version": 7,
+      "ezbr_sha256": "2ee333e692e13355815adfc56abc0e367717d58d96a9960fa27f0d993f49a49e",
+      "verify_jwt": false,
+      "access": "public POST; IP/UA-hash rate limited",
       "writes": true
+    },
+    {
+      "slug": "bvss-track-lookup",
+      "version": 2,
+      "ezbr_sha256": "8fdb04c72bd461030a8d02a84a1862b5f9f690ebff67fee7d37e40fac0c8f5d7",
+      "verify_jwt": false,
+      "access": "public GET; server-side Spotify API credentials",
+      "writes": false
     }
   ]
 }
