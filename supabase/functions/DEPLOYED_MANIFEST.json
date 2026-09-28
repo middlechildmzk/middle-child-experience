@@ -1,0 +1,103 @@
+{
+  "project_ref": "myrtdfyjoxvtubusrrmf",
+  "recovered_at": "2026-09-28",
+  "policy": "Source-parity snapshot only. These files were recovered from deployed Supabase Edge Function source. This branch does not deploy or mutate production.",
+  "functions": [
+    {
+      "slug": "bvss-playlists",
+      "version": 4,
+      "ezbr_sha256": "c24f87c613735c53034a32df98c103d527d22b6b0fef3fe384173c68281c647c",
+      "verify_jwt": false,
+      "access": "public GET",
+      "writes": false
+    },
+    {
+      "slug": "bvss-submit",
+      "version": 7,
+      "ezbr_sha256": "2ee333e692e13355815adfc56abc0e367717d58d96a9960fa27f0d993f49a49e",
+      "verify_jwt": false,
+      "access": "public POST; IP/UA-hash rate limited",
+      "writes": true
+    },
+    {
+      "slug": "bvss-event",
+      "version": 2,
+      "ezbr_sha256": "08c9f51ab7ee6f91e4fab0b71fd460c08173fee36fffaefc770885e9d9fc8c37",
+      "verify_jwt": false,
+      "access": "public POST analytics event",
+      "writes": true
+    },
+    {
+      "slug": "bvss-admin",
+      "version": 8,
+      "ezbr_sha256": "e451f5c67687a4e6c8d4d92cf6f8b392becd2c3e28a14a2dc84c3ecea14651c4",
+      "verify_jwt": false,
+      "access": "Supabase user bearer token + bvss_admin_users membership",
+      "writes": true
+    },
+    {
+      "slug": "bvss-media",
+      "version": 4,
+      "ezbr_sha256": "152191a6720be75c8f7d530af7ef8c4dfca44be5d980cc8f704bf1eea5e420ea",
+      "verify_jwt": false,
+      "access": "mixed: public rate-limited upload slot; authenticated/authorized download",
+      "writes": true
+    },
+    {
+      "slug": "bvss-curator",
+      "version": 7,
+      "ezbr_sha256": "09406892c2885f22ef28e8203deac5c5f1e465eed3f980b77d3249e03d0e8709",
+      "verify_jwt": false,
+      "access": "Supabase user bearer token; curator-scoped actions",
+      "writes": true
+    },
+    {
+      "slug": "bvss-curators-public",
+      "version": 2,
+      "ezbr_sha256": "b6599a7da31be7dbe32e86bf6e15d19d2ea3c3aeef3d482e9e5900e2afd7338d",
+      "verify_jwt": false,
+      "access": "public GET",
+      "writes": false
+    },
+    {
+      "slug": "bvss-submission-status",
+      "version": 4,
+      "ezbr_sha256": "5942545f9e90379b9f032c9d92526165c46f2eccafe414eccb57331ca43d8708",
+      "verify_jwt": false,
+      "access": "public GET gated by UUID artist_status_token",
+      "writes": false
+    },
+    {
+      "slug": "bvss-network-admin",
+      "version": 3,
+      "ezbr_sha256": "184b4daa7f5dd86858b924760e2866788ab5b980284abdb5af7439c83b0c3f0d",
+      "verify_jwt": false,
+      "access": "Supabase user bearer token + bvss_admin_users membership",
+      "writes": true
+    },
+    {
+      "slug": "bvss-track-lookup",
+      "version": 2,
+      "ezbr_sha256": "8fdb04c72bd461030a8d02a84a1862b5f9f690ebff67fee7d37e40fac0c8f5d7",
+      "verify_jwt": false,
+      "access": "public GET; server-side Spotify API credentials",
+      "writes": false
+    },
+    {
+      "slug": "bvss-soundcharts-sync",
+      "version": 3,
+      "ezbr_sha256": "9e4d6db761457f27c9f26e9bb46d42d292a7d7de9ba553f1bcf9a53ca2419259",
+      "verify_jwt": false,
+      "access": "POST gated by x-bvss-sync-token SHA-256 match",
+      "writes": true
+    },
+    {
+      "slug": "bvss-admin-password-setup",
+      "version": 1,
+      "ezbr_sha256": "2666943bab7888e1e1d0e97101f2b917d028b66a387fe69d8d55850a7fbbfe88",
+      "verify_jwt": false,
+      "access": "POST gated by allowed origin + one-time setup token + admin membership",
+      "writes": true
+    }
+  ]
+}

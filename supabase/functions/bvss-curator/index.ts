@@ -1,0 +1,267 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
+
+const origins=new Set(["https://bvssfvm.com","https://www.bvssfvm.com","http://localhost:3000"]);
+function headers(origin:string|null){
+  return {
+    "Content-Type":"application/json","Cache-Control":"no-store",
+    "Access-Control-Allow-Origin":origin&&origins.has(origin)?origin:"https://bvssfvm.com",
+    "Access-Control-Allow-Headers":"authorization, content-type",
+    "Access-Control-Allow-Methods":"GET, POST, OPTIONS","Vary":"Origin"
+  };
+}
+function keys(){
+  const s=JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}");
+  const p=JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}");
+  return {secret:s.default||Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),publishable:p.default||Deno.env.get("SUPABASE_ANON_KEY")};
+}
+async function auth(req:Request){
+  const {secret,publishable}=keys();
+  if(!secret||!publishable) throw new Error("supabase_keys_unavailable");
+  const token=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
+  if(!token) return {error:"missing_auth",status:401};
+  const userClient=createClient(Deno.env.get("SUPABASE_URL")!,publishable,{auth:{persistSession:false}});
+  const {data:{user},error}=await userClient.auth.getUser(token);
+  if(error||!user) return {error:"invalid_auth",status:401};
+  const db=createClient(Deno.env.get("SUPABASE_URL")!,secret,{auth:{persistSession:false}});
+  return {db,user};
+}
+const clean=(v:unknown,max=200)=>typeof v==="string"?v.trim().slice(0,max):"";
+const list=(v:unknown,maxItems=12,maxLen=80)=>Array.isArray(v)?v.map(x=>clean(x,maxLen)).filter(Boolean).slice(0,maxItems):[];
+const slugify=(v:string)=>v.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,70);
+const playlistId=(url:string)=>{
+  const m=url.match(/^https:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?playlist\/([A-Za-z0-9]{22})(?:\?.*)?$/i);
+  return m?m[1]:null;
+};
+const code=()=>("BVSSFVM-"+crypto.randomUUID().replace(/-/g,"").slice(0,7).toUpperCase());
+
+async function profileFor(db:any,userId:string){
+  const {data,error}=await db.from("bvss_curator_profiles").select("*").eq("user_id",userId).maybeSingle();
+  if(error) throw error;
+  return data;
+}
+
+Deno.serve(async(req)=>{
+  const h=headers(req.headers.get("origin"));
+  if(req.method==="OPTIONS") return new Response("ok",{headers:h});
+  try{
+    const a:any=await auth(req);
+    if(a.error) return new Response(JSON.stringify({error:a.error}),{status:a.status,headers:h});
+    const {db,user}=a;
+    const profile=await profileFor(db,user.id);
+
+    if(req.method==="GET"){
+      if(!profile) return new Response(JSON.stringify({profile:null,playlists:[],claims:[],routes:[],facts:null}),{headers:h});
+      const [{data:playlists},{data:claims},{data:facts},{data:entitlement},{data:usage}]=await Promise.all([
+        db.from("bvss_playlists")
+          .select("id,slug,spotify_playlist_id,spotify_url,canonical_name,subtitle,description,cover_asset_url,primary_genre,secondary_genres,moods,anchor_artists,submission_status,verification_status,network_routing_enabled,public_status,website_status,lifecycle_state,created_at")
+          .eq("curator_id",profile.id).order("created_at"),
+        db.from("bvss_curator_playlist_claims").select("*").eq("curator_id",profile.id).order("submitted_at",{ascending:false}),
+        db.from("bvss_curator_public_facts").select("*").eq("curator_id",profile.id).maybeSingle(),
+        db.from("bvss_curator_entitlements").select("*").eq("curator_id",profile.id).maybeSingle(),
+        db.from("bvss_curator_usage_monthly").select("*").eq("curator_id",profile.id).maybeSingle()
+      ]);
+      let routes:any[]=[];
+      if(profile.status==="approved"){
+        const {data,error}=await db.from("bvss_submission_routes")
+          .select("id,status,route_type,match_score,match_reasons,routed_at,first_opened_at,decided_at,decision,playlist_id,bvss_playlists(slug,canonical_name),bvss_submissions(id,artist_name,song_title,release_state,spotify_url,source_url,source_platform,artwork_url,release_date,genre,moods,comparable_artists,is_explicit,notes,private_stream_url,download_external_url,download_source,download_permission,artist_socials,submitted_at)")
+          .eq("curator_id",profile.id)
+          .in("status",["queued","opened","hold","accepted"])
+          .order("routed_at",{ascending:false}).limit(250);
+        if(error) throw error;
+        routes=data||[];
+      }
+      return new Response(JSON.stringify({profile,playlists:playlists||[],claims:claims||[],routes,facts:facts||null,entitlement:entitlement||null,usage:usage||null}),{headers:h});
+    }
+
+    if(req.method!=="POST") return new Response(JSON.stringify({error:"method_not_allowed"}),{status:405,headers:h});
+    const body=await req.json();
+    const action=clean(body.action,50);
+
+    if(action==="apply"){
+      const display_name=clean(body.display_name,100);
+      const handle=slugify(clean(body.handle,80)||display_name);
+      const contact_email=clean(body.contact_email,254).toLowerCase()||String(user.email||"").toLowerCase();
+      const bio=clean(body.bio,1200)||null;
+      const website_url=clean(body.website_url,300)||null;
+      const spotify_profile_url=clean(body.spotify_profile_url,300)||null;
+      const genres=list(body.genres,12,80);
+      const moods=list(body.moods,12,80);
+      const social_links=body.social_links&&typeof body.social_links==="object"?body.social_links:{};
+      if(!display_name||!handle||!contact_email.includes("@")) return new Response(JSON.stringify({error:"missing_required_fields"}),{status:400,headers:h});
+      const values:any={
+        user_id:user.id,handle,display_name,contact_email,bio,website_url,spotify_profile_url,
+        social_links,genres,moods,terms_version:"curator-beta-2026-09",terms_accepted_at:new Date().toISOString()
+      };
+      let result;
+      if(profile){
+        values.status=profile.status==="rejected"?"pending":profile.status;
+        const {data,error}=await db.from("bvss_curator_profiles").update(values).eq("id",profile.id).select("*").single();
+        if(error) throw error; result=data;
+      } else {
+        const {data,error}=await db.from("bvss_curator_profiles").insert(values).select("*").single();
+        if(error){ if(error.code==="23505") return new Response(JSON.stringify({error:"handle_unavailable"}),{status:409,headers:h}); throw error; }
+        result=data;
+      }
+      return new Response(JSON.stringify({ok:true,profile:result}),{status:201,headers:h});
+    }
+
+    const current=profile||await profileFor(db,user.id);
+    if(!current) return new Response(JSON.stringify({error:"application_required"}),{status:403,headers:h});
+
+    if(action==="update_profile"){
+      const patch:any={};
+      for(const [key,max] of [["display_name",100],["bio",1200],["website_url",300],["spotify_profile_url",300]] as const){
+        if(body[key]!==undefined) patch[key]=clean(body[key],max)||null;
+      }
+      if(body.genres!==undefined) patch.genres=list(body.genres,12,80);
+      if(body.moods!==undefined) patch.moods=list(body.moods,12,80);
+      if(body.social_links&&typeof body.social_links==="object") patch.social_links=body.social_links;
+      if(current.status==="approved") patch.public_profile=true;
+      const {data,error}=await db.from("bvss_curator_profiles").update(patch).eq("id",current.id).select("*").single();
+      if(error) throw error;
+      return new Response(JSON.stringify({ok:true,profile:data}),{headers:h});
+    }
+
+    if(action==="add_playlist"){
+      const [{data:entitlement},{count:registeredCount}]=await Promise.all([
+        db.from("bvss_curator_entitlements").select("max_registered_playlists").eq("curator_id",current.id).maybeSingle(),
+        db.from("bvss_playlists").select("id",{count:"exact",head:true}).eq("curator_id",current.id)
+      ]);
+      const maxPlaylists=entitlement?.max_registered_playlists||5;
+      if((registeredCount||0)>=maxPlaylists)
+        return new Response(JSON.stringify({error:"playlist_limit_reached",limit:maxPlaylists}),{status:409,headers:h});
+      const spotify_url=clean(body.spotify_url,320);
+      const spid=playlistId(spotify_url);
+      const canonical_name=clean(body.canonical_name,140);
+      const primary_genre=clean(body.primary_genre,100);
+      const description=clean(body.description,800);
+      const secondary_genres=list(body.secondary_genres,10,80);
+      const moods=list(body.moods,10,80);
+      const activities=list(body.activities,10,80);
+      const anchor_artists=list(body.anchor_artists,10,100);
+      if(!spid||!canonical_name||!primary_genre) return new Response(JSON.stringify({error:"playlist_fields_invalid"}),{status:400,headers:h});
+      const slug=(slugify(current.handle+"-"+canonical_name).slice(0,76)+"-"+spid.slice(0,5)).replace(/-+/g,"-");
+      const {data:p,error:pErr}=await db.from("bvss_playlists").insert({
+        slug,spotify_playlist_id:spid,spotify_uri:"spotify:playlist:"+spid,spotify_url:"https://open.spotify.com/playlist/"+spid,
+        canonical_name,subtitle:clean(body.subtitle,160)||primary_genre,description,
+        primary_genre,secondary_genres,moods,activities,seo_keywords:[primary_genre,...secondary_genres],
+        anchor_artists,target_track_count:Number(body.target_track_count||60),
+        public_status:"private",submission_status:"paused",update_cadence:clean(body.update_cadence,40)||"weekly",
+        middle_child_eligible:false,subflower_eligible:false,website_status:"hidden",lifecycle_state:"experimental",
+        curation_philosophy:clean(body.curation_philosophy,1200)||"Independent curator playlist participating in the BVSS FVM curator network beta.",
+        submission_criteria:clean(body.submission_criteria,1200)||"Tracks are considered independently by the curator. Placement is never guaranteed.",
+        display_order:1000,network_owner_type:"partner",curator_id:current.id,verification_status:"pending",
+        network_routing_enabled:false,source_metadata:{curator_beta:true,submitted_by:user.id}
+      }).select("id,slug,spotify_playlist_id,spotify_url,canonical_name,verification_status").single();
+      if(pErr){ if(pErr.code==="23505") return new Response(JSON.stringify({error:"playlist_already_registered"}),{status:409,headers:h}); throw pErr; }
+      const verification_code=code();
+      const {data:claim,error:cErr}=await db.from("bvss_curator_playlist_claims").insert({
+        curator_id:current.id,playlist_id:p.id,verification_code,status:"pending"
+      }).select("*").single();
+      if(cErr) throw cErr;
+      return new Response(JSON.stringify({
+        ok:true,playlist:p,claim,
+        instructions:"Temporarily add "+verification_code+" to the Spotify playlist description, then return here and request verification. BVSS FVM approval is required before the playlist can receive network submissions."
+      }),{status:201,headers:h});
+    }
+
+    if(action==="request_verification"){
+      const playlist_id=clean(body.playlist_id,80);
+      const {data,error}=await db.from("bvss_curator_playlist_claims")
+        .update({status:"pending",notes:"Curator requested verification at "+new Date().toISOString()})
+        .eq("playlist_id",playlist_id).eq("curator_id",current.id)
+        .select("id,status,verification_code,submitted_at").maybeSingle();
+      if(error) throw error;
+      if(!data) return new Response(JSON.stringify({error:"claim_not_found"}),{status:404,headers:h});
+      return new Response(JSON.stringify({ok:true,claim:data,message:"Verification request is queued for BVSS FVM review."}),{headers:h});
+    }
+
+    if(action==="set_playlist_status"){
+      if(current.status!=="approved") return new Response(JSON.stringify({error:"curator_not_approved"}),{status:403,headers:h});
+      const playlist_id=clean(body.playlist_id,80);
+      const submission_status=clean(body.submission_status,20);
+      if(!["open","paused"].includes(submission_status)) return new Response(JSON.stringify({error:"invalid_submission_status"}),{status:400,headers:h});
+      const {data:playlist,error:pErr}=await db.from("bvss_playlists")
+        .select("id,verification_status").eq("id",playlist_id).eq("curator_id",current.id).maybeSingle();
+      if(pErr) throw pErr;
+      if(!playlist) return new Response(JSON.stringify({error:"playlist_not_found"}),{status:404,headers:h});
+      if(playlist.verification_status!=="verified") return new Response(JSON.stringify({error:"playlist_not_verified"}),{status:409,headers:h});
+      const open=submission_status==="open";
+      const {data,error}=await db.from("bvss_playlists").update({
+        submission_status,network_routing_enabled:open
+      }).eq("id",playlist_id).eq("curator_id",current.id)
+        .select("id,canonical_name,submission_status,network_routing_enabled").single();
+      if(error) throw error;
+      return new Response(JSON.stringify({ok:true,playlist:data}),{headers:h});
+    }
+
+    if(action==="open_route"){
+      if(current.status!=="approved") return new Response(JSON.stringify({error:"curator_not_approved"}),{status:403,headers:h});
+      const route_id=clean(body.route_id,80);
+      const {data,error}=await db.from("bvss_submission_routes")
+        .update({status:"opened",first_opened_at:new Date().toISOString()})
+        .eq("id",route_id).eq("curator_id",current.id).eq("status","queued")
+        .select("id,status,first_opened_at").maybeSingle();
+      if(error) throw error;
+      return new Response(JSON.stringify({ok:true,route:data}),{headers:h});
+    }
+
+    if(action==="review_route"){
+      if(current.status!=="approved") return new Response(JSON.stringify({error:"curator_not_approved"}),{status:403,headers:h});
+      const route_id=clean(body.route_id,80);
+      const decision=clean(body.decision,20);
+      if(!["accept","reject","hold"].includes(decision)) return new Response(JSON.stringify({error:"invalid_decision"}),{status:400,headers:h});
+      const {data:route,error:rErr}=await db.from("bvss_submission_routes")
+        .select("id,submission_id,playlist_id,status,bvss_submissions(spotify_track_id)")
+        .eq("id",route_id).eq("curator_id",current.id).maybeSingle();
+      if(rErr) throw rErr;
+      if(!route) return new Response(JSON.stringify({error:"route_not_found"}),{status:404,headers:h});
+      const now=new Date().toISOString();
+      let placement_id=null;
+      if(decision==="accept"){
+        const sub:any=route.bvss_submissions;
+        const {data:placement,error:pErr}=await db.from("bvss_playlist_placements").insert({
+          submission_id:route.submission_id,playlist_id:route.playlist_id,spotify_track_id:sub?.spotify_track_id||null,
+          target_position:body.target_position?Number(body.target_position):null,notes:clean(body.notes,2000)||null
+        }).select("id").single();
+        if(pErr) throw pErr;
+        placement_id=placement.id;
+      }
+      const next=decision==="accept"?"accepted":decision==="reject"?"rejected":"hold";
+      const {error:uErr}=await db.from("bvss_submission_routes").update({
+        status:next,decision,decision_notes:clean(body.notes,2000)||null,decided_at:decision==="hold"?null:now,
+        first_opened_at:route.status==="queued"?now:undefined,placement_id
+      }).eq("id",route.id);
+      if(uErr) throw uErr;
+      const {error:revErr}=await db.from("bvss_submission_reviews").insert({
+        submission_id:route.submission_id,decision,playlist_id:route.playlist_id,reviewer_id:user.id,
+        reviewer_label:current.display_name,target_position:body.target_position?Number(body.target_position):null,
+        review_notes:clean(body.notes,2000)||null
+      });
+      if(revErr) throw revErr;
+      await db.from("bvss_submission_status_events").insert({
+        submission_id:route.submission_id,event_type:"curator_"+decision,
+        public_label:decision==="accept"?"Accepted by a curator":decision==="hold"?"Held for another listen":"Reviewed by a curator",
+        public_detail:decision==="accept"?"A curator accepted your track for a verified network playlist.":decision==="hold"?"A curator is keeping your track under consideration.":"A curator completed their review without placing the track."
+      });
+      return new Response(JSON.stringify({ok:true,status:next,placement_id}),{headers:h});
+    }
+
+    if(action==="report"){
+      const category=clean(body.category,80);
+      const detail=clean(body.detail,3000);
+      if(!category||!detail) return new Response(JSON.stringify({error:"report_fields_required"}),{status:400,headers:h});
+      const {data,error}=await db.from("bvss_network_reports").insert({
+        reporter_user_id:user.id,curator_id:current.id,
+        playlist_id:clean(body.playlist_id,80)||null,submission_id:clean(body.submission_id,80)||null,
+        category,detail
+      }).select("id,status,created_at").single();
+      if(error) throw error;
+      return new Response(JSON.stringify({ok:true,report:data}),{status:201,headers:h});
+    }
+
+    return new Response(JSON.stringify({error:"unknown_action"}),{status:400,headers:h});
+  }catch(e){
+    return new Response(JSON.stringify({error:"curator_request_failed",detail:e instanceof Error?e.message:String(e)}),{status:500,headers:h});
+  }
+});
