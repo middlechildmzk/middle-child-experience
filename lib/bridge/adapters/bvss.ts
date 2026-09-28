@@ -56,6 +56,25 @@ import type {
   PublicCurator,
   PublicCuratorPlaylist,
 } from '../../curator-network';
+import { parseAt, parseRowsAt } from '../validation/core';
+import {
+  bvssCuratorDetailResponseSchema,
+  bvssCuratorsResponseSchema,
+  bvssMetricSnapshotRowSchema,
+  bvssPlaylistDetailResponseSchema,
+  bvssPlaylistRecordSchema,
+  bvssPlaylistTrackSchema,
+  bvssPlaylistsResponseSchema,
+  bvssPublicCuratorPlaylistSchema,
+  bvssPublicCuratorSchema,
+  bvssSubmissionStatusResponseSchema,
+  bvssTrackLookupHitSchema,
+  bvssTrackLookupResponseSchema,
+} from '../validation/bvss';
+
+// Validated rows are loose objects (unknown native columns pass through for
+// `raw`); every field the normalizers read is checked by the schema, so the
+// casts below narrow a validated value, never an unchecked one.
 
 /* ------------------------------------------------------------------ */
 /* Errors                                                              */
@@ -134,10 +153,17 @@ export function normalizePlaylist(
 export async function fetchPlaylists(
   baseUrl: string = playlistApiBase,
 ): Promise<Normalized<Playlist>[]> {
-  const body = (await getJson(baseUrl, '/bvss-playlists')) as {
-    playlists?: PlaylistRecord[];
-  };
-  return (body.playlists ?? []).map((record) => normalizePlaylist(record));
+  const body = parseAt(
+    'bvss-playlists',
+    bvssPlaylistsResponseSchema,
+    await getJson(baseUrl, '/bvss-playlists'),
+  );
+  const records = parseRowsAt(
+    'bvss-playlists.playlists',
+    bvssPlaylistRecordSchema,
+    body.playlists ?? [],
+  ) as unknown as PlaylistRecord[];
+  return records.map((record) => normalizePlaylist(record));
 }
 
 /** GET /bvss-playlists?slug= — one playlist plus its track highlights. */
@@ -145,16 +171,27 @@ export async function fetchPlaylistDetail(
   slug: string,
   baseUrl: string = playlistApiBase,
 ): Promise<{ playlist: Normalized<Playlist>; tracks: Normalized<Track>[] }> {
-  const body = (await getJson(
-    baseUrl,
-    `/bvss-playlists?slug=${encodeURIComponent(slug)}`,
-  )) as { playlist?: PlaylistRecord; highlights?: PlaylistTrack[] };
-  if (!body.playlist) {
+  const body = parseAt(
+    'bvss-playlists?slug=',
+    bvssPlaylistDetailResponseSchema,
+    await getJson(baseUrl, `/bvss-playlists?slug=${encodeURIComponent(slug)}`),
+  );
+  if (body.playlist === undefined || body.playlist === null) {
     throw new BvssAdapterError('/bvss-playlists', `unknown slug: ${slug}`, 404);
   }
+  const playlist = parseAt(
+    'bvss-playlists?slug=.playlist',
+    bvssPlaylistRecordSchema,
+    body.playlist,
+  ) as unknown as PlaylistRecord;
+  const highlights = parseRowsAt(
+    'bvss-playlists?slug=.highlights',
+    bvssPlaylistTrackSchema,
+    body.highlights ?? [],
+  ) as unknown as PlaylistTrack[];
   return {
-    playlist: normalizePlaylist(body.playlist),
-    tracks: (body.highlights ?? []).map((track) =>
+    playlist: normalizePlaylist(playlist),
+    tracks: highlights.map((track) =>
       normalize<Track>(
         {
           // Contract-level assembly: no canonical track table exists
@@ -225,10 +262,17 @@ export function normalizeCurator(
 export async function fetchPublicCurators(
   baseUrl: string = playlistApiBase,
 ): Promise<Normalized<Curator>[]> {
-  const body = (await getJson(baseUrl, '/bvss-curators-public')) as {
-    curators?: PublicCurator[];
-  };
-  return (body.curators ?? []).map(normalizeCurator);
+  const body = parseAt(
+    'bvss-curators-public',
+    bvssCuratorsResponseSchema,
+    await getJson(baseUrl, '/bvss-curators-public'),
+  );
+  const curators = parseRowsAt(
+    'bvss-curators-public.curators',
+    bvssPublicCuratorSchema,
+    body.curators ?? [],
+  ) as unknown as PublicCurator[];
+  return curators.map(normalizeCurator);
 }
 
 /** Normalize a curator's playlist from the public directory shape —
@@ -267,20 +311,31 @@ export async function fetchPublicCurator(
   handle: string,
   baseUrl: string = playlistApiBase,
 ): Promise<{ curator: Normalized<Curator>; playlists: Normalized<Playlist>[] }> {
-  const body = (await getJson(
-    baseUrl,
-    `/bvss-curators-public?handle=${encodeURIComponent(handle)}`,
-  )) as { curator?: PublicCurator; playlists?: PublicCuratorPlaylist[] };
-  if (!body.curator) {
+  const body = parseAt(
+    'bvss-curators-public?handle=',
+    bvssCuratorDetailResponseSchema,
+    await getJson(baseUrl, `/bvss-curators-public?handle=${encodeURIComponent(handle)}`),
+  );
+  if (body.curator === undefined || body.curator === null) {
     throw new BvssAdapterError(
       '/bvss-curators-public',
       `unknown handle: ${handle}`,
       404,
     );
   }
+  const curator = parseAt(
+    'bvss-curators-public?handle=.curator',
+    bvssPublicCuratorSchema,
+    body.curator,
+  ) as unknown as PublicCurator;
+  const playlists = parseRowsAt(
+    'bvss-curators-public?handle=.playlists',
+    bvssPublicCuratorPlaylistSchema,
+    body.playlists ?? [],
+  ) as unknown as PublicCuratorPlaylist[];
   return {
-    curator: normalizeCurator(body.curator),
-    playlists: (body.playlists ?? []).map(normalizePublicCuratorPlaylist),
+    curator: normalizeCurator(curator),
+    playlists: playlists.map(normalizePublicCuratorPlaylist),
   };
 }
 
@@ -308,11 +363,16 @@ export async function fetchTrackLookup(
   query: string,
   baseUrl: string = playlistApiBase,
 ): Promise<Normalized<Track>[]> {
-  const body = (await getJson(
-    baseUrl,
-    `/bvss-track-lookup?q=${encodeURIComponent(query)}`,
-  )) as { tracks?: TrackLookupHit[]; results?: TrackLookupHit[] };
-  const hits = body.tracks ?? body.results ?? [];
+  const body = parseAt(
+    'bvss-track-lookup',
+    bvssTrackLookupResponseSchema,
+    await getJson(baseUrl, `/bvss-track-lookup?q=${encodeURIComponent(query)}`),
+  );
+  const hits = parseRowsAt(
+    'bvss-track-lookup.hits',
+    bvssTrackLookupHitSchema,
+    body.tracks ?? body.results ?? [],
+  ) as TrackLookupHit[];
   return hits
     .filter((hit) => hit.spotify_track_id ?? hit.title ?? hit.track_name)
     .map((hit) =>
@@ -350,9 +410,10 @@ export async function fetchSubmissionStatus(
   token: string,
   baseUrl: string = playlistApiBase,
 ): Promise<Normalized<unknown>> {
-  const payload = await getJson(
-    baseUrl,
-    `/bvss-submission-status?token=${encodeURIComponent(token)}`,
+  const payload = parseAt(
+    'bvss-submission-status',
+    bvssSubmissionStatusResponseSchema,
+    await getJson(baseUrl, `/bvss-submission-status?token=${encodeURIComponent(token)}`),
   );
   return normalize<unknown>(
     payload,
@@ -441,6 +502,18 @@ export interface BvssMetricSnapshotRow {
   source: string;
   source_ref?: string | null;
   observed_at: string;
+}
+
+/**
+ * Validate server-side snapshot rows at the boundary before normalizing.
+ * Any invalid row fails the batch — no silent drops (metric integrity).
+ */
+export function parseMetricSnapshotRows(rows: unknown[]): BvssMetricSnapshotRow[] {
+  return parseRowsAt(
+    'bvss_playlist_metric_snapshots',
+    bvssMetricSnapshotRowSchema,
+    rows,
+  ) as BvssMetricSnapshotRow[];
 }
 
 /** One snapshot row → one Metric per populated measure. */

@@ -1,0 +1,40 @@
+name: Bridge read-only guard
+
+# Promotion Intelligence Bridge — Tranche 2.
+# Blocks any PR that introduces a write path (non-GET method, request body,
+# supabase-js client, PostgREST mutation, RPC, write-capable edge function,
+# or network call outside the approved GET-only readers) under lib/bridge/.
+
+on:
+  pull_request:
+    paths:
+      - 'lib/bridge/**'
+      - 'lib/bridge-contract/**'
+      - 'lib/playlist-os.ts'
+      - 'lib/curator-network.ts'
+      - 'scripts/check-bridge-readonly.mjs'
+      - 'tests/bridge/**'
+      - 'package.json'
+      - '.github/workflows/bridge-guard.yml'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Read-only guard (no write paths in the bridge)
+        run: npm run bridge:check-readonly
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Smoke tests (live read shapes + guard self-test)
+        run: npm run bridge:smoke

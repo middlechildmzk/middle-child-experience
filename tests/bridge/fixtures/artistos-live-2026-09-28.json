@@ -1,0 +1,25 @@
+{
+  "_provenance": "Read-only SELECT against artistos-core (myrtdfyjoxvtubusrrmf) on 2026-09-28 via the Supabase connector, using exactly the adapter's column lists. PII columns (contact_*, owner_*) were never selected. Row counts at capture: artists 2, releases 2, campaigns 1, campaign_targets 0, campaign_submissions 0, playlist_placements 57, evidence_records 27, outcomes 19.",
+  "artists": [
+    {"id":"9857b77c-f702-4e1e-9eb2-88dd9a543ee8","workspace_id":"7fe2a999-41d0-4ba7-af23-98f1e58a5982","name":"Middle Child","aliases":["SUBFLOWER"],"genre_tags":["melodic bass","future bass","emotional electronic","cinematic"],"spotify_url":null,"created_at":"2026-07-11T23:30:09.513796+00:00"},
+    {"id":"d9fe23d9-7f33-4a71-b5e2-0ca77af5ba88","workspace_id":"7fe2a999-41d0-4ba7-af23-98f1e58a5982","name":"SUBFLOWER","aliases":[],"genre_tags":["soft psychedelic melodic bass","deep dubstep","wave"],"spotify_url":null,"created_at":"2026-07-11T23:30:09.513796+00:00"}
+  ],
+  "releases": [
+    {"id":"2519333f-01b8-4c79-b81a-d421fd78c8ca","artist_id":"9857b77c-f702-4e1e-9eb2-88dd9a543ee8","title":"Mercy","featured_artist":null,"release_date":null,"distributor":"DistroKid","label":"BVSS FVM","isrc":null,"upc":null,"status":"catalog","spotify_url":null,"created_at":"2026-07-11T23:30:09.513796+00:00","workspace_id":"7fe2a999-41d0-4ba7-af23-98f1e58a5982"},
+    {"id":"47210a7f-d595-4ec4-8d7b-639e0049dd16","artist_id":"9857b77c-f702-4e1e-9eb2-88dd9a543ee8","title":"Never Alone","featured_artist":"lowly sunday","release_date":"2026-07-31","distributor":"DistroKid","label":"BVSS FVM","isrc":"QT6EX2615333","upc":"882877618355","status":"released","spotify_url":"https://open.spotify.com/track/4CzteKxZWpQw81hZPbUXj1","created_at":"2026-07-11T23:30:09.513796+00:00","workspace_id":"7fe2a999-41d0-4ba7-af23-98f1e58a5982"}
+  ],
+  "campaigns": [
+    {"id":"7d4e5f6e-b65d-45c0-a170-ec4789c837bb","release_id":"47210a7f-d595-4ec4-8d7b-639e0049dd16","name":"Never Alone Release Campaign","status":"active","start_date":null,"end_date":"2026-08-31","goals":"Maximize legitimate streams, saves, follows, playlist adds, creator usage, press, and sync interest while protecting the master.","created_at":"2026-07-11T23:30:09.513796+00:00","workspace_id":"7fe2a999-41d0-4ba7-af23-98f1e58a5982"}
+  ],
+  "playlist_placements": [
+    {"id":"58aa8402-d338-415e-b2a7-23535a0a21a3","release_id":"47210a7f-d595-4ec4-8d7b-639e0049dd16","platform_id":"cf123215-b24a-47cd-8eef-5943d99d126d","playlist_name":"Goosebumps Givers: Epic EDM Drops & Festival Anthems","playlist_url":null,"external_playlist_id":"628a2a8f-5b66-442f-8eaf-3d1ec0bb9ad1","followers":null,"track_position":68,"added_at":"2026-08-07T05:00:02+00:00","removed_at":null,"source_type":"licensed","confidence":1,"risk_state":"unknown","verification_state":"verified","last_verified_at":"2026-08-07T14:42:45.051+00:00","created_at":"2026-08-07T14:42:45.166315+00:00","updated_at":"2026-08-07T14:42:45.051+00:00"},
+    {"id":"43ef66b4-3689-4906-a9c5-215b4c73f5f8","release_id":"47210a7f-d595-4ec4-8d7b-639e0049dd16","platform_id":"cf123215-b24a-47cd-8eef-5943d99d126d","playlist_name":"USA Top 100: Apple Music","playlist_url":null,"external_playlist_id":"e6724d27-8180-4b40-8099-94b19271c6c1","followers":null,"track_position":118,"added_at":"2026-08-07T05:00:02+00:00","removed_at":null,"source_type":"licensed","confidence":1,"risk_state":"unknown","verification_state":"verified","last_verified_at":"2026-08-07T14:42:45.051+00:00","created_at":"2026-08-07T14:42:45.217231+00:00","updated_at":"2026-08-07T14:42:45.051+00:00"}
+  ],
+  "evidence_records": [
+    {"id":"e440f3bb-7055-489f-b20a-1a6379d3b4f4","artist_id":"9857b77c-f702-4e1e-9eb2-88dd9a543ee8","evidence_type":"public_metric_observation","source_type":"url","source_uri":"https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN","confidence":"supported","confidence_score":0.95,"observed_at":"2026-07-30T17:58:11.611141+00:00","captured_at":"2026-07-30T17:58:11.611141+00:00","content_hash":null,"supersedes_id":null,"revoked_at":null,"release_id":"2519333f-01b8-4c79-b81a-d421fd78c8ca","campaign_id":null,"verification_level":"L2","verification_status":"verified","contradiction_state":"clear"},
+    {"id":"e3083a3e-7ace-495c-8d02-5dbc228eb111","artist_id":"9857b77c-f702-4e1e-9eb2-88dd9a543ee8","evidence_type":"public_profile_identity","source_type":"url","source_uri":"https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN","confidence":"verified","confidence_score":0.99,"observed_at":"2026-07-30T17:58:11.611141+00:00","captured_at":"2026-07-30T17:58:11.611141+00:00","content_hash":null,"supersedes_id":null,"revoked_at":null,"release_id":null,"campaign_id":null,"verification_level":"L2","verification_status":"verified","contradiction_state":"clear"}
+  ],
+  "outcomes": [
+    {"id":"c0a78608-83b2-4d81-a205-b846f2d99280","campaign_id":null,"release_id":null,"organization_id":"5659795e-55b9-46c7-9f41-3e5cc2e5ce83","property_id":null,"outcome_type":"press_mention","outcome_date":null,"url":"https://www.edmsauce.com/2017/07/10/middle-child-the-recipe","confidence":"confirmed","created_at":"2026-07-11T23:35:58.750333+00:00"}
+  ]
+}
