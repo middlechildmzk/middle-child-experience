@@ -126,6 +126,17 @@ export interface PromotionTarget {
   contact_method?: string;
   submission_rules?: string;
   fit_notes?: string;
+  /**
+   * Source-native trust/risk facts. These describe the target, not the
+   * bridge source itself, so trust_score must never be copied into
+   * Provenance.confidence.
+   */
+  trust_score?: number;
+  risk_level?: string;
+  risk_notes?: string;
+  verification_notes?: string;
+  last_reviewed_at?: string;
+  last_checked_at?: string;
   /** Native target status preserved verbatim. */
   status: string;
   /** → Playlist.id when target_source is bvss_*. */

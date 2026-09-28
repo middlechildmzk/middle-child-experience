@@ -44,8 +44,10 @@ in `bridge-contract` — BVSS / CuratorFit / ArtistOS vocabularies are
 disjoint. ArtistOS values verified against the live migration DDL
 (2026-09-28). Unknown stays unknown.
 
-**Open items:** per-route rate-limit enforcement on the public endpoints
-is PENDING-SOURCE (function source not exposed by the Management API).
+**Production source:** all 12 BVSS Edge Functions are recovered under
+`supabase/functions/`, with deployed version/hash parity tracked in
+`supabase/functions/DEPLOYED_MANIFEST.json`. Authentication and rate-limit
+behavior can therefore be reviewed from source instead of inferred from probes.
 
 ---
 
@@ -107,6 +109,19 @@ Fetchers require `CURATORFIT_SUPABASE_URL` + `CURATORFIT_READ_KEY` and
 refuse artistos-core outright (its `campaigns` / `campaign_targets` are
 ArtistOS tables). Normalizers are usable today on DDL-shaped rows.
 
-`trust_score` / `risk_level` / `risk_notes` have no contract field yet —
-preserved in `raw` and summarized in the provenance note. `trust_score` is
-not source confidence and is never mapped to `provenance.confidence`.
+`trust_score`, `risk_level`, `risk_notes`, verification notes, and review/check
+timestamps project into optional PromotionTarget trust/risk fields while remaining
+preserved in `raw`. `trust_score` is a target fact — never source confidence and
+never mapped to `provenance.confidence`.
+
+
+### BVSS status namespaces
+
+BVSS has two distinct production lifecycles and they must not bleed together:
+
+- `bvss` = `bvss_submissions.status`: pending, in_review, hold, accepted,
+  rejected, withdrawn.
+- `bvss_route` = `bvss_submission_routes.status`: queued, opened, hold,
+  accepted, rejected, withdrawn.
+
+Both were verified from recovered production migrations/functions on 2026-09-28.

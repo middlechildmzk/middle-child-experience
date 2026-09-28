@@ -401,9 +401,9 @@ export async function fetchTrackLookup(
 /* Submission status — via bvss-submission-status (tokenized GET).     */
 /* The token is artist-scoped; the response schema is unconfirmed, so  */
 /* tranche one returns the payload verbatim with provenance rather     */
-/* than forcing it into SubmissionPitch. BVSS submission mapping      */
-/* (repo-inferred statuses waiting|accepted|held|rejected) is applied */
-/* by mapBvssSubmissionStatus once rows exist.                         */
+/* than forcing it into SubmissionPitch. Native submission and route   */
+/* lifecycles are separately namespaced and verified from recovered    */
+/* production source/migrations.                                       */
 /* ------------------------------------------------------------------ */
 
 export async function fetchSubmissionStatus(
@@ -429,9 +429,8 @@ export async function fetchSubmissionStatus(
 }
 
 /**
- * Map a BVSS-native submission status to the normalized lifecycle.
- * BVSS statuses are repo-inferred (waiting|accepted|held|rejected) and
- * unconfirmed live 2026-09-28 — returns undefined for anything else.
+ * Map `bvss_submissions.status` to the normalized lifecycle.
+ * Verified native values: pending|in_review|hold|accepted|rejected|withdrawn.
  */
 export function mapBvssSubmissionStatus(
   native: string,
@@ -440,8 +439,18 @@ export function mapBvssSubmissionStatus(
 }
 
 /**
+ * Map `bvss_submission_routes.status` to the normalized lifecycle.
+ * Verified native values: queued|opened|hold|accepted|rejected|withdrawn.
+ */
+export function mapBvssRouteStatus(
+  native: string,
+): NormalizedStatus | undefined {
+  return mapNativeStatus(native, 'bvss_route');
+}
+
+/**
  * Build a SubmissionPitch from a BVSS-native submission row once rows
- * exist (0 rows live 2026-09-28). Unmapped statuses surface as `unknown`
+ * exist. Unmapped statuses surface as `unknown`
  * with the native value preserved — never guessed.
  */
 export function normalizeBvssSubmission(input: {

@@ -150,13 +150,19 @@ export function normalizeCuratorfitTarget(
       contact_method: undef(row.contact_method),
       submission_rules: undef(row.submission_rules),
       fit_notes: undef(row.fit_notes),
+      trust_score: row.trust_score,
+      risk_level: row.risk_level,
+      risk_notes: undef(row.risk_notes),
+      verification_notes: undef(row.verification_notes),
+      last_reviewed_at: undef(row.last_reviewed_at),
+      last_checked_at: undef(row.last_checked_at),
       // Native target_status verbatim (seed, claimed, verified, …).
       status: row.status,
       external_ref: row.slug,
     },
-    // trust_score / risk_level / risk_notes have no contract field yet —
-    // preserved in raw (contract gap, see PR). trust_score is NOT source
-    // confidence and is deliberately not mapped to provenance.confidence.
+    // Trust/risk are target facts in the contract. They remain separate
+    // from provenance confidence, which describes confidence in the source
+    // observation itself.
     provenanceFor('promotion_targets', row.id, row.updated_at, `risk_level=${row.risk_level}; trust_score=${row.trust_score}`),
     asRaw(row),
   );
