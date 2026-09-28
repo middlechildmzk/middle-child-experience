@@ -1,7 +1,7 @@
 {
   "project_ref": "myrtdfyjoxvtubusrrmf",
   "recovered_at": "2026-09-28",
-  "policy": "Source-parity snapshot only. These files were recovered from deployed Supabase Edge Function source. This branch does not deploy or mutate production.",
+  "policy": "Source-parity manifest for deployed BVSS Edge Functions. Update after every reviewed production deploy; compare version/hash before subsequent deploys.",
   "functions": [
     {
       "slug": "bvss-playlists",
@@ -21,8 +21,8 @@
     },
     {
       "slug": "bvss-event",
-      "version": 2,
-      "ezbr_sha256": "08c9f51ab7ee6f91e4fab0b71fd460c08173fee36fffaefc770885e9d9fc8c37",
+      "version": 3,
+      "ezbr_sha256": "6714eae56f0abf82a6f7191b2eacce400212af877ef8752be6377c31b7a7b2af",
       "verify_jwt": false,
       "access": "public POST analytics event",
       "writes": true
