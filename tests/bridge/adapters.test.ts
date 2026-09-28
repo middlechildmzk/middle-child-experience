@@ -141,6 +141,7 @@ test('ArtistOS outcomes are NOT forced into contract Outcome (contract gap)', ()
 });
 
 test('ArtistOS campaign_targets and campaign_submissions use separate status namespaces', () => {
+  // 0 live rows: shapes from live columns + CHECK constraints (2026-09-28).
   const ct = parseAt('t', artistosCampaignTargetRowSchema, {
     id: 'ct1', campaign_id: 'c1', target_kind: 'property', target_id: 'p1', status: 'queued',
     added_at: '2026-09-28T00:00:00Z', updated_at: '2026-09-28T00:00:00Z', notes: null, workspace_id: null,
@@ -151,6 +152,7 @@ test('ArtistOS campaign_targets and campaign_submissions use separate status nam
 
   const replied = normalizeArtistosCampaignTarget({ ...ct, status: 'replied' });
   assert.equal(replied.data.status_normalized, 'responded');
+  // `replied` is not a campaign_submissions status — namespaces must not bleed.
   assert.equal(mapNativeStatus('replied', 'artistos'), undefined);
   assert.equal(mapNativeStatus('in_review', 'artistos_campaign_target'), undefined);
 
@@ -185,6 +187,7 @@ test('ArtistOS fetch: GET only, explicit columns, validated, key required', asyn
   assert.match(seen[0].url, /release_id=eq\.47210a7f/);
   assert.doesNotMatch(seen[0].url, /contact_email|select=\*/, 'PII columns never selected');
 
+  // A drifted row fails the read loudly — no silent drop.
   mockFetch(() => [A.playlist_placements[0], { ...A.playlist_placements[1], confidence: 'high' }]);
   await assert.rejects(
     fetchArtistosPlacements('x', { url: 'https://example.supabase.co', key: 'k' }),
@@ -194,6 +197,7 @@ test('ArtistOS fetch: GET only, explicit columns, validated, key required', asyn
 
 /* =========================== CuratorFit ============================ */
 
+// DDL-shaped rows (schema.sql @ c675dd3) — CuratorFit has no live DB.
 const cfTarget = {
   id: 't1', curator_id: null, type: 'spotify_playlist', external_id: null,
   url: 'https://open.spotify.com/playlist/example', slug: 'example-melodic-bass', name: 'Example Melodic Bass',
