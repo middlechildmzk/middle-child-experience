@@ -33,6 +33,18 @@ Deno.serve(async (req)=>{
     const {data,error}=await q;
     if(error) throw error;
     if(slug && (!data || !data.length)) return new Response(JSON.stringify({error:"not_found"}),{status:404,headers:h});
+    // Attach follower source health so pages can say "Measuring" or "Last
+    // measured" instead of presenting stale or unconfirmed values as current.
+    // Tolerates the provenance migration not being applied yet.
+    if(data && data.length){
+      const {data:health,error:healthError}=await db.from("bvss_playlist_source_status")
+        .select("playlist_id,last_request_status,last_provider_measured_at,last_value,previous_provider_measured_at,previous_value,consecutive_unchanged_measurements,freshness_state,confidence,value_state,last_attempt_at")
+        .eq("provider","soundcharts").eq("metric","followers").in("playlist_id",data.map((p:any)=>p.id));
+      if(!healthError){
+        const byPlaylist=new Map((health||[]).map((row:any)=>{const {playlist_id,...rest}=row;return [playlist_id,rest];}));
+        for(const p of data as any[]) p.follower_health=byPlaylist.get(p.id)||null;
+      }
+    }
     if(slug){
       const playlist=data![0];
       const {data:tracks}=await db.from("bvss_playlist_tracks").select("spotify_track_id,track_name,artists,spotify_url,artwork_url,position,added_at")

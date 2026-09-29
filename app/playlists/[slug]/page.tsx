@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPlaylist, getPlaylists, relatedPlaylists } from '../../../lib/playlist-os';
+import { describeFollowers } from '../../../lib/source-health';
 import { siteUrl } from '../../../lib/site-url';
 import PlaylistAnalytics from '../PlaylistAnalytics';
 import PlaylistShareButton from '../PlaylistShareButton';
@@ -140,7 +141,8 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
           <div className="playlist-live-proof" aria-label="Current playlist facts">
             <div>
               <span>Followers</span>
-              <strong>{playlist.current_follower_count != null ? playlist.current_follower_count.toLocaleString() : 'Measuring'}</strong>
+              <strong data-follower-state={describeFollowers(playlist).state}>{describeFollowers(playlist).value}</strong>
+              <small className="follower-provenance">{describeFollowers(playlist).detail}</small>
             </div>
             <div>
               <span>Tracks</span>

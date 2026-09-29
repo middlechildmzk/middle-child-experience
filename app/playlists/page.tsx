@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getPlaylists } from '../../lib/playlist-os';
+import { networkFollowerTotals } from '../../lib/source-health';
 import { siteUrl } from '../../lib/site-url';
 import PlaylistBrowser from './PlaylistBrowser';
 
@@ -28,11 +29,7 @@ export default async function PlaylistsPage() {
   const playlists = await getPlaylists();
   const active = playlists.filter((playlist) => playlist.lifecycle_state === 'active');
   const network = active.length ? active : playlists;
-  const measured = network.filter((playlist) => playlist.current_follower_count != null);
-  const followerTotal = measured.reduce(
-    (sum, playlist) => sum + Number(playlist.current_follower_count || 0),
-    0,
-  );
+  const followerTotals = networkFollowerTotals(network);
   const openCount = network.filter((playlist) => playlist.submission_status === 'open').length;
 
   const collectionSchema = {
@@ -75,8 +72,8 @@ export default async function PlaylistsPage() {
         <div className="shell proof-grid">
           <div><span>Network</span><strong>{network.length} active playlists</strong></div>
           <div>
-            <span>Measured audience</span>
-            <strong>{followerTotal ? formatNumber(followerTotal) + ' followers' : measured.length + ' playlists connected'}</strong>
+            <span>Measured audience{followerTotals.counted ? ' · ' + followerTotals.counted + ' of ' + followerTotals.monitored + ' playlists' : ''}</span>
+            <strong>{followerTotals.counted ? formatNumber(followerTotals.total) + ' followers' : 'Measuring'}</strong>
           </div>
           <div><span>Submissions</span><strong>{openCount || 'Multiple'} lanes open for review</strong></div>
         </div>
