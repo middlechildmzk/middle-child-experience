@@ -31,6 +31,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # Cross-repo handshake: every BVSS migration file must already be declared
+      # (applied or pending, same canonical hash) in the authority manifest on
+      # middlechildmzk/artistos main. Merge the ArtistOS manifest PR first.
+      - name: Checkout migration authority (middlechildmzk/artistos main)
+        uses: actions/checkout@v4
+        with:
+          repository: middlechildmzk/artistos
+          ref: main
+          path: .ci/artistos
+      - name: BVSS migrations are declared in the authority manifest
+        working-directory: .ci/artistos
+        run: node scripts/check-cross-repo-migration-manifest.mjs --repo middle-child-experience=${{ github.workspace }}
       - run: npm install --no-audit --no-fund
       - name: Database privileges and provenance (PGlite replay)
         run: npm run test:db
