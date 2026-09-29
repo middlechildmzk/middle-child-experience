@@ -48,6 +48,7 @@ import type {
   Track,
 } from '../../bridge-contract';
 import { playlistApiBase } from '../../playlist-os';
+import { assessPlaylistFollowers } from '../../source-health';
 import type {
   PlaylistRecord,
   PlaylistTrack,
@@ -639,9 +640,16 @@ export function promotionTargetForPlaylist(
     ...(data.primary_genre ? [data.primary_genre] : []),
     ...(data.secondary_genres ?? []),
   ];
+  // Only a displayable measurement becomes an audience figure: an unconfirmed
+  // zero or a value without a provider timestamp stays missing (§5 "missing
+  // stays missing"), never "0 followers".
+  const followers = assessPlaylistFollowers({
+    current_follower_count: data.follower_count ?? null,
+    follower_count_observed_at: data.follower_count_observed_at ?? null,
+  }).displayValue;
   const audience_label =
-    data.follower_count !== undefined
-      ? `${data.follower_count.toLocaleString('en-US')} followers`
+    followers !== null
+      ? `${followers.toLocaleString('en-US')} followers`
       : undefined;
   const raw = playlist.raw ?? {};
   const submission_criteria =
@@ -661,7 +669,7 @@ export function promotionTargetForPlaylist(
       genres,
       moods: data.moods,
       audience_label,
-      audience_count: data.follower_count,
+      audience_count: followers ?? undefined,
       submission_rules: submission_criteria,
       status: data.submission_status ?? 'unknown',
       playlist_id: data.id,
