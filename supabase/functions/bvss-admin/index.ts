@@ -305,9 +305,12 @@ Deno.serve(async(req)=>{
 
       const today=new Date().toISOString().slice(0,10);
       const observed_at=new Date().toISOString();
+      // A person reading the Spotify app is a measurement taken now: the
+      // measurement and retrieval times are the same moment by definition.
       const snapshot:any={
         playlist_id:p.id,metric_date:today,followers,track_count,source:"manual_admin",
         source_ref:a.user.id,observed_at,
+        provider_measured_at:observed_at,retrieved_at:observed_at,measurement_basis:"manual",
         raw_data:{entered_by:a.user.email||a.user.id,method:"playlist_os_manual_baseline"}
       };
       const {error:sErr}=await admin.from("bvss_playlist_metric_snapshots")
