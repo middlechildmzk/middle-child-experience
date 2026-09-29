@@ -1,0 +1,40 @@
+name: Foundation tests (migrations, privileges, source health)
+
+# T0/T1: replays BVSS migrations into in-process PostgreSQL (PGlite) and runs
+# exploit regressions, provenance guards and Soundcharts source-health tests.
+# Never connects to a shared database.
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'tests/db/**'
+      - 'tests/source-health/**'
+      - 'tests/support/**'
+      - 'lib/source-health.ts'
+      - 'app/**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - '.github/workflows/foundation-tests.yml'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Database privileges and provenance (PGlite replay)
+        run: npm run test:db
+      - name: Source health and Soundcharts sync
+        run: npm run test:source-health
+      - name: Typecheck
+        run: npm run typecheck
