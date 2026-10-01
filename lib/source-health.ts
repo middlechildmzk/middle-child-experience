@@ -126,3 +126,23 @@ export function networkFollowerTotals(playlists: FollowerFields[], now: Date = n
 export function followerDelta(playlist: FollowerFields, baseline: number | null | undefined, now: Date = new Date()): number | null {
   return trustworthyDelta(assessPlaylistFollowers(playlist, now).deltaEligibleValue, baseline);
 }
+
+/**
+ * Public-site variant (D2). Soundcharts public-display rights are unconfirmed,
+ * so public pages carry only freshness-derived state labels: no measurement
+ * dates and no provider history. The count itself stays at its existing
+ * public exposure. Admin surfaces keep describeFollowers (with dates).
+ */
+const PUBLIC_DETAIL: Record<ValueState, string> = {
+  measured: '',
+  unmeasured_zero: 'Follower count not confirmed yet',
+  stale: 'May be out of date',
+  anomalous: 'Recent change being verified',
+  unavailable: 'Follower data not available yet',
+};
+
+export function describeFollowersPublic(playlist: FollowerFields, now: Date = new Date()): FollowerDisplay {
+  const full = describeFollowers(playlist, now);
+  const detail = full.state === 'measured' && full.freshness === 'delayed' ? 'Update pending' : PUBLIC_DETAIL[full.state];
+  return { ...full, detail };
+}

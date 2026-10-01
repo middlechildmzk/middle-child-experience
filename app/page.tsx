@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPlaylists } from '../lib/playlist-os';
-import { assessPlaylistFollowers, describeFollowers, networkFollowerTotals } from '../lib/source-health';
+import { assessPlaylistFollowers, describeFollowersPublic, networkFollowerTotals } from '../lib/source-health';
 import { siteUrl } from '../lib/site-url';
 
 const smartLink = 'https://lnk.to/MiddlechildNeverAlone';
@@ -126,8 +126,8 @@ export default async function HomePage() {
                     <h3>{playlist.canonical_name}</h3>
                     <p>{playlist.subtitle}</p>
                     <div className="network-feature-meta">
-                      <strong title={describeFollowers(playlist, now).detail} data-follower-state={describeFollowers(playlist, now).state}>
-                        {describeFollowers(playlist, now).label}
+                      <strong title={describeFollowersPublic(playlist, now).detail || undefined} data-follower-state={describeFollowersPublic(playlist, now).state}>
+                        {describeFollowersPublic(playlist, now).label}
                       </strong>
                       <span>
                         {playlist.current_track_count != null

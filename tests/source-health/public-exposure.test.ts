@@ -42,3 +42,40 @@ test('a corroborated zero still renders as Measuring publicly (safe side)', () =
   const shown = describeFollowers({ current_follower_count: 0, follower_count_observed_at: '2026-10-01T05:00:02Z', follower_health: projected }, new Date('2026-10-01T15:00:00Z'));
   assert.equal(shown.value, 'Measuring');
 });
+
+import { describeFollowersPublic } from '../../lib/source-health';
+
+const NOW = new Date('2026-10-01T15:00:00Z');
+const DATE_PATTERN = /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}\b|\d{4}-\d{2}-\d{2}|\bmeasured\b/i;
+
+test('public follower text never contains a measurement date or "measured"', () => {
+  const cases = [
+    { current_follower_count: 2283, follower_count_observed_at: '2026-10-01T05:00:02Z' },
+    { current_follower_count: 154, follower_count_observed_at: '2026-09-30T05:00:02Z' },
+    { current_follower_count: 327, follower_count_observed_at: '2026-09-20T05:00:02Z' },
+    { current_follower_count: 0, follower_count_observed_at: '2026-09-26T19:46:51Z' },
+    { current_follower_count: null, follower_count_observed_at: null },
+  ];
+  const seen = cases.map((c) => describeFollowersPublic(c, new Date('2026-10-01T15:00:00Z')));
+  for (const d of seen) assert.doesNotMatch(`${d.value} ${d.label} ${d.detail}`, DATE_PATTERN);
+  assert.deepEqual(seen.map((d) => [d.value, d.detail]), [
+    ['2,283', ''],
+    ['154', ''],
+    ['327', 'May be out of date'],
+    ['Measuring', 'Follower count not confirmed yet'],
+    ['Measuring', 'Follower data not available yet'],
+  ]);
+});
+
+test('delayed values say "Update pending" without a date', () => {
+  const d = describeFollowersPublic({ current_follower_count: 154, follower_count_observed_at: '2026-09-28T05:00:02Z' }, NOW);
+  assert.deepEqual([d.value, d.detail, d.freshness], ['154', 'Update pending', 'delayed']);
+});
+
+test('public pages use only the public variant', () => {
+  for (const file of ['app/page.tsx', 'app/playlists/[slug]/page.tsx', 'app/playlists/PlaylistBrowser.tsx']) {
+    const src = readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8');
+    assert.doesNotMatch(src, /describeFollowers\(/, `${file} uses the dated admin variant`);
+    assert.doesNotMatch(src, /formatMeasuredDate|follower_count_observed_at/, `${file} renders a measurement time`);
+  }
+});
