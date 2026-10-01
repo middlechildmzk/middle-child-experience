@@ -28,7 +28,8 @@ export type FollowerHealth = {
   freshness_state: FreshnessState;
   confidence: Confidence;
   value_state: ValueState;
-  last_attempt_at: string;
+  /** Admin-only; null in the public projection. */
+  last_attempt_at: string | null;
 };
 
 export type FollowerFields = {

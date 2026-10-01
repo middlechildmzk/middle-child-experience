@@ -223,3 +223,31 @@ export const VALUE_STATE_LABEL: Record<ValueState, string> = {
   anomalous: 'Needs check',
   unavailable: 'Unavailable',
 };
+
+/**
+ * Public projection of a follower source-status row.
+ *
+ * Soundcharts storage/public-display rights are not confirmed, so the public
+ * API must not expose any provider-derived data beyond what it already
+ * exposed before T1 (the current count and its measurement time). Previous
+ * provider values and times, run counters, request timing and reasons stay
+ * admin-only. Without the previous reading a zero can never be corroborated
+ * publicly, so a public zero always renders as "Measuring": the safe side.
+ */
+export const PUBLIC_FOLLOWER_HEALTH_COLUMNS = 'playlist_id,last_request_status,last_provider_measured_at,last_value,freshness_state,confidence,value_state' as const;
+
+export function publicFollowerHealth(row: Record<string, unknown> | null | undefined) {
+  if (!row) return null;
+  return {
+    last_request_status: row.last_request_status as RequestStatus,
+    last_provider_measured_at: (row.last_provider_measured_at as string | null) ?? null,
+    last_value: row.last_value == null ? null : Number(row.last_value),
+    previous_provider_measured_at: null,
+    previous_value: null,
+    consecutive_unchanged_measurements: 0,
+    freshness_state: row.freshness_state as FreshnessState,
+    confidence: row.confidence as Confidence,
+    value_state: row.value_state as ValueState,
+    last_attempt_at: null,
+  };
+}
