@@ -1,5 +1,6 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { PUBLIC_FOLLOWER_HEALTH_COLUMNS, publicFollowerHealth } from "../_shared/source-health.ts";
 
 const allowed = new Set(["https://bvssfvm.com","https://www.bvssfvm.com","http://localhost:3000"]);
 function headers(origin:string|null){
@@ -33,6 +34,20 @@ Deno.serve(async (req)=>{
     const {data,error}=await q;
     if(error) throw error;
     if(slug && (!data || !data.length)) return new Response(JSON.stringify({error:"not_found"}),{status:404,headers:h});
+    // Attach follower source health so pages can say "Measuring" or "Last
+    // measured" instead of presenting stale or unconfirmed values as current.
+    // Public projection only (Soundcharts display rights unconfirmed): no
+    // provider data beyond what this endpoint already exposed. Tolerates the
+    // provenance migration not being applied yet.
+    if(data && data.length){
+      const {data:health,error:healthError}=await db.from("bvss_playlist_source_status")
+        .select(PUBLIC_FOLLOWER_HEALTH_COLUMNS)
+        .eq("provider","soundcharts").eq("metric","followers").in("playlist_id",data.map((p:any)=>p.id));
+      if(!healthError){
+        const byPlaylist=new Map((health||[]).map((row:any)=>[row.playlist_id,publicFollowerHealth(row)]));
+        for(const p of data as any[]) p.follower_health=byPlaylist.get(p.id)||null;
+      }
+    }
     if(slug){
       const playlist=data![0];
       const {data:tracks}=await db.from("bvss_playlist_tracks").select("spotify_track_id,track_name,artists,spotify_url,artwork_url,position,added_at")

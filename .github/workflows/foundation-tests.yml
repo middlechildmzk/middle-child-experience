@@ -1,0 +1,52 @@
+name: Foundation tests (migrations, privileges, source health)
+
+# T0/T1: replays BVSS migrations into in-process PostgreSQL (PGlite) and runs
+# exploit regressions, provenance guards and Soundcharts source-health tests.
+# Never connects to a shared database.
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'tests/db/**'
+      - 'tests/source-health/**'
+      - 'tests/support/**'
+      - 'lib/source-health.ts'
+      - 'app/**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - '.github/workflows/foundation-tests.yml'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Cross-repo handshake: every BVSS migration file must already be declared
+      # (applied or pending, same canonical hash) in the authority manifest on
+      # middlechildmzk/artistos main. Merge the ArtistOS manifest PR first.
+      - name: Checkout migration authority (middlechildmzk/artistos main)
+        uses: actions/checkout@v4
+        with:
+          repository: middlechildmzk/artistos
+          ref: main
+          path: .ci/artistos
+      - name: BVSS migrations are declared in the authority manifest
+        working-directory: .ci/artistos
+        run: node scripts/check-cross-repo-migration-manifest.mjs --repo middle-child-experience=${{ github.workspace }}
+      - run: npm install --no-audit --no-fund
+      - name: Database privileges and provenance (PGlite replay)
+        run: npm run test:db
+      - name: Source health and Soundcharts sync
+        run: npm run test:source-health
+      - name: Typecheck
+        run: npm run typecheck

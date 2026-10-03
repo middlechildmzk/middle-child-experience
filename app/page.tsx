@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPlaylists } from '../lib/playlist-os';
+import { assessPlaylistFollowers, describeFollowersPublic, networkFollowerTotals } from '../lib/source-health';
 import { siteUrl } from '../lib/site-url';
 
 const smartLink = 'https://lnk.to/MiddlechildNeverAlone';
@@ -30,15 +31,12 @@ export default async function HomePage() {
   const playlists = await getPlaylists().catch(() => []);
   const activePlaylists = playlists.filter((playlist) => playlist.lifecycle_state === 'active');
   const network = activePlaylists.length ? activePlaylists : playlists;
-  const measured = network.filter((playlist) => playlist.current_follower_count != null);
-  const measuredFollowers = measured.reduce(
-    (sum, playlist) => sum + Number(playlist.current_follower_count || 0),
-    0,
-  );
+  const now = new Date();
+  const followerTotals = networkFollowerTotals(network, now);
   const featured = [...network]
     .sort(
       (a, b) =>
-        Number(b.current_follower_count || 0) - Number(a.current_follower_count || 0)
+        (assessPlaylistFollowers(b, now).displayValue ?? -1) - (assessPlaylistFollowers(a, now).displayValue ?? -1)
         || a.display_order - b.display_order,
     )
     .slice(0, 4);
@@ -85,8 +83,8 @@ export default async function HomePage() {
         <div className="shell proof-grid">
           <div><span>Playlist network</span><strong>{networkCount} active playlists</strong></div>
           <div>
-            <span>Measured audience</span>
-            <strong>{measuredFollowers ? formatNumber(measuredFollowers) + ' followers' : 'Follower telemetry live'}</strong>
+            <span>Measured audience{followerTotals.counted ? ' · ' + followerTotals.counted + ' of ' + followerTotals.monitored + ' playlists' : ''}</span>
+            <strong>{followerTotals.counted ? formatNumber(followerTotals.total) + ' followers' : 'Measuring'}</strong>
           </div>
           <div><span>Curation</span><strong>Human reviewed · submissions open</strong></div>
         </div>
@@ -128,10 +126,8 @@ export default async function HomePage() {
                     <h3>{playlist.canonical_name}</h3>
                     <p>{playlist.subtitle}</p>
                     <div className="network-feature-meta">
-                      <strong>
-                        {playlist.current_follower_count != null
-                          ? formatNumber(playlist.current_follower_count) + ' followers'
-                          : 'Follower feed connecting'}
+                      <strong title={describeFollowersPublic(playlist, now).detail || undefined} data-follower-state={describeFollowersPublic(playlist, now).state}>
+                        {describeFollowersPublic(playlist, now).label}
                       </strong>
                       <span>
                         {playlist.current_track_count != null

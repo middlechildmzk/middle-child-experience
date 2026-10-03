@@ -1,4 +1,6 @@
 
+import type { FollowerHealth } from './source-health';
+
 export const playlistApiBase =
   process.env.NEXT_PUBLIC_BVSS_API_BASE ||
   'https://myrtdfyjoxvtubusrrmf.supabase.co/functions/v1';
@@ -32,6 +34,8 @@ export type PlaylistRecord = {
   current_follower_count: number | null;
   follower_count_source: string | null;
   follower_count_observed_at: string | null;
+  /** Source health for followers; absent until the provenance migration is live. */
+  follower_health?: FollowerHealth | null;
   last_editorial_update_at: string | null;
   submission_status: 'open' | 'paused' | 'closed';
   update_cadence: string;

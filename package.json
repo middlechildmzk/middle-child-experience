@@ -8,7 +8,10 @@
     "start": "next start",
     "typecheck": "tsc --noEmit -p .",
     "bridge:check-readonly": "node scripts/check-bridge-readonly.mjs",
-    "bridge:smoke": "node --import tsx --test tests/bridge/*.test.ts tests/bridge/*.test.mjs"
+    "bridge:smoke": "node --import tsx --test tests/bridge/*.test.ts tests/bridge/*.test.mjs",
+    "test:db": "node --test tests/db/*.test.mjs",
+    "test:source-health": "node --import tsx --test tests/source-health/*.test.ts",
+    "test": "npm run bridge:smoke && npm run test:db && npm run test:source-health"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
@@ -18,6 +21,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.3.14",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

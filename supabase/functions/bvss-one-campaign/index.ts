@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { assessMetric } from "../_shared/source-health.ts";
 
 const allowedOrigins = new Set([
   "https://bvssfvm.com",
@@ -87,7 +88,11 @@ function targetProjection(playlist: any, artistTags: string[]) {
   if (playlist.submission_status === "open") reasons.push("Open for submissions");
   if (playlist.network_routing_enabled) reasons.push("Routing enabled");
   if (playlist.verification_status === "verified") reasons.push("Verified BVSS playlist");
-  if (playlist.current_follower_count != null) reasons.push("Follower count measured");
+  const followers = assessMetric({
+    value: playlist.current_follower_count == null ? null : Number(playlist.current_follower_count),
+    measuredAt: playlist.follower_count_observed_at ?? null,
+  }, new Date());
+  if (followers.displayValue !== null) reasons.push(followers.freshness === "fresh" ? "Follower count measured" : "Follower count last measured " + String(playlist.follower_count_observed_at).slice(0, 10));
 
   // Deterministic, inspectable alignment score — not an ML prediction.
   let score = 0;
@@ -96,7 +101,7 @@ function targetProjection(playlist: any, artistTags: string[]) {
   if (playlist.submission_status === "open") score += 10;
   if (playlist.network_routing_enabled) score += 10;
   if (playlist.verification_status === "verified") score += 10;
-  if (playlist.current_follower_count != null) score += 5;
+  if (followers.displayValue !== null) score += 5;
 
   return {
     id: "tgt-bvss-" + playlist.id,
@@ -106,10 +111,12 @@ function targetProjection(playlist: any, artistTags: string[]) {
     channel: "playlist",
     genres: [playlist.primary_genre, ...(playlist.secondary_genres || [])].filter(Boolean),
     moods: playlist.moods || [],
-    audience_count: playlist.current_follower_count,
-    audience_label: playlist.current_follower_count == null
+    audience_count: followers.displayValue,
+    audience_label: followers.displayValue === null
       ? null
-      : Number(playlist.current_follower_count).toLocaleString("en-US") + " followers",
+      : followers.displayValue.toLocaleString("en-US") + " followers"
+        + (followers.valueState === "stale" ? " (stale)" : followers.freshness === "delayed" ? " (last measured " + String(playlist.follower_count_observed_at).slice(0, 10) + ")" : ""),
+    follower_value_state: followers.valueState,
     submission_rules: playlist.submission_criteria || null,
     status: playlist.submission_status,
     playlist_id: playlist.id,

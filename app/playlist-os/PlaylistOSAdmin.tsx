@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createClient, Session } from '@supabase/supabase-js';
 import { playlistApiBase, supabasePublishableKey, supabaseUrl } from '../../lib/playlist-os';
+import { FRESHNESS_LABEL, VALUE_STATE_LABEL, assessPlaylistFollowers, describeFollowers, summarizeCoverage } from '../../lib/source-health';
 
 const supabase = createClient(supabaseUrl, supabasePublishableKey);
 
@@ -31,6 +32,16 @@ type Dashboard = {
 
 function delta(current: number | null, historic: number | null) {
   return current == null || historic == null ? null : current - historic;
+}
+
+/** Current follower value usable for growth math: fresh or delayed, measured, not flagged. */
+function growthCurrent(playlist: any): number | null {
+  return assessPlaylistFollowers(playlist).deltaEligibleValue;
+}
+
+/** A zero or missing baseline is never trusted for growth. */
+function growthBaseline(value: number | null | undefined): number | null {
+  return value == null || Number(value) === 0 ? null : Number(value);
 }
 
 function pct(value: number | null | undefined) {
@@ -129,8 +140,8 @@ function aggregateGrowth(playlists: any[], historicKey: string) {
   let historic = 0;
   let coverage = 0;
   for (const playlist of playlists) {
-    const now = playlist.current_follower_count;
-    const then = playlist[historicKey];
+    const now = growthCurrent(playlist);
+    const then = growthBaseline(playlist[historicKey]);
     if (now == null || then == null) continue;
     current += Number(now);
     historic += Number(then);
@@ -206,25 +217,37 @@ function NetworkIntelligence({ data, playlists }: { data: Dashboard; playlists: 
   const followerProvider = data.integrations.find((integration) =>
     ['soundcharts', 'spotontrack', 'chartmetric'].includes(integration.provider) && integration.status === 'ready'
   );
+  const coverage = summarizeCoverage(playlists.map((playlist) => ({
+    assessment: assessPlaylistFollowers(playlist),
+    requestStatus: playlist.follower_health?.last_request_status,
+  })));
   const measured = Number(data.totals.followers_known_playlists || 0);
   const totalPlaylists = Number(data.totals.playlists || 0);
   const ranking7 = playlists
-    .map((playlist) => ({ playlist, value: delta(playlist.current_follower_count, playlist.followers_7d_ago) }))
+    .map((playlist) => ({ playlist, value: delta(growthCurrent(playlist), growthBaseline(playlist.followers_7d_ago)) }))
     .filter((row) => row.value != null)
     .sort((a, b) => Number(b.value) - Number(a.value));
   const ranking30 = playlists
-    .map((playlist) => ({ playlist, value: delta(playlist.current_follower_count, playlist.followers_30d_ago) }))
+    .map((playlist) => ({ playlist, value: delta(growthCurrent(playlist), growthBaseline(playlist.followers_30d_ago)) }))
     .filter((row) => row.value != null)
     .sort((a, b) => Number(b.value) - Number(a.value));
-  const milestone = nextMilestone(focusedPlaylist?.current_follower_count);
+  const milestone = nextMilestone(focusedPlaylist ? assessPlaylistFollowers(focusedPlaylist).displayValue : null);
 
   return (
     <section className="os-section os-intelligence" id="growth">
       <div className="os-section-head">
         <div><p className="eyebrow">Playlist Growth Engine</p><h2>Network growth</h2></div>
         <div className="os-source-state">
-          <span className={'status-pill ' + (followerProvider ? 'ready' : '')}>{followerProvider ? 'automatic feed ready' : 'feed pending'}</span>
-          <small>{followerProvider ? (followerProvider.provider === 'soundcharts' ? 'Soundcharts' : followerProvider.provider) + ' is the follower source of truth.' : 'Manual snapshots are live; automated follower data is not configured yet.'}</small>
+          <span className={'status-pill ' + (coverage.monitored && coverage.fresh === coverage.monitored ? 'ready' : '')}>
+            {coverage.fresh}/{coverage.monitored} fresh
+          </span>
+          <small>
+            {followerProvider
+              ? (followerProvider.provider === 'soundcharts' ? 'Soundcharts' : followerProvider.provider) + ' feed: '
+                + coverage.delayed + ' delayed, ' + coverage.stale + ' stale, ' + coverage.unmeasuredZero + ' unconfirmed zero, '
+                + coverage.requestFailures + ' request failures. A successful request is not a fresh measurement.'
+              : 'Manual snapshots are live; automated follower data is not configured yet.'}
+          </small>
         </div>
       </div>
 
@@ -262,9 +285,9 @@ function NetworkIntelligence({ data, playlists }: { data: Dashboard; playlists: 
         <HistoryChart points={series} label={focusedPlaylist ? focusedPlaylist.canonical_name : 'BVSS FVM network followers'} />
         {focusedPlaylist && (
           <div className="os-playlist-detail-strip">
-            <div><span>Followers</span><strong>{focusedPlaylist.current_follower_count?.toLocaleString() ?? '—'}</strong></div>
-            <div><span>30d</span><strong>{formatDelta(delta(focusedPlaylist.current_follower_count, focusedPlaylist.followers_30d_ago))}</strong></div>
-            <div><span>30d growth</span><strong>{pct(growthPercent(focusedPlaylist.current_follower_count, focusedPlaylist.followers_30d_ago))}</strong></div>
+            <div><span>Followers</span><strong data-follower-state={describeFollowers(focusedPlaylist).state}>{describeFollowers(focusedPlaylist).value}</strong><small>{describeFollowers(focusedPlaylist).detail}</small></div>
+            <div><span>30d</span><strong>{formatDelta(delta(growthCurrent(focusedPlaylist), growthBaseline(focusedPlaylist.followers_30d_ago)))}</strong></div>
+            <div><span>30d growth</span><strong>{pct(growthPercent(growthCurrent(focusedPlaylist), growthBaseline(focusedPlaylist.followers_30d_ago)))}</strong></div>
             <div><span>Tracks</span><strong>{focusedPlaylist.current_track_count ?? '—'}</strong></div>
             <div>
               <span>Next milestone</span>
@@ -477,7 +500,7 @@ function QuickUpdate({
       </div>
       {selected && (
         <p className="muted">
-          Current stored values: {selected.current_follower_count ?? 'no follower baseline'} followers · {selected.current_track_count ?? 'no track baseline'} tracks.
+          Current stored values: {selected.current_follower_count ?? 'no follower baseline'} followers ({describeFollowers(selected).detail}) · {selected.current_track_count ?? 'no track baseline'} tracks.
         </p>
       )}
       {status && <p className="muted" role="status">{status}</p>}
@@ -580,7 +603,8 @@ export default function PlaylistOSAdmin() {
         <Metric
           label="Measured followers"
           value={totals.followers_known_playlists ? totals.followers : null}
-          note={(totals.followers_known_playlists || 0) + ' / ' + (totals.playlists || 0) + ' playlists connected'}
+          note={(totals.followers_known_playlists || 0) + ' / ' + (totals.playlists || 0) + ' playlists with current measurements'
+            + (totals.followers_unconfirmed_playlists ? ' · ' + totals.followers_unconfirmed_playlists + ' unconfirmed or stale' : '')}
         />
         <Metric label="Waiting submissions" value={data.queue.length} />
         <Metric label="Active placements" value={totals.active_placements || 0} note={(totals.own_artist_placements || 0) + ' Middle Child / SUBFLOWER tracks'} />
@@ -625,15 +649,23 @@ export default function PlaylistOSAdmin() {
           <table className="os-table">
             <thead><tr><th>Playlist</th><th>Followers</th><th>Trend</th><th>1d</th><th>7d</th><th>30d</th><th>30d %</th><th>90d</th><th>Tracks</th><th>Queue</th><th>Placements</th><th>Own artists</th><th>Traffic 30d</th><th>Search 30d</th><th>Data health</th></tr></thead>
             <tbody>{playlistRows.map((p) => {
-              const d1=delta(p.current_follower_count,p.followers_1d_ago);
-              const d7=delta(p.current_follower_count,p.followers_7d_ago);
-              const d30=delta(p.current_follower_count,p.followers_30d_ago);
-              const d90=delta(p.current_follower_count,p.followers_90d_ago);
-              const p30=growthPercent(p.current_follower_count,p.followers_30d_ago);
-              const health=p.current_follower_count==null?'Follower feed pending':(d7!=null&&d7<0?'Follower decline':'Measured');
+              const cur=growthCurrent(p);
+              const d1=delta(cur,growthBaseline(p.followers_1d_ago));
+              const d7=delta(cur,growthBaseline(p.followers_7d_ago));
+              const d30=delta(cur,growthBaseline(p.followers_30d_ago));
+              const d90=delta(cur,growthBaseline(p.followers_90d_ago));
+              const p30=growthPercent(cur,growthBaseline(p.followers_30d_ago));
+              const assessment=assessPlaylistFollowers(p);
+              const shown=describeFollowers(p);
+              const request=p.follower_health?.last_request_status;
+              const health=p.current_follower_count==null
+                ? 'Follower feed pending'
+                : VALUE_STATE_LABEL[assessment.valueState] + ' · ' + FRESHNESS_LABEL[assessment.freshness]
+                  + (request && request!=='ok' ? ' · last request ' + request.replace('_',' ') : '')
+                  + (assessment.valueState==='measured' && d7!=null && d7<0 ? ' · decline' : '');
               return <tr key={p.playlist_id}>
                 <td><strong>{p.canonical_name}</strong></td>
-                <td>{p.current_follower_count?.toLocaleString() ?? '—'}</td>
+                <td title={shown.detail}><span data-follower-state={shown.state}>{shown.value}</span><br /><small className="muted">{shown.detail}</small></td>
                 <td><Sparkline points={data.metrics_history?.[p.playlist_id] || []} /></td>
                 <td>{formatDelta(d1)}</td>
                 <td>{formatDelta(d7)}</td>
@@ -646,7 +678,7 @@ export default function PlaylistOSAdmin() {
                 <td>{p.own_artist_placements ?? 0}</td>
                 <td>{p.pageviews_30d} / {p.spotify_clicks_30d}</td>
                 <td>{p.search_impressions_30d} / {p.search_clicks_30d}</td>
-                <td><span className="status-pill">{health}</span></td>
+                <td><span className={'status-pill ' + (assessment.valueState==='measured' && assessment.freshness==='fresh' ? 'ready' : '')} title={assessment.reason}>{health}</span></td>
               </tr>;
             })}</tbody>
           </table>
@@ -761,8 +793,9 @@ export default function PlaylistOSAdmin() {
           <div className="integration-grid">
             {data.legacy_playlists.map((p) => (
               <article className="card" key={p.id}>
-                <span className="status-pill">legacy</span>
+                <span className="status-pill">legacy · monitored</span>
                 <h3>{p.canonical_name}</h3>
+                <p><strong data-follower-state={describeFollowers(p).state}>{describeFollowers(p).label}</strong> <small className="muted">{describeFollowers(p).detail}</small></p>
                 <p>{p.description}</p>
                 <a className="card-link" href={p.spotify_url} target="_blank" rel="noreferrer">Open on Spotify →</a>
               </article>

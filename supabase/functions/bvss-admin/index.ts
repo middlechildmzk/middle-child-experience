@@ -1,4 +1,32 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { assessMetric } from "../_shared/source-health.ts";
+
+// Follower assessment for a rollup/playlist row, recomputed at request time
+// from the provider measurement timestamp (see _shared/source-health.ts).
+function assessFollowers(p:any){
+  const h=p.follower_health;
+  const same=h&&h.last_provider_measured_at&&p.follower_count_observed_at
+    &&new Date(h.last_provider_measured_at).getTime()===new Date(p.follower_count_observed_at).getTime();
+  return assessMetric({
+    value:p.current_follower_count==null?null:Number(p.current_follower_count),
+    measuredAt:p.follower_count_observed_at||null,
+    previousValue:same&&h.previous_value!=null?Number(h.previous_value):null,
+    previousMeasuredAt:same?h.previous_provider_measured_at:null,
+    requestStatus:h?.last_request_status,
+    consecutiveUnchanged:same?Number(h.consecutive_unchanged_measurements||0):0,
+  },new Date());
+}
+
+const HEALTH_COLUMNS="playlist_id,last_request_status,last_provider_measured_at,last_value,previous_provider_measured_at,previous_value,consecutive_unchanged_measurements,freshness_state,confidence,value_state,reason,last_attempt_at";
+
+async function attachFollowerHealth(admin:any, rows:any[], idKey:string){
+  if(!rows.length) return rows;
+  const {data,error}=await admin.from("bvss_playlist_source_status").select(HEALTH_COLUMNS)
+    .eq("provider","soundcharts").eq("metric","followers").in("playlist_id",rows.map((r:any)=>r[idKey]));
+  if(error) return rows; // provenance migration not applied yet
+  const byId=new Map((data||[]).map((row:any)=>[row.playlist_id,row]));
+  return rows.map((r:any)=>({...r,follower_health:byId.get(r[idKey])||null}));
+}
 
 function jsonHeaders(origin?: string | null){
   const allowed = new Set(["https://bvssfvm.com","https://www.bvssfvm.com","http://localhost:3000"]);
@@ -80,6 +108,28 @@ function buildActions(playlists:any[], integrations:any[]){
         title:"Record follower baseline",
         detail:"Follower history cannot start until the first observed count is stored."
       });
+    } else {
+      const a=assessFollowers(p);
+      const when=p.follower_count_observed_at?String(p.follower_count_observed_at).slice(0,10):"unknown";
+      if(a.valueState==="unmeasured_zero"){
+        actions.push({
+          priority:"medium",type:"follower_unconfirmed",playlist_slug:p.slug,playlist_name:p.canonical_name,
+          title:"Confirm follower count",
+          detail:"The provider last measured "+when+" and reports 0 with nothing to corroborate it, so it shows as Measuring. Record a manual baseline from the Spotify app if the playlist has followers."
+        });
+      } else if(a.valueState==="stale"){
+        actions.push({
+          priority:"high",type:"follower_stale",playlist_slug:p.slug,playlist_name:p.canonical_name,
+          title:"Follower data is stale",
+          detail:"Last provider measurement was "+when+". The stored count is shown as out of date until a fresh measurement arrives."
+        });
+      } else if(a.valueState==="anomalous"){
+        actions.push({
+          priority:"low",type:"follower_anomaly",playlist_slug:p.slug,playlist_name:p.canonical_name,
+          title:"Spot-check a large follower change",
+          detail:a.reason+" Growth metrics skip this value until it is confirmed."
+        });
+      }
     }
   }
 
@@ -123,7 +173,7 @@ async function fetchMetricHistory(admin:any){
 async function dashboard(admin:any){
   const since30=new Date(Date.now()-30*86400000).toISOString();
   const [
-    {data:playlists,error:pErr},
+    {data:playlistsRaw,error:pErr},
     {data:subs,error:sErr},
     {data:integrations,error:iErr},
     history,
@@ -152,6 +202,7 @@ async function dashboard(admin:any){
       .order("requested_at",{ascending:false}).limit(100)
   ]);
   if(pErr) throw pErr; if(sErr) throw sErr; if(iErr) throw iErr; if(wErr) throw wErr; if(rsErr) throw rsErr; if(tErr) throw tErr; if(srErr) throw srErr;
+  const playlists=await attachFollowerHealth(admin, playlistsRaw||[], "playlist_id");
 
   const pids=(subs||[]).map((s:any)=>s.id);
   let matches:any[]=[];
@@ -177,10 +228,13 @@ async function dashboard(admin:any){
 
   const totals=(playlists||[]).reduce((acc:any,p:any)=>{
     acc.playlists+=1;
-    if(p.current_follower_count!=null){
+    const a=assessFollowers(p);
+    if(a.displayValue!=null&&(a.valueState==="measured"||a.valueState==="anomalous")){
       acc.followers_known_playlists+=1;
-      acc.followers+=Number(p.current_follower_count);
+      acc.followers+=a.displayValue;
     }
+    if(a.freshness==="fresh"&&a.valueState==="measured") acc.followers_fresh_playlists+=1;
+    if(a.valueState==="unmeasured_zero"||a.valueState==="unavailable"||a.valueState==="stale") acc.followers_unconfirmed_playlists+=1;
     if(p.current_track_count!=null) acc.track_count_known_playlists+=1;
     acc.submissions_waiting+=Number(p.submissions_waiting||0);
     acc.active_placements+=Number(p.active_placements||0);
@@ -191,7 +245,7 @@ async function dashboard(admin:any){
     acc.search_clicks_30d+=Number(p.search_clicks_30d||0);
     return acc;
   },{
-    playlists:0,followers:0,followers_known_playlists:0,track_count_known_playlists:0,submissions_waiting:0,
+    playlists:0,followers:0,followers_known_playlists:0,followers_fresh_playlists:0,followers_unconfirmed_playlists:0,track_count_known_playlists:0,submissions_waiting:0,
     active_placements:0,own_artist_placements:0,pageviews_30d:0,spotify_clicks_30d:0,
     search_impressions_30d:0,search_clicks_30d:0
   });
@@ -248,7 +302,7 @@ async function dashboard(admin:any){
   }
 
   const {data:legacyPlaylists,error:legacyErr}=await admin.from("bvss_playlists")
-    .select("id,slug,spotify_playlist_id,spotify_url,canonical_name,description,cover_asset_url,primary_genre,source_metadata")
+    .select("id,slug,spotify_playlist_id,spotify_url,canonical_name,description,cover_asset_url,primary_genre,source_metadata,current_follower_count,follower_count_observed_at,current_track_count")
     .eq("lifecycle_state","experimental")
     .eq("website_status","hidden")
     .order("display_order");
@@ -266,7 +320,7 @@ async function dashboard(admin:any){
     submission_sources:Array.from(sourceMap.values()).sort((a:any,b:any)=>b.total-a.total),
     track_events:trackEvents||[],
     sync_runs:syncRuns||[],
-    legacy_playlists:legacyPlaylists||[]
+    legacy_playlists:await attachFollowerHealth(admin, legacyPlaylists||[], "id")
   };
 }
 
@@ -305,9 +359,12 @@ Deno.serve(async(req)=>{
 
       const today=new Date().toISOString().slice(0,10);
       const observed_at=new Date().toISOString();
+      // A person reading the Spotify app is a measurement taken now: the
+      // measurement and retrieval times are the same moment by definition.
       const snapshot:any={
         playlist_id:p.id,metric_date:today,followers,track_count,source:"manual_admin",
         source_ref:a.user.id,observed_at,
+        provider_measured_at:observed_at,retrieved_at:observed_at,measurement_basis:"manual",
         raw_data:{entered_by:a.user.email||a.user.id,method:"playlist_os_manual_baseline"}
       };
       const {error:sErr}=await admin.from("bvss_playlist_metric_snapshots")

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getPlaylists } from '../../lib/playlist-os';
+import { networkFollowerTotals } from '../../lib/source-health';
 import { siteUrl } from '../../lib/site-url';
 
 export const dynamic = 'force-dynamic';
@@ -26,11 +27,7 @@ function formatNumber(value: number) {
 export default async function AboutPage() {
   const playlists = await getPlaylists().catch(() => []);
   const active = playlists.filter((playlist) => playlist.lifecycle_state === 'active');
-  const measured = active.filter((playlist) => playlist.current_follower_count != null);
-  const followers = measured.reduce(
-    (sum, playlist) => sum + Number(playlist.current_follower_count || 0),
-    0,
-  );
+  const followerTotals = networkFollowerTotals(active);
   const openForSubmissions = active.filter((playlist) => playlist.submission_status === 'open').length;
 
   const aboutSchema = {
@@ -71,8 +68,8 @@ export default async function AboutPage() {
             <strong>{active.length || playlists.length || 18} active playlists</strong>
           </div>
           <div>
-            <span>Measured audience</span>
-            <strong>{followers ? formatNumber(followers) + ' followers' : 'Follower telemetry live'}</strong>
+            <span>Measured audience{followerTotals.counted ? ' · ' + followerTotals.counted + ' of ' + followerTotals.monitored + ' playlists' : ''}</span>
+            <strong>{followerTotals.counted ? formatNumber(followerTotals.total) + ' followers' : 'Measuring'}</strong>
           </div>
           <div>
             <span>Submission lanes</span>

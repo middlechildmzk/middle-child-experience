@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { PlaylistRecord } from '../../lib/playlist-os';
+import { describeFollowersPublic } from '../../lib/source-health';
 
 function unique(values: string[]) {
   return Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
@@ -119,10 +120,8 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
                   {playlist.moods.slice(0, 3).map((value) => <span className="chip" key={value}>{value}</span>)}
                 </div>
                 <div className="playlist-card-proof">
-                  <strong>
-                    {playlist.current_follower_count != null
-                      ? playlist.current_follower_count.toLocaleString() + ' followers'
-                      : 'Follower feed connecting'}
+                  <strong title={describeFollowersPublic(playlist).detail || undefined} data-follower-state={describeFollowersPublic(playlist).state}>
+                    {describeFollowersPublic(playlist).label}
                   </strong>
                   <span>
                     {playlist.current_track_count != null
