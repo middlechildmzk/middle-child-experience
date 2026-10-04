@@ -22,6 +22,37 @@ export default function CuratorPortal() {
   const [data, setData] = useState<Dashboard | null>(null);
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState(0);
+  const [decisionDraft, setDecisionDraft] = useState<{ routeId: string; decision: 'accept' | 'hold' | 'reject' } | null>(null);
+  const [decisionNotes, setDecisionNotes] = useState('');
+
+  useEffect(() => {
+    setSelectedRoute((index) => Math.min(index, Math.max(0, (data?.routes.length || 0) - 1)));
+  }, [data]);
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const target = event.target as HTMLElement;
+      if (event.ctrlKey || event.metaKey || event.altKey || target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (event.key === 'Escape') { setDecisionDraft(null); return; }
+      if (busy || decisionDraft || !data?.routes.length) return;
+      const key = event.key.toLowerCase();
+      if (!['j', 'k', 'a', 'd', 'h'].includes(key)) return;
+      event.preventDefault();
+      if (key === 'j' || key === 'k') {
+        setSelectedRoute((index) => Math.max(0, Math.min(data.routes.length - 1, index + (key === 'j' ? 1 : -1))));
+      } else {
+        setDecisionNotes('');
+        setDecisionDraft({ routeId: data.routes[selectedRoute].id, decision: key === 'a' ? 'accept' : key === 'd' ? 'reject' : 'hold' });
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [data, selectedRoute, busy, decisionDraft]);
+
+  useEffect(() => {
+    document.getElementById('review-' + data?.routes[selectedRoute]?.id)?.scrollIntoView({ block: 'nearest' });
+  }, [selectedRoute]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -68,6 +99,9 @@ export default function CuratorPortal() {
       }
       await load();
       return result;
+    } catch {
+      setStatus('Could not save. Check your connection and try again.');
+      return null;
     } finally {
       setBusy(false);
     }
@@ -113,8 +147,18 @@ export default function CuratorPortal() {
   }
 
   async function review(routeId: string, decision: 'accept' | 'hold' | 'reject') {
-    const notes = window.prompt(decision === 'accept' ? 'Optional placement/review notes:' : 'Optional private review notes:') || '';
-    await post({ action: 'review_route', route_id: routeId, decision, notes });
+    setDecisionNotes('');
+    setDecisionDraft({ routeId, decision });
+  }
+
+  async function confirmReview(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!decisionDraft || busy) return;
+    const result = await post({ action: 'review_route', route_id: decisionDraft.routeId, decision: decisionDraft.decision, notes: decisionNotes.trim() });
+    if (result) {
+      setDecisionDraft(null);
+      setStatus(decisionDraft.decision === 'accept' ? 'Accepted for a planned placement. Live placement still needs confirmation.' : decisionDraft.decision === 'hold' ? 'Submission held for another listen.' : 'Submission declined.');
+    }
   }
 
   async function download(submissionId: string) {
@@ -309,10 +353,10 @@ export default function CuratorPortal() {
             <p className="muted">Matching is routing assistance, never a placement recommendation.</p>
           </div>
           <div className="os-review-grid">
-            {data.routes.length ? data.routes.map((route) => {
+            {data.routes.length ? data.routes.map((route, index) => {
               const submission = route.bvss_submissions;
               return (
-                <article className="os-review-card" key={route.id}>
+                <article className="os-review-card" key={route.id} id={'review-' + route.id} onFocus={() => setSelectedRoute(index)} style={index === selectedRoute ? { outline: '2px solid currentColor', outlineOffset: 3 } : undefined}>
                   <div className="os-review-head">
                     <div>
                       <span className="eyebrow">{submission?.release_state === 'unreleased' ? 'unreleased · ' : ''}{submission?.genre} · match {route.match_score ?? '—'}</span>
@@ -334,14 +378,32 @@ export default function CuratorPortal() {
                     {submission?.download_permission && (
                       <button className="button button-secondary button-small" onClick={() => download(submission.id)}>Download permitted master</button>
                     )}
-                    <button className="button button-small" onClick={() => review(route.id, 'accept')}>Accept</button>
-                    <button className="button button-secondary button-small" onClick={() => review(route.id, 'hold')}>Hold</button>
-                    <button className="button button-secondary button-small" onClick={() => review(route.id, 'reject')}>Reject</button>
+                    <button className="button button-small" disabled={busy} onClick={() => review(route.id, 'accept')}>Accept</button>
+                    <button className="button button-secondary button-small" disabled={busy} onClick={() => review(route.id, 'hold')}>Hold</button>
+                    <button className="button button-secondary button-small" disabled={busy} onClick={() => review(route.id, 'reject')}>Decline</button>
                   </div>
                 </article>
               );
             }) : <p className="muted">No matched submissions waiting.</p>}
           </div>
+        </section>
+      )}
+
+      {profile.status === 'approved' && <p className="muted">Keyboard: J next · K previous · A accept · D decline · H hold. Decisions require confirmation.</p>}
+      {decisionDraft && (
+        <section className="card" role="dialog" aria-modal="false" aria-labelledby="review-decision-title">
+          <h3 id="review-decision-title">{decisionDraft.decision === 'reject' ? 'Decline' : decisionDraft.decision === 'accept' ? 'Accept' : 'Hold'} submission</h3>
+          {decisionDraft.decision === 'accept' && <p>Acceptance plans a placement. It does not confirm the song is live on Spotify.</p>}
+          <form onSubmit={confirmReview}>
+            <div className="field">
+              <label htmlFor="decision-notes">{decisionDraft.decision === 'reject' ? 'Reason for declining' : 'Optional review notes'}</label>
+              <textarea id="decision-notes" autoFocus maxLength={2000} required={decisionDraft.decision === 'reject'} value={decisionNotes} onChange={(event) => setDecisionNotes(event.target.value)} />
+            </div>
+            <div className="actions">
+              <button className="button" disabled={busy || (decisionDraft.decision === 'reject' && !decisionNotes.trim())}>{busy ? 'Saving…' : 'Confirm decision'}</button>
+              <button type="button" className="button button-secondary" disabled={busy} onClick={() => setDecisionDraft(null)}>Cancel</button>
+            </div>
+          </form>
         </section>
       )}
 
