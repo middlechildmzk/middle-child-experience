@@ -6,6 +6,28 @@ import { playlistApiBase, supabasePublishableKey, supabaseUrl } from '../../lib/
 
 const supabase = createClient(supabaseUrl, supabasePublishableKey);
 
+// Structured decline reasons (Muse v1). Keys 1-8 toggle them in the composer.
+const DECLINE_REASONS: [string, string][] = [
+  ['energy_mismatch', 'Energy mismatch'],
+  ['not_my_genre_lane', 'Not my genre lane'],
+  ['production_not_ready', 'Production not there yet'],
+  ['too_similar_to_recent_adds', 'Too similar to recent adds'],
+  ['wrong_mood', 'Wrong mood for this playlist'],
+  ['vocal_style', 'Vocal style'],
+  ['mix_master', 'Mix/master'],
+  ['other', 'Other'],
+];
+const FIT_LABEL: Record<string, string> = { strong_fit: 'Strong fit', worth_a_look: 'Worth a look', long_shot: 'Long shot' };
+const PLACEMENT_LABEL: Record<string, string> = {
+  scheduled: 'Scheduled',
+  pending_verification: 'Pending sync confirmation (≤24h)',
+  live: 'Live',
+  removed: 'Removed',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+const dateInDays = (days: number) => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+
 type Dashboard = {
   profile: any;
   playlists: any[];
@@ -25,6 +47,8 @@ export default function CuratorPortal() {
   const [selectedRoute, setSelectedRoute] = useState(0);
   const [decisionDraft, setDecisionDraft] = useState<{ routeId: string; decision: 'accept' | 'hold' | 'reject' } | null>(null);
   const [decisionNotes, setDecisionNotes] = useState('');
+  const [declineReasons, setDeclineReasons] = useState<string[]>([]);
+  const [holdUntil, setHoldUntil] = useState(dateInDays(7));
 
   useEffect(() => {
     setSelectedRoute((index) => Math.min(index, Math.max(0, (data?.routes.length || 0) - 1)));
@@ -35,6 +59,12 @@ export default function CuratorPortal() {
       const target = event.target as HTMLElement;
       if (event.ctrlKey || event.metaKey || event.altKey || target.closest('input, textarea, select, [contenteditable="true"]')) return;
       if (event.key === 'Escape') { setDecisionDraft(null); return; }
+      if (decisionDraft?.decision === 'reject' && !busy && /^[1-8]$/.test(event.key)) {
+        event.preventDefault();
+        const code = DECLINE_REASONS[Number(event.key) - 1][0];
+        setDeclineReasons((current) => current.includes(code) ? current.filter((c) => c !== code) : [...current, code]);
+        return;
+      }
       if (busy || decisionDraft || !data?.routes.length) return;
       const key = event.key.toLowerCase();
       if (!['j', 'k', 'a', 'd', 'h'].includes(key)) return;
@@ -42,8 +72,9 @@ export default function CuratorPortal() {
       if (key === 'j' || key === 'k') {
         setSelectedRoute((index) => Math.max(0, Math.min(data.routes.length - 1, index + (key === 'j' ? 1 : -1))));
       } else {
-        setDecisionNotes('');
-        setDecisionDraft({ routeId: data.routes[selectedRoute].id, decision: key === 'a' ? 'accept' : key === 'd' ? 'reject' : 'hold' });
+        const route = data.routes[selectedRoute];
+        if (route.status === 'accepted') return;
+        openDecision(route.id, key === 'a' ? 'accept' : key === 'd' ? 'reject' : 'hold');
       }
     }
     window.addEventListener('keydown', onKey);
@@ -146,19 +177,43 @@ export default function CuratorPortal() {
     }
   }
 
-  async function review(routeId: string, decision: 'accept' | 'hold' | 'reject') {
+  function openDecision(routeId: string, decision: 'accept' | 'hold' | 'reject') {
     setDecisionNotes('');
+    setDeclineReasons([]);
+    setHoldUntil(dateInDays(7));
     setDecisionDraft({ routeId, decision });
+  }
+
+  async function review(routeId: string, decision: 'accept' | 'hold' | 'reject') {
+    openDecision(routeId, decision);
   }
 
   async function confirmReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!decisionDraft || busy) return;
-    const result = await post({ action: 'review_route', route_id: decisionDraft.routeId, decision: decisionDraft.decision, notes: decisionNotes.trim() });
+    if (decisionDraft.decision === 'reject' && !declineReasons.length) return;
+    const result = await post({
+      action: 'review_route',
+      route_id: decisionDraft.routeId,
+      decision: decisionDraft.decision,
+      notes: decisionNotes.trim(),
+      reasons: decisionDraft.decision === 'reject' ? declineReasons : [],
+      hold_until: decisionDraft.decision === 'hold' ? new Date(holdUntil + 'T23:59:00').toISOString() : null,
+    });
     if (result) {
       setDecisionDraft(null);
-      setStatus(decisionDraft.decision === 'accept' ? 'Accepted for a planned placement. Live placement still needs confirmation.' : decisionDraft.decision === 'hold' ? 'Submission held for another listen.' : 'Submission declined.');
+      setStatus(
+        result.idempotent ? 'That decision was already saved.'
+          : decisionDraft.decision === 'accept' ? 'Accepted. Scheduled: add it in Spotify, then mark it added. It shows as placed once the playlist sync confirms it.'
+          : decisionDraft.decision === 'hold' ? 'On hold until ' + holdUntil + '. It returns to your queue then.'
+          : 'Declined. The artist sees your reason.',
+      );
     }
+  }
+
+  async function reportAdded(placementId: string) {
+    const result = await post({ action: 'report_added', placement_id: placementId });
+    if (result) setStatus('Pending sync confirmation. It shows as placed once the playlist sync finds the track (usually within 24 hours).');
   }
 
   async function download(submissionId: string) {
@@ -359,7 +414,7 @@ export default function CuratorPortal() {
                 <article className="os-review-card" key={route.id} id={'review-' + route.id} onFocus={() => setSelectedRoute(index)} style={index === selectedRoute ? { outline: '2px solid currentColor', outlineOffset: 3 } : undefined}>
                   <div className="os-review-head">
                     <div>
-                      <span className="eyebrow">{submission?.release_state === 'unreleased' ? 'unreleased · ' : ''}{submission?.genre} · match {route.match_score ?? '—'}</span>
+                      <span className="eyebrow">{submission?.release_state === 'unreleased' ? 'unreleased · ' : ''}{submission?.genre}{route.fit_band ? ' · ' + FIT_LABEL[route.fit_band] : ''}{route.status === 'hold' && route.hold_until ? ' · on hold until ' + String(route.hold_until).slice(0, 10) : ''}</span>
                       <h3>{submission?.song_title}</h3>
                       <p>{submission?.artist_name} · routed to {route.bvss_playlists?.canonical_name}</p>
                     </div>
@@ -378,9 +433,24 @@ export default function CuratorPortal() {
                     {submission?.download_permission && (
                       <button className="button button-secondary button-small" onClick={() => download(submission.id)}>Download permitted master</button>
                     )}
-                    <button className="button button-small" disabled={busy} onClick={() => review(route.id, 'accept')}>Accept</button>
-                    <button className="button button-secondary button-small" disabled={busy} onClick={() => review(route.id, 'hold')}>Hold</button>
-                    <button className="button button-secondary button-small" disabled={busy} onClick={() => review(route.id, 'reject')}>Decline</button>
+                    {route.status === 'accepted' ? (
+                      <>
+                        <span className="status-pill">{PLACEMENT_LABEL[route.placement?.status] || 'Accepted'}</span>
+                        {route.placement?.status === 'live' && route.placement.actual_position != null && <span className="muted">position {route.placement.actual_position + 1}</span>}
+                        {route.bvss_playlists?.spotify_url && route.placement?.status === 'scheduled' && (
+                          <a className="button button-secondary button-small" href={route.bvss_playlists.spotify_url} target="_blank" rel="noreferrer">Open playlist in Spotify</a>
+                        )}
+                        {route.placement?.status === 'scheduled' && (
+                          <button className="button button-small" disabled={busy} onClick={() => reportAdded(route.placement.id)}>I've added it</button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <button className="button button-small" disabled={busy} onClick={() => review(route.id, 'accept')}>Accept</button>
+                        <button className="button button-secondary button-small" disabled={busy} onClick={() => review(route.id, 'hold')}>Hold</button>
+                        <button className="button button-secondary button-small" disabled={busy} onClick={() => review(route.id, 'reject')}>Decline</button>
+                      </>
+                    )}
                   </div>
                 </article>
               );
@@ -393,14 +463,32 @@ export default function CuratorPortal() {
       {decisionDraft && (
         <section className="card" role="dialog" aria-modal="false" aria-labelledby="review-decision-title">
           <h3 id="review-decision-title">{decisionDraft.decision === 'reject' ? 'Decline' : decisionDraft.decision === 'accept' ? 'Accept' : 'Hold'} submission</h3>
-          {decisionDraft.decision === 'accept' && <p>Acceptance plans a placement. It does not confirm the song is live on Spotify.</p>}
+          {decisionDraft.decision === 'accept' && <p>Accepting schedules a placement. It shows as placed only after the playlist sync finds the track.</p>}
           <form onSubmit={confirmReview}>
+            {decisionDraft.decision === 'reject' && (
+              <fieldset className="field">
+                <legend>Why are you passing? Pick at least one (keys 1–8).</legend>
+                <div className="chip-row">
+                  {DECLINE_REASONS.map(([code, label], i) => (
+                    <label className="chip" key={code}>
+                      <input type="checkbox" checked={declineReasons.includes(code)} onChange={() => setDeclineReasons((c) => c.includes(code) ? c.filter((x) => x !== code) : [...c, code])} /> {i + 1}. {label}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+            {decisionDraft.decision === 'hold' && (
+              <div className="field">
+                <label htmlFor="hold-until">Revisit by</label>
+                <input id="hold-until" type="date" min={dateInDays(1)} max={dateInDays(30)} value={holdUntil} onChange={(event) => setHoldUntil(event.target.value)} required />
+              </div>
+            )}
             <div className="field">
-              <label htmlFor="decision-notes">{decisionDraft.decision === 'reject' ? 'Reason for declining' : 'Optional review notes'}</label>
-              <textarea id="decision-notes" autoFocus maxLength={2000} required={decisionDraft.decision === 'reject'} value={decisionNotes} onChange={(event) => setDecisionNotes(event.target.value)} />
+              <label htmlFor="decision-notes">{decisionDraft.decision === 'reject' ? 'Optional note to the artist (280 characters)' : 'Optional notes'}</label>
+              <textarea id="decision-notes" autoFocus={decisionDraft.decision !== 'reject'} maxLength={decisionDraft.decision === 'reject' ? 280 : 2000} value={decisionNotes} onChange={(event) => setDecisionNotes(event.target.value)} />
             </div>
             <div className="actions">
-              <button className="button" disabled={busy || (decisionDraft.decision === 'reject' && !decisionNotes.trim())}>{busy ? 'Saving…' : 'Confirm decision'}</button>
+              <button className="button" disabled={busy || (decisionDraft.decision === 'reject' && !declineReasons.length)}>{busy ? 'Saving…' : 'Confirm decision'}</button>
               <button type="button" className="button button-secondary" disabled={busy} onClick={() => setDecisionDraft(null)}>Cancel</button>
             </div>
           </form>
