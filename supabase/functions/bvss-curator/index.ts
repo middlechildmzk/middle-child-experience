@@ -33,6 +33,15 @@ const playlistId=(url:string)=>{
   return m?m[1]:null;
 };
 const code=()=>("BVSSFVM-"+crypto.randomUUID().replace(/-/g,"").slice(0,7).toUpperCase());
+const fitBand=(score:unknown)=>typeof score!=="number"?null:score>=75?"strong_fit":score>=50?"worth_a_look":"long_shot";
+// Transition-function error codes -> HTTP status.
+const httpFor=(e:string)=>["route_not_found","placement_not_found"].includes(e)?404:e==="curator_not_approved"||e==="not_bvss_route"||e==="invalid_actor"?403:["already_decided","route_withdrawn","invalid_route_state","invalid_placement_state","track_already_placed_on_playlist","only_live_can_complete","only_unverified_can_cancel"].includes(e)?409:400;
+async function rpc(db:any,fn:string,args:Record<string,unknown>,h:Record<string,string>){
+  const {data,error}=await db.rpc(fn,args);
+  if(error) throw error;
+  if(!data?.ok) return new Response(JSON.stringify({error:data?.error||"transition_failed",status:data?.status}),{status:httpFor(String(data?.error||"")),headers:h});
+  return new Response(JSON.stringify(data),{headers:h});
+}
 
 async function profileFor(db:any,userId:string){
   const {data,error}=await db.from("bvss_curator_profiles").select("*").eq("user_id",userId).maybeSingle();
@@ -63,12 +72,13 @@ Deno.serve(async(req)=>{
       let routes:any[]=[];
       if(profile.status==="approved"){
         const {data,error}=await db.from("bvss_submission_routes")
-          .select("id,status,route_type,match_score,match_reasons,routed_at,first_opened_at,decided_at,decision,playlist_id,bvss_playlists(slug,canonical_name),bvss_submissions(id,artist_name,song_title,release_state,spotify_url,source_url,source_platform,artwork_url,release_date,genre,moods,comparable_artists,is_explicit,notes,private_stream_url,download_external_url,download_source,download_permission,artist_socials,submitted_at)")
+          .select("id,status,route_type,match_score,match_reasons,routed_at,first_opened_at,decided_at,decision,decision_notes,decline_reasons,hold_until,placement_id,playlist_id,bvss_playlists(slug,canonical_name,spotify_url),placement:bvss_playlist_placements!bvss_submission_routes_placement_id_fkey(id,status,scheduled_for,accepted_at,added_reported_at,placed_at,verified_live_at,actual_position,target_position,ended_at,end_reason),bvss_submissions(id,artist_name,song_title,release_state,spotify_track_id,spotify_url,source_url,source_platform,artwork_url,release_date,genre,moods,comparable_artists,is_explicit,notes,private_stream_url,download_external_url,download_source,download_permission,artist_socials,submitted_at)")
           .eq("curator_id",profile.id)
           .in("status",["queued","opened","hold","accepted"])
           .order("routed_at",{ascending:false}).limit(250);
         if(error) throw error;
-        routes=data||[];
+        // Fit is shown as a band with reasons, never as a 0-100 number (Muse v1).
+        routes=(data||[]).map(({match_score,...r}:any)=>({...r,fit_band:fitBand(match_score)}));
       }
       return new Response(JSON.stringify({profile,playlists:playlists||[],claims:claims||[],routes,facts:facts||null,entitlement:entitlement||null,usage:usage||null}),{headers:h});
     }
@@ -208,43 +218,28 @@ Deno.serve(async(req)=>{
 
     if(action==="review_route"){
       if(current.status!=="approved") return new Response(JSON.stringify({error:"curator_not_approved"}),{status:403,headers:h});
-      const route_id=clean(body.route_id,80);
-      const decision=clean(body.decision,20);
-      if(!["accept","reject","hold"].includes(decision)) return new Response(JSON.stringify({error:"invalid_decision"}),{status:400,headers:h});
-      const {data:route,error:rErr}=await db.from("bvss_submission_routes")
-        .select("id,submission_id,playlist_id,status,bvss_submissions(spotify_track_id)")
-        .eq("id",route_id).eq("curator_id",current.id).maybeSingle();
-      if(rErr) throw rErr;
-      if(!route) return new Response(JSON.stringify({error:"route_not_found"}),{status:404,headers:h});
-      const now=new Date().toISOString();
-      let placement_id=null;
-      if(decision==="accept"){
-        const sub:any=route.bvss_submissions;
-        const {data:placement,error:pErr}=await db.from("bvss_playlist_placements").insert({
-          submission_id:route.submission_id,playlist_id:route.playlist_id,spotify_track_id:sub?.spotify_track_id||null,
-          target_position:body.target_position?Number(body.target_position):null,notes:clean(body.notes,2000)||null
-        }).select("id").single();
-        if(pErr) throw pErr;
-        placement_id=placement.id;
-      }
-      const next=decision==="accept"?"accepted":decision==="reject"?"rejected":"hold";
-      const {error:uErr}=await db.from("bvss_submission_routes").update({
-        status:next,decision,decision_notes:clean(body.notes,2000)||null,decided_at:decision==="hold"?null:now,
-        first_opened_at:route.status==="queued"?now:undefined,placement_id
-      }).eq("id",route.id);
-      if(uErr) throw uErr;
-      const {error:revErr}=await db.from("bvss_submission_reviews").insert({
-        submission_id:route.submission_id,decision,playlist_id:route.playlist_id,reviewer_id:user.id,
-        reviewer_label:current.display_name,target_position:body.target_position?Number(body.target_position):null,
-        review_notes:clean(body.notes,2000)||null
-      });
-      if(revErr) throw revErr;
-      await db.from("bvss_submission_status_events").insert({
-        submission_id:route.submission_id,event_type:"curator_"+decision,
-        public_label:decision==="accept"?"Accepted by a curator":decision==="hold"?"Held for another listen":"Reviewed by a curator",
-        public_detail:decision==="accept"?"A curator accepted your track for a verified network playlist.":decision==="hold"?"A curator is keeping your track under consideration.":"A curator completed their review without placing the track."
-      });
-      return new Response(JSON.stringify({ok:true,status:next,placement_id}),{headers:h});
+      // One transaction in the database: lock, validate, route + review + placement + status event.
+      const hold=clean(body.hold_until,40);
+      const sched=clean(body.scheduled_for,10);
+      return rpc(db,"bvss_decide_route",{
+        p_route_id:clean(body.route_id,80)||null,
+        p_actor:{kind:"curator",user_id:user.id,curator_id:current.id,label:current.display_name},
+        p_decision:clean(body.decision,20),
+        p_reasons:list(body.reasons,8,40),
+        p_notes:clean(body.notes,2001)||null,
+        p_hold_until:hold||null,
+        p_target_position:body.target_position!=null&&body.target_position!==""?Number(body.target_position):null,
+        p_scheduled_for:sched||null
+      },h);
+    }
+
+    if(action==="report_added"){
+      if(current.status!=="approved") return new Response(JSON.stringify({error:"curator_not_approved"}),{status:403,headers:h});
+      // "I've added it" = pending sync confirmation. Only a playlist observation makes it live.
+      return rpc(db,"bvss_report_placement_added",{
+        p_placement_id:clean(body.placement_id,80)||null,
+        p_actor:{kind:"curator",user_id:user.id,curator_id:current.id,label:current.display_name}
+      },h);
     }
 
     if(action==="report"){

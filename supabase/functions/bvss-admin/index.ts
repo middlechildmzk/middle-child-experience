@@ -219,7 +219,25 @@ async function dashboard(admin:any){
     a.push(m);
     matchBy.set(m.submission_id,a);
   }
-  const queue=(subs||[]).map((s:any)=>({...s,suggested_matches:matchBy.get(s.id)||[]}));
+  let routes:any[]=[];
+  if(pids.length){
+    const {data,error}=await admin.from("bvss_submission_routes")
+      .select("id,submission_id,playlist_id,route_type,status,hold_until,decline_reasons,placement_id,routed_at,bvss_playlists(slug,canonical_name)")
+      .in("submission_id",pids).is("curator_id",null);
+    if(error) throw error;
+    routes=data||[];
+  }
+  const routeBy=new Map<string,any[]>();
+  for(const r of routes){ const a=routeBy.get(r.submission_id)||[]; a.push(r); routeBy.set(r.submission_id,a); }
+  const queue=(subs||[]).map((s:any)=>({...s,
+    suggested_matches:(matchBy.get(s.id)||[]).map(({score,...m}:any)=>({...m,fit_band:fitBand(score)})),
+    bvss_routes:routeBy.get(s.id)||[]}));
+
+  // Placement lifecycle for BVSS-owned playlists (scheduled -> pending -> live -> ended).
+  const {data:placements,error:plErr}=await admin.from("bvss_playlist_placements")
+    .select("id,status,submission_id,playlist_id,spotify_track_id,route_id,scheduled_for,accepted_at,added_reported_at,placed_at,verified_live_at,actual_position,target_position,verification_source,verification_evidence,ended_at,end_reason,bvss_playlists(slug,canonical_name,spotify_url),bvss_submissions(artist_name,song_title,spotify_url)")
+    .order("accepted_at",{ascending:false,nullsFirst:false}).limit(200);
+  if(plErr) throw plErr;
 
   const historyBy:Record<string,any[]>={};
   for(const point of history||[]){
@@ -313,6 +331,7 @@ async function dashboard(admin:any){
     playlists:playlists||[],
     metrics_history:historyBy,
     queue,
+    placements:placements||[],
     integrations:integrations||[],
     actions:buildActions(playlists||[],integrations||[]),
     playlist_attribution,
@@ -322,6 +341,15 @@ async function dashboard(admin:any){
     sync_runs:syncRuns||[],
     legacy_playlists:await attachFollowerHealth(admin, legacyPlaylists||[], "id")
   };
+}
+
+const fitBand=(score:unknown)=>typeof score!=="number"?null:score>=75?"strong_fit":score>=50?"worth_a_look":"long_shot";
+const httpFor=(e:string)=>["route_not_found","placement_not_found","playlist_not_found"].includes(e)?404:e==="not_bvss_route"||e==="invalid_actor"||e==="curator_not_approved"?403:["already_decided","route_withdrawn","invalid_route_state","invalid_placement_state","track_already_placed_on_playlist","only_live_can_complete","only_unverified_can_cancel"].includes(e)?409:400;
+async function transition(admin:any,fn:string,args:Record<string,unknown>,headers:Record<string,string>){
+  const {data,error}=await admin.rpc(fn,args);
+  if(error) throw error;
+  if(!data?.ok) return new Response(JSON.stringify({error:data?.error||"transition_failed",status:data?.status}),{status:httpFor(String(data?.error||"")),headers});
+  return new Response(JSON.stringify(data),{headers});
 }
 
 Deno.serve(async(req)=>{
@@ -396,48 +424,63 @@ Deno.serve(async(req)=>{
       return new Response(JSON.stringify({ok:true,playlist:data}),{headers});
     }
 
+    const actor={kind:"admin",user_id:a.user.id,label:a.user.email||"BVSS admin"};
+
     if(action==="review"){
-      const submission_id=String(body.submission_id||"");
-      const decision=String(body.decision||"");
-      const playlist_slug=body.playlist_slug?String(body.playlist_slug):null;
-      if(!submission_id||!["hold","accept","reject"].includes(decision))
-        return new Response(JSON.stringify({error:"invalid_review"}),{status:400,headers});
-
-      let playlist_id=null;
-      if(playlist_slug){
-        const {data:p}=await admin.from("bvss_playlists").select("id").eq("slug",playlist_slug).maybeSingle();
-        playlist_id=p?.id||null;
-      }
-      if(decision==="accept"&&!playlist_id)
-        return new Response(JSON.stringify({error:"accept_requires_playlist"}),{status:400,headers});
-
-      const {error:rErr}=await admin.from("bvss_submission_reviews").insert({
-        submission_id,decision,playlist_id,reviewer_id:a.user.id,reviewer_label:a.user.email||null,
-        target_position:body.target_position||null,rotation_notes:body.rotation_notes||null,review_notes:body.review_notes||null
-      });
-      if(rErr) throw rErr;
-
-      const next=decision==="accept"?"accepted":decision==="reject"?"rejected":"hold";
-      const {error:uErr}=await admin.from("bvss_submissions").update({status:next}).eq("id",submission_id);
-      if(uErr) throw uErr;
-
-      if(decision==="accept"){
-        const {data:s}=await admin.from("bvss_submissions").select("spotify_track_id").eq("id",submission_id).single();
-        const {error:pErr}=await admin.from("bvss_playlist_placements").insert({
-          submission_id,playlist_id,spotify_track_id:s?.spotify_track_id||null,target_position:body.target_position||null,
-          notes:body.rotation_notes||null
-        });
+      // Route-level decision on a BVSS-owned playlist, in one database transaction.
+      let route_id=typeof body.route_id==="string"?body.route_id:"";
+      if(!route_id){
+        const submission_id=String(body.submission_id||"");
+        const playlist_slug=String(body.playlist_slug||"");
+        if(!submission_id||!playlist_slug) return new Response(JSON.stringify({error:"route_or_playlist_required"}),{status:400,headers});
+        const {data:p,error:pErr}=await admin.from("bvss_playlists").select("id,curator_id,network_owner_type").eq("slug",playlist_slug).maybeSingle();
         if(pErr) throw pErr;
+        if(!p) return new Response(JSON.stringify({error:"playlist_not_found"}),{status:404,headers});
+        if(p.curator_id) return new Response(JSON.stringify({error:"not_bvss_route"}),{status:403,headers});
+        const {data:r,error:rErr}=await admin.from("bvss_submission_routes").select("id").eq("submission_id",submission_id).eq("playlist_id",p.id).maybeSingle();
+        if(rErr) throw rErr;
+        if(r) route_id=r.id;
+        else{
+          // An admin may route a submission to any BVSS-owned playlist by hand.
+          const {data:created,error:cErr}=await admin.from("bvss_submission_routes")
+            .insert({submission_id,playlist_id:p.id,curator_id:null,route_type:"manual",status:"opened",first_opened_at:new Date().toISOString()})
+            .select("id").single();
+          if(cErr&&cErr.code!=="23505") throw cErr;
+          if(created) route_id=created.id;
+          else{
+            const {data:again,error:aErr}=await admin.from("bvss_submission_routes").select("id").eq("submission_id",submission_id).eq("playlist_id",p.id).single();
+            if(aErr) throw aErr;
+            route_id=again.id;
+          }
+        }
       }
-      return new Response(JSON.stringify({ok:true,status:next}),{headers});
+      const tp=body.target_position;
+      return transition(admin,"bvss_decide_route",{
+        p_route_id:route_id,p_actor:actor,p_decision:String(body.decision||""),
+        p_reasons:Array.isArray(body.reasons)?body.reasons.map((x:unknown)=>String(x).slice(0,40)).slice(0,8):[],
+        p_notes:(typeof body.review_notes==="string"?body.review_notes:typeof body.notes==="string"?body.notes:"").trim().slice(0,2001)||null,
+        p_hold_until:typeof body.hold_until==="string"&&body.hold_until?body.hold_until:null,
+        p_target_position:tp!=null&&tp!==""?Number(tp):null,
+        p_scheduled_for:typeof body.scheduled_for==="string"&&body.scheduled_for?body.scheduled_for:null
+      },headers);
     }
 
-    if(action==="remove_placement"){
+    if(action==="report_added"){
+      return transition(admin,"bvss_report_placement_added",{p_placement_id:String(body.placement_id||""),p_actor:actor},headers);
+    }
+
+    if(action==="end_placement"||action==="remove_placement"){
+      // A placement is "removed" only when a playlist observation stops seeing it.
+      // By hand an admin can complete a live placement or cancel one that never went live.
       const placement_id=String(body.placement_id||"");
       if(!placement_id) return new Response(JSON.stringify({error:"placement_required"}),{status:400,headers});
-      const {error}=await admin.from("bvss_playlist_placements").update({removed_at:new Date().toISOString()}).eq("id",placement_id);
-      if(error) throw error;
-      return new Response(JSON.stringify({ok:true}),{headers});
+      let outcome=String(body.outcome||"");
+      if(!outcome){
+        const {data:cur,error}=await admin.from("bvss_playlist_placements").select("status").eq("id",placement_id).maybeSingle();
+        if(error) throw error;
+        outcome=cur?.status==="live"?"completed":"cancelled";
+      }
+      return transition(admin,"bvss_end_placement",{p_placement_id:placement_id,p_actor:actor,p_outcome:outcome,p_reason:typeof body.reason==="string"?body.reason.slice(0,500):null},headers);
     }
 
     return new Response(JSON.stringify({error:"unknown_action"}),{status:400,headers});
