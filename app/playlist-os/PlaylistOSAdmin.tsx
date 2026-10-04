@@ -415,7 +415,20 @@ function ReviewCard({ submission, playlists, token, refresh }: { submission: any
       </div>
       <div className="chip-row">{(submission.moods || []).map((m: string) => <span className="chip" key={m}>{m}</span>)}</div>
       {submission.notes && <p>{submission.notes}</p>}
-      {!!suggestions.length && <p className="muted">Routing: {suggestions.map((m: any) => (m.bvss_playlists?.canonical_name || 'Playlist') + (m.fit_band ? ' (' + FIT_LABEL[m.fit_band] + ')' : '')).join(' · ')}</p>}
+      {!!suggestions.length && (
+        <details>
+          <summary className="muted">Routing: {suggestions.map((m: any) => (m.bvss_playlists?.canonical_name || 'Playlist') + ' (' + (m.fit_band ? FIT_LABEL[m.fit_band] : 'not enough evidence') + ')').join(' · ')}</summary>
+          {suggestions.map((m: any) => (
+            <div key={m.playlist_id}>
+              <strong>{m.bvss_playlists?.canonical_name}</strong> · Fit signal (inferred)
+              <ul>
+                {(m.fit?.signals || []).map((sig: any, i: number) => <li key={i}>{sig.kind === 'aligned' ? '✓' : '✕'} {sig.detail}{sig.material ? '' : ' (minor)'}</li>)}
+                {m.fit?.insufficient_reason && <li>{m.fit.insufficient_reason}</li>}
+              </ul>
+            </div>
+          ))}
+        </details>
+      )}
       {(submission.bvss_routes || []).filter((r: any) => r.status === 'hold').map((r: any) => (
         <p className="muted" key={r.id}>On hold for {r.bvss_playlists?.canonical_name} until {String(r.hold_until).slice(0, 10)}</p>
       ))}
@@ -439,6 +452,57 @@ function ReviewCard({ submission, playlists, token, refresh }: { submission: any
       </div>
       {message && <p className="muted" role="status">{message}</p>}
     </article>
+  );
+}
+
+function SpotifyOwnerCard({ token, refresh }: { token: string; refresh: () => void }) {
+  const [state, setState] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  async function call(action: string) {
+    const response = await fetch(playlistApiBase + '/bvss-spotify-owner', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ action }),
+    });
+    return { ok: response.ok, body: await response.json().catch(() => ({})) };
+  }
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get('spotify');
+    if (result) setMessage(result.startsWith('connected') ? 'Spotify owner account connected (read-only).' : 'Spotify connection not saved: ' + result.replace(/_/g, ' ') + '.');
+    call('status').then(({ ok, body }) => ok && setState(body));
+  }, [token]);
+  async function connect() {
+    setBusy(true);
+    const { ok, body } = await call('start');
+    setBusy(false);
+    if (ok && body.url) window.location.href = body.url;
+    else setMessage('Could not start: ' + (body.error || 'request failed'));
+  }
+  async function observe() {
+    setBusy(true);
+    const { body } = await call('observe');
+    setBusy(false);
+    setMessage(body.error ? 'Check failed: ' + body.error : 'Checked ' + body.playlists + ' playlists · ' + body.placements_live + ' placement(s) confirmed live' + (body.failed ? ' · ' + body.failed + ' failed' : '') + '.');
+    refresh();
+    call('status').then(({ ok, body: b }) => ok && setState(b));
+  }
+  const conn = state?.connection;
+  return (
+    <div className="card">
+      <p className="eyebrow">Placement verification</p>
+      <h3>Spotify owner connection</h3>
+      {conn ? (
+        <p>Connected as <strong>{conn.account_id}</strong> · read-only ({(conn.scopes || []).join(', ')}) · owns {(conn.owned_playlists_checked || []).length} BVSS playlists · last check {state.last_sync_at ? String(state.last_sync_at).slice(0, 16).replace('T', ' ') + ' UTC' : 'not yet'}{state.status === 'degraded' ? ' · needs attention: ' + (conn.last_result?.error || 'last check failed') : ''}</p>
+      ) : (
+        <p className="muted">Not connected. Placements stay "Pending sync confirmation" until the account that owns the BVSS playlists is connected.</p>
+      )}
+      <div className="actions">
+        <button className="button button-small" disabled={busy} onClick={connect}>{conn ? 'Reconnect' : 'Connect Spotify owner account'}</button>
+        {conn && <button className="button button-secondary button-small" disabled={busy} onClick={observe}>{busy ? 'Checking…' : 'Check playlists now'}</button>}
+      </div>
+      {message && <p className="muted" role="status">{message}</p>}
+    </div>
   );
 }
 
@@ -872,6 +936,7 @@ export default function PlaylistOSAdmin() {
       </section>
       <section className="os-section">
         <div className="os-section-head"><div><p className="eyebrow">Placements</p><h2>Accepted → scheduled → live</h2></div><p className="muted">Live only after the playlist sync finds the track.</p></div>
+        <SpotifyOwnerCard token={session.access_token} refresh={load} />
         <PlacementsPanel placements={data.placements || []} token={session.access_token} refresh={load} />
       </section>
 

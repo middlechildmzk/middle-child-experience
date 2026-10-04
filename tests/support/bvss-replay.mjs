@@ -14,7 +14,7 @@ export const BVSS_ROOT = path.resolve(path.dirname(new URL(import.meta.url).path
 /** Last BVSS migration applied to production (manifest, captured 2026-09-29). */
 export const LAST_APPLIED_VERSION = "20260928163302";
 
-export async function replayBvss({ pending = [] } = {}) {
+export async function replayBvss({ pending = [], prelude = "" } = {}) {
   const dir = path.join(BVSS_ROOT, "supabase/migrations");
   const files = (await readdir(dir)).filter((f) => /^\d{14}_.+\.sql$/.test(f)).sort();
   const applied = files.filter((f) => f.slice(0, 14) <= LAST_APPLIED_VERSION);
@@ -22,6 +22,7 @@ export async function replayBvss({ pending = [] } = {}) {
   if (wanted.length !== pending.length) throw new Error(`unknown pending migration in ${pending.join(", ")}`);
   const db = new PGlite({ extensions: { pgcrypto } });
   await db.exec(SUPABASE_PLATFORM_STUB);
+  if (prelude) await db.exec(prelude);
   for (const file of [...applied, ...wanted]) {
     try {
       await db.exec(await readFile(path.join(dir, file), "utf8"));
