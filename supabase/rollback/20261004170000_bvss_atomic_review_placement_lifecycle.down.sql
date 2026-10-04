@@ -13,7 +13,7 @@ end
 $$;
 
 drop function if exists public.bvss_end_placement(uuid, jsonb, text, text);
-drop function if exists public.bvss_record_playlist_observation(uuid, text, text, timestamptz, jsonb);
+drop function if exists public.bvss_record_playlist_observation(uuid, text, text, timestamptz, jsonb, jsonb);
 drop function if exists public.bvss_report_placement_added(uuid, jsonb);
 drop function if exists public.bvss_decide_route(uuid, jsonb, text, text[], text, timestamptz, integer, date);
 drop function if exists public.bvss_actor_can_act(jsonb, uuid);

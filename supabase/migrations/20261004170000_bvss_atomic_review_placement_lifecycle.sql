@@ -446,14 +446,17 @@ $$;
 -- ---------------------------------------------------------------------------
 -- 7. Observed playlist snapshot -> the only path to live / removed
 -- ---------------------------------------------------------------------------
--- p_tracks: [{"spotify_track_id":"..","position":0,"added_at":"..","track_name":"..",
---             "artists":[".."],"isrc":"..","spotify_url":".."}, ...] (the full playlist)
+-- p_tracks: [{"spotify_track_id":"..","position":0,"added_at":".."}, ...] (the full playlist).
+-- Only verification facts are kept: track id, position, added time. No titles,
+-- artists or other playlist content are stored from this path.
+-- p_context: {"evidence_hash":"sha256 of the observed id list","method":"..","triggered_by":".."}
 create or replace function public.bvss_record_playlist_observation(
   p_playlist_id uuid,
   p_source text,
   p_snapshot_id text,
   p_observed_at timestamptz,
-  p_tracks jsonb
+  p_tracks jsonb,
+  p_context jsonb default '{}'::jsonb
 )
 returns jsonb
 language plpgsql
@@ -474,6 +477,9 @@ begin
   if p_observed_at is null or p_observed_at > now() + interval '5 minutes' or p_observed_at < now() - interval '2 days' then
     return jsonb_build_object('ok', false, 'error', 'observed_at_invalid');
   end if;
+  if jsonb_typeof(coalesce(p_context, '{}'::jsonb)) is distinct from 'object' then
+    return jsonb_build_object('ok', false, 'error', 'context_must_be_object');
+  end if;
   if jsonb_typeof(p_tracks) is distinct from 'array' then
     return jsonb_build_object('ok', false, 'error', 'tracks_must_be_array');
   end if;
@@ -485,18 +491,12 @@ begin
 
   -- Upsert the observed contents; tracks absent from the snapshot become inactive.
   insert into public.bvss_playlist_tracks
-    (playlist_id, spotify_track_id, track_name, artists, isrc, spotify_url, position, added_at, first_seen_at, last_seen_at, is_active, source, source_metadata)
-  select p_playlist_id, t ->> 'spotify_track_id', t ->> 'track_name',
-         coalesce(array(select jsonb_array_elements_text(t -> 'artists')), '{}'),
-         t ->> 'isrc', t ->> 'spotify_url', nullif(t ->> 'position', '')::integer,
+    (playlist_id, spotify_track_id, position, added_at, first_seen_at, last_seen_at, is_active, source, source_metadata)
+  select p_playlist_id, t ->> 'spotify_track_id', nullif(t ->> 'position', '')::integer,
          nullif(t ->> 'added_at', '')::timestamptz, p_observed_at, p_observed_at, true, p_source,
-         jsonb_build_object('snapshot_id', p_snapshot_id)
+         jsonb_build_object('snapshot_id', p_snapshot_id, 'evidence_hash', p_context ->> 'evidence_hash')
   from jsonb_array_elements(p_tracks) t
   on conflict (playlist_id, spotify_track_id) do update set
-    track_name = coalesce(excluded.track_name, bvss_playlist_tracks.track_name),
-    artists = case when cardinality(excluded.artists) > 0 then excluded.artists else bvss_playlist_tracks.artists end,
-    isrc = coalesce(excluded.isrc, bvss_playlist_tracks.isrc),
-    spotify_url = coalesce(excluded.spotify_url, bvss_playlist_tracks.spotify_url),
     position = excluded.position,
     added_at = coalesce(excluded.added_at, bvss_playlist_tracks.added_at),
     first_seen_at = case when bvss_playlist_tracks.is_active then bvss_playlist_tracks.first_seen_at else excluded.first_seen_at end,
@@ -532,7 +532,9 @@ begin
           'source', p_source, 'snapshot_id', p_snapshot_id, 'observed_at', p_observed_at,
           'playlist_id', p_playlist_id, 'spotify_track_id', rec.spotify_track_id,
           'position', v_track.position, 'added_at', v_track.added_at,
-          'playlist_size', jsonb_array_length(p_tracks), 'reported_before_detection', rec.status = 'pending_verification'),
+          'playlist_size', jsonb_array_length(p_tracks), 'reported_before_detection', rec.status = 'pending_verification',
+          'evidence_hash', p_context ->> 'evidence_hash', 'method', coalesce(p_context ->> 'method', p_source),
+          'triggered_by', p_context ->> 'triggered_by'),
         updated_at = now()
       where id = rec.id;
       v_live := v_live + 1;
@@ -619,11 +621,11 @@ revoke all on function public.bvss_refresh_submission_status(uuid) from public, 
 revoke all on function public.bvss_actor_can_act(jsonb, uuid) from public, anon, authenticated;
 revoke all on function public.bvss_decide_route(uuid, jsonb, text, text[], text, timestamptz, integer, date) from public, anon, authenticated;
 revoke all on function public.bvss_report_placement_added(uuid, jsonb) from public, anon, authenticated;
-revoke all on function public.bvss_record_playlist_observation(uuid, text, text, timestamptz, jsonb) from public, anon, authenticated;
+revoke all on function public.bvss_record_playlist_observation(uuid, text, text, timestamptz, jsonb, jsonb) from public, anon, authenticated;
 revoke all on function public.bvss_end_placement(uuid, jsonb, text, text) from public, anon, authenticated;
 grant execute on function public.bvss_refresh_submission_status(uuid) to service_role;
 grant execute on function public.bvss_actor_can_act(jsonb, uuid) to service_role;
 grant execute on function public.bvss_decide_route(uuid, jsonb, text, text[], text, timestamptz, integer, date) to service_role;
 grant execute on function public.bvss_report_placement_added(uuid, jsonb) to service_role;
-grant execute on function public.bvss_record_playlist_observation(uuid, text, text, timestamptz, jsonb) to service_role;
+grant execute on function public.bvss_record_playlist_observation(uuid, text, text, timestamptz, jsonb, jsonb) to service_role;
 grant execute on function public.bvss_end_placement(uuid, jsonb, text, text) to service_role;

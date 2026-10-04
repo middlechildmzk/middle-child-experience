@@ -61,10 +61,10 @@ async function decide(db, route, actor, decision, extra = {}) {
   );
   return r.rows[0].res;
 }
-async function observe(db, playlist, tracks, { source = "spotify_owner_api", snapshot = "snap1", at = null } = {}) {
+async function observe(db, playlist, tracks, { source = "spotify_owner_api", snapshot = "snap1", at = null, context = {} } = {}) {
   const r = await db.query(
-    `select public.bvss_record_playlist_observation($1, $2, $3, coalesce($4::timestamptz, now()), $5::jsonb) as res`,
-    [playlist, source, snapshot, at, JSON.stringify(tracks)],
+    `select public.bvss_record_playlist_observation($1, $2, $3, coalesce($4::timestamptz, now()), $5::jsonb, $6::jsonb) as res`,
+    [playlist, source, snapshot, at, JSON.stringify(tracks), JSON.stringify(context)],
   );
   return r.rows[0].res;
 }
@@ -149,6 +149,19 @@ describe(FIX, () => {
     assert.equal(p.verification_evidence.reported_before_detection, true);
     const ev = await one(db, `select public_label from public.bvss_submission_status_events where event_type='placement_live'`);
     assert.equal(ev.public_label, "Placed on Emotional Bass");
+  });
+
+  test("observation keeps only verification facts plus evidence hash and actor", async () => {
+    await decide(db, R_BVSS, ADMIN, "accept");
+    await observe(db, BVSS_PL, [{ spotify_track_id: TRACK, position: 4, added_at: new Date(Date.now() - 60000).toISOString(), track_name: "Never Alone", artists: ["Middle Child"], isrc: "QZ0000000001" }],
+      { snapshot: "snapX", context: { evidence_hash: "abc123", method: "spotify_owner_api:/playlists/{id}/items", triggered_by: "admin:" + ADMIN_USER } });
+    const t = await one(db, `select track_name, artists, isrc, position, source_metadata from public.bvss_playlist_tracks`);
+    assert.deepEqual([t.track_name, t.artists, t.isrc, t.position], [null, [], null, 4]);
+    assert.equal(t.source_metadata.evidence_hash, "abc123");
+    const p = await one(db, `select verification_evidence e from public.bvss_playlist_placements`);
+    assert.equal(p.e.evidence_hash, "abc123");
+    assert.equal(p.e.triggered_by, "admin:" + ADMIN_USER);
+    assert.equal(p.e.snapshot_id, "snapX");
   });
 
   test("removal is detected from a later snapshot", async () => {
@@ -258,7 +271,7 @@ describe(FIX, () => {
       `insert into public.bvss_submission_status_events (submission_id, event_type, public_label) values ('${SUB}', 'x', 'x')`,
       `insert into public.bvss_playlist_tracks (playlist_id, spotify_track_id) values ('${BVSS_PL}', '${TRACK}')`,
       `select public.bvss_decide_route('${R_BVSS}', '{"kind":"admin"}'::jsonb, 'accept')`,
-      `select public.bvss_record_playlist_observation('${BVSS_PL}', 'spotify_owner_api', 's', now(), '[]'::jsonb)`,
+      `select public.bvss_record_playlist_observation('${BVSS_PL}', 'spotify_owner_api', 's', now(), '[]'::jsonb, '{}'::jsonb)`,
     ];
     for (const role of ["anon", "authenticated"]) {
       for (const sql of writes) {
