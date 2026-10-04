@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { assessFit } from "../_shared/fit.ts";
 import { assessMetric } from "../_shared/source-health.ts";
 
 // Follower assessment for a rollup/playlist row, recomputed at request time
@@ -208,7 +209,7 @@ async function dashboard(admin:any){
   let matches:any[]=[];
   if(pids.length){
     const {data,error}=await admin.from("bvss_submission_matches")
-      .select("submission_id,score,reasons,rank,playlist_id,bvss_playlists(slug,canonical_name)")
+      .select("submission_id,score,reasons,rank,playlist_id,bvss_playlists(slug,canonical_name,primary_genre,secondary_genres,seo_keywords,moods,anchor_artists)")
       .in("submission_id",pids).order("rank");
     if(error) throw error;
     matches=data||[];
@@ -230,7 +231,10 @@ async function dashboard(admin:any){
   const routeBy=new Map<string,any[]>();
   for(const r of routes){ const a=routeBy.get(r.submission_id)||[]; a.push(r); routeBy.set(r.submission_id,a); }
   const queue=(subs||[]).map((s:any)=>({...s,
-    suggested_matches:(matchBy.get(s.id)||[]).map(({score,...m}:any)=>({...m,fit_band:fitBand(score)})),
+    suggested_matches:(matchBy.get(s.id)||[]).map(({score,...m}:any)=>{
+      const fit=assessFit(s,m.bvss_playlists||{});
+      return {...m,fit_band:fit.band,fit};
+    }),
     bvss_routes:routeBy.get(s.id)||[]}));
 
   // Placement lifecycle for BVSS-owned playlists (scheduled -> pending -> live -> ended).
@@ -343,7 +347,6 @@ async function dashboard(admin:any){
   };
 }
 
-const fitBand=(score:unknown)=>typeof score!=="number"?null:score>=75?"strong_fit":score>=50?"worth_a_look":"long_shot";
 const httpFor=(e:string)=>["route_not_found","placement_not_found","playlist_not_found"].includes(e)?404:e==="not_bvss_route"||e==="invalid_actor"||e==="curator_not_approved"?403:["already_decided","route_withdrawn","invalid_route_state","invalid_placement_state","track_already_placed_on_playlist","only_live_can_complete","only_unverified_can_cancel"].includes(e)?409:400;
 async function transition(admin:any,fn:string,args:Record<string,unknown>,headers:Record<string,string>){
   const {data,error}=await admin.rpc(fn,args);

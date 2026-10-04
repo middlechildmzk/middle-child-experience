@@ -427,7 +427,18 @@ export default function CuratorPortal() {
                     )}
                   </div>
                   <div className="chip-row">{(submission?.moods || []).map((m: string) => <span className="chip" key={m}>{m}</span>)}</div>
-                  {route.match_reasons?.length ? <p className="muted">Routing reasons: {route.match_reasons.join(' · ')}</p> : null}
+                  {route.match_reasons?.length ? <p className="muted">Why you're seeing this: {route.match_reasons.join(' · ')}</p> : null}
+                  {route.fit && (
+                    <details>
+                      <summary>Fit signal (inferred): {route.fit.label || 'Not enough evidence for a fit read'}</summary>
+                      <ul>
+                        {route.fit.signals.map((sig: any, i: number) => (
+                          <li key={i}>{sig.kind === 'aligned' ? '✓' : '✕'} {sig.detail}{sig.material ? '' : ' (minor)'} · artist-attested vs curator-stated</li>
+                        ))}
+                        {route.fit.insufficient_reason && <li>{route.fit.insufficient_reason}</li>}
+                      </ul>
+                    </details>
+                  )}
                   {submission?.notes && <p>{submission.notes}</p>}
                   <div className="actions">
                     {submission?.download_permission && (

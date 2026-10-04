@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { assessFit } from "../_shared/fit.ts";
 
 const origins=new Set(["https://bvssfvm.com","https://www.bvssfvm.com","http://localhost:3000"]);
 function headers(origin:string|null){
@@ -33,7 +34,6 @@ const playlistId=(url:string)=>{
   return m?m[1]:null;
 };
 const code=()=>("BVSSFVM-"+crypto.randomUUID().replace(/-/g,"").slice(0,7).toUpperCase());
-const fitBand=(score:unknown)=>typeof score!=="number"?null:score>=75?"strong_fit":score>=50?"worth_a_look":"long_shot";
 // Transition-function error codes -> HTTP status.
 const httpFor=(e:string)=>["route_not_found","placement_not_found"].includes(e)?404:e==="curator_not_approved"||e==="not_bvss_route"||e==="invalid_actor"?403:["already_decided","route_withdrawn","invalid_route_state","invalid_placement_state","track_already_placed_on_playlist","only_live_can_complete","only_unverified_can_cancel"].includes(e)?409:400;
 async function rpc(db:any,fn:string,args:Record<string,unknown>,h:Record<string,string>){
@@ -72,13 +72,17 @@ Deno.serve(async(req)=>{
       let routes:any[]=[];
       if(profile.status==="approved"){
         const {data,error}=await db.from("bvss_submission_routes")
-          .select("id,status,route_type,match_score,match_reasons,routed_at,first_opened_at,decided_at,decision,decision_notes,decline_reasons,hold_until,placement_id,playlist_id,bvss_playlists(slug,canonical_name,spotify_url),placement:bvss_playlist_placements!bvss_submission_routes_placement_id_fkey(id,status,scheduled_for,accepted_at,added_reported_at,placed_at,verified_live_at,actual_position,target_position,ended_at,end_reason),bvss_submissions(id,artist_name,song_title,release_state,spotify_track_id,spotify_url,source_url,source_platform,artwork_url,release_date,genre,moods,comparable_artists,is_explicit,notes,private_stream_url,download_external_url,download_source,download_permission,artist_socials,submitted_at)")
+          .select("id,status,route_type,match_score,match_reasons,routed_at,first_opened_at,decided_at,decision,decision_notes,decline_reasons,hold_until,placement_id,playlist_id,bvss_playlists(slug,canonical_name,spotify_url,primary_genre,secondary_genres,seo_keywords,moods,anchor_artists),placement:bvss_playlist_placements!bvss_submission_routes_placement_id_fkey(id,status,scheduled_for,accepted_at,added_reported_at,placed_at,verified_live_at,actual_position,target_position,ended_at,end_reason),bvss_submissions(id,artist_name,song_title,release_state,spotify_track_id,spotify_url,source_url,source_platform,artwork_url,release_date,genre,moods,comparable_artists,is_explicit,notes,private_stream_url,download_external_url,download_source,download_permission,artist_socials,submitted_at)")
           .eq("curator_id",profile.id)
           .in("status",["queued","opened","hold","accepted"])
           .order("routed_at",{ascending:false}).limit(250);
         if(error) throw error;
-        // Fit is shown as a band with reasons, never as a 0-100 number (Muse v1).
-        routes=(data||[]).map(({match_score,...r}:any)=>({...r,fit_band:fitBand(match_score)}));
+        // Fit is a band from material matches/mismatches with visible evidence,
+        // never a 0-100 number (Muse v1). No band when evidence is insufficient.
+        routes=(data||[]).map(({match_score,...r}:any)=>{
+          const fit=assessFit(r.bvss_submissions||{},r.bvss_playlists||{});
+          return {...r,fit_band:fit.band,fit};
+        });
       }
       return new Response(JSON.stringify({profile,playlists:playlists||[],claims:claims||[],routes,facts:facts||null,entitlement:entitlement||null,usage:usage||null}),{headers:h});
     }
