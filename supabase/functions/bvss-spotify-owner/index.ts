@@ -247,7 +247,8 @@ Deno.serve(async (req) => {
         .select("spotify_account_id,scopes,status,connected_at,last_verified_at,last_error")
         .eq("user_id", user.id).maybeSingle();
       if (error) throw error;
-      return new Response(JSON.stringify({ ok: true, connected: !!data, connection: data || null, redirect_uri: REDIRECT_URI }), { headers: h });
+      const configured = !!Deno.env.get("SPOTIFY_CLIENT_ID") && !!Deno.env.get("SPOTIFY_CLIENT_SECRET");
+      return new Response(JSON.stringify({ ok: true, connected: !!data, connection: data || null, spotify_app_configured: configured, redirect_uri: REDIRECT_URI }), { headers: h });
     }
     if (action === "curator_verify") {
       if (!user) return new Response(JSON.stringify({ error: "not_authenticated" }), { status: 401, headers: h });
