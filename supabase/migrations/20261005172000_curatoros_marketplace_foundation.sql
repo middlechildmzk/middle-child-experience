@@ -59,7 +59,7 @@ begin
     values
       ('BVSS FVM', 'BVSS FVM', 'curator_network', 'https://bvssfvm.com',
        'active', 'verified', 'low', 'verified', current_date, 3,
-       'https://bvssfvm.com', 'active', 'label')
+       'https://bvssfvm.com', 'qualified', 'label')
     returning id into v_org;
   else
     update public.organizations
