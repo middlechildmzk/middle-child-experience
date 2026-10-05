@@ -1,4 +1,5 @@
 -- Keep a submission in review while any routed playlist still needs a decision.
+-- Body is byte-identical to the statement recorded in the production ledger.
 create or replace function public.bvss_refresh_submission_status(p_submission_id uuid)
 returns text
 language plpgsql
@@ -17,6 +18,7 @@ begin
   into v_next
   from public.bvss_submission_routes
   where submission_id = p_submission_id;
+
   if v_next is not null then
     update public.bvss_submissions
     set status = v_next
@@ -24,6 +26,7 @@ begin
       and status is distinct from v_next
       and status <> 'withdrawn';
   end if;
+
   return v_next;
 end
 $$;
