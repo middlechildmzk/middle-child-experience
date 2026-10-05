@@ -1,8 +1,73 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
-
 const SUPABASE_URL='https://myrtdfyjoxvtubusrrmf.supabase.co';
 const SUPABASE_KEY='sb_publishable_128ongB0ItsEwmef_F1zTg_YnxFX6M8';
-const supabase=createClient(SUPABASE_URL,SUPABASE_KEY);
+const AUTH_STORAGE='curatoros.auth.session';
+
+function readStoredSession(){
+  try{return JSON.parse(localStorage.getItem(AUTH_STORAGE)||'null')}catch{return null}
+}
+function storeSession(session){
+  try{
+    if(session)localStorage.setItem(AUTH_STORAGE,JSON.stringify(session));
+    else localStorage.removeItem(AUTH_STORAGE);
+  }catch{}
+}
+function normalizeSession(body){
+  if(!body?.access_token)return null;
+  const expiresAt=body.expires_at||Math.floor(Date.now()/1000)+(body.expires_in||3600);
+  return {
+    access_token:body.access_token,
+    refresh_token:body.refresh_token||null,
+    expires_at:expiresAt,
+    token_type:body.token_type||'bearer',
+    user:body.user||null
+  };
+}
+async function authRequest(path,body){
+  const r=await fetch(SUPABASE_URL+path,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY},
+    body:JSON.stringify(body||{})
+  });
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok)return {data:null,error:{message:data?.msg||data?.error_description||data?.message||data?.error||('Auth request failed ('+r.status+')')}};
+  return {data,error:null};
+}
+let currentSession=readStoredSession();
+const authListeners=new Set();
+async function ensureSession(){
+  if(!currentSession)return null;
+  if(currentSession.expires_at&&currentSession.expires_at<=Math.floor(Date.now()/1000)+60&&currentSession.refresh_token){
+    const rr=await authRequest('/auth/v1/token?grant_type=refresh_token',{refresh_token:currentSession.refresh_token});
+    if(!rr.error){
+      currentSession=normalizeSession(rr.data);
+      storeSession(currentSession);
+      authListeners.forEach(cb=>cb('TOKEN_REFRESHED',currentSession));
+    }
+  }
+  return currentSession;
+}
+const supabase={auth:{
+  async getSession(){return {data:{session:await ensureSession()},error:null}},
+  async signInWithPassword({email,password}){
+    const r=await authRequest('/auth/v1/token?grant_type=password',{email,password});
+    if(r.error)return {data:{session:null,user:null},error:r.error};
+    currentSession=normalizeSession(r.data);storeSession(currentSession);
+    authListeners.forEach(cb=>cb('SIGNED_IN',currentSession));
+    return {data:{session:currentSession,user:currentSession?.user||null},error:null};
+  },
+  async signUp({email,password}){
+    const r=await authRequest('/auth/v1/signup',{email,password});
+    if(r.error)return {data:{session:null,user:null},error:r.error};
+    currentSession=normalizeSession(r.data);storeSession(currentSession);
+    if(currentSession)authListeners.forEach(cb=>cb('SIGNED_IN',currentSession));
+    return {data:{session:currentSession,user:r.data?.user||currentSession?.user||null},error:null};
+  },
+  onAuthStateChange(cb){
+    authListeners.add(cb);
+    queueMicrotask(()=>cb('INITIAL_SESSION',currentSession));
+    return {data:{subscription:{unsubscribe(){authListeners.delete(cb)}}}};
+  }
+}};
 const root=document.getElementById('app');
 
 const state={mode:'artist',playlists:null,curators:null,session:null,submit:{track:null,genre:'',moods:[],selected:[],step:1,results:[]}};
