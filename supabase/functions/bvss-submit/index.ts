@@ -243,7 +243,7 @@ Deno.serve(async(req)=>{
       const artistHits=(p.anchor_artists||[]).map(norm).filter((x:string)=>na.includes(x)).length;
       if(artistHits){score+=Math.min(20,artistHits*10);reasons.push(String(artistHits)+" comparable-artist match"+(artistHits>1?"es":""));}
       return {...p,score:Math.min(100,score),reasons};
-    }).filter((x:any)=>x.score>=15)
+    }).filter((x:any)=>x.score>=15||(route_mode==="selected_only"&&preferredSet.has(x.id)))
       .sort((a:any,b:any)=>b.score-a.score||Number(preferredSet.has(b.id))-Number(preferredSet.has(a.id)))
       .slice(0,8);
 
