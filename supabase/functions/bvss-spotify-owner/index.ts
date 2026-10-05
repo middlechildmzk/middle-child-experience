@@ -219,6 +219,10 @@ Deno.serve(async (req) => {
     if (req.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: h });
     const body = await req.json().catch(() => ({}));
     const action = typeof body.action === "string" ? body.action : "";
+    if (action === "configuration_status") {
+      const configured = !!Deno.env.get("SPOTIFY_CLIENT_ID") && !!Deno.env.get("SPOTIFY_CLIENT_SECRET");
+      return new Response(JSON.stringify({ ok: true, spotify_app_configured: configured, redirect_uri: REDIRECT_URI, scope: "playlist-read-private" }), { headers: h });
+    }
     const user = await authenticatedUser(req);
     const admin = user ? (await db.from("bvss_admin_users").select("role").eq("user_id", user.id).maybeSingle()).data : null;
 
