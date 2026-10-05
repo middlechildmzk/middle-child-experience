@@ -28,7 +28,7 @@ const articles=[
 
 function chrome(content){
  const artist=[['Discover','/playlists'],['Submit Music','/submit'],['Playlists','/playlists'],['Curators','/curators'],['Genres','/genres'],['Free Tools','/tools'],['Learn','/learn']];
- const curator=[['Inbox','/app/inbox'],['Playlists','/playlists'],['Placements','/app/inbox#placements'],['Analytics','/app/inbox#analytics'],['Profile','/apply']];
+ const curator=[['Inbox','/app/inbox'],['Playlists','/apply'],['Placements','/app/placements'],['Analytics','/app/analytics'],['Profile','/apply']];
  const nav=state.mode==='artist'?artist:curator;
  return '<div class="statusbar"><span>SYSTEM</span><strong>Canonical backend: ArtistOS / Playlist OS / CuratorOS</strong><span class="status-accent">Founding beta</span></div>'+
  '<header class="site-header"><div class="nav-shell"><div class="brand">CuratorOS</div><span class="spec-pill">BETA</span>'+
@@ -201,7 +201,7 @@ async function curatorWorkspace(mode='apply'){
 
  const routes=d.routes||[];
  return '<div><div class="section-head"><div><div class="eyebrow">Curator workspace</div><h2>Inbox</h2></div><span class="provenance">Account: '+esc(d.profile?.status||'unknown')+'</span></div>'+
-   (routes.length?routes.map(r=>'<article class="inbox-card"><div class="eyebrow-row"><span>'+esc(r.bvss_playlists?.canonical_name||'Playlist')+'</span><span>'+esc(r.status)+'</span></div><h3>'+esc(r.bvss_submissions?.song_title||'Submission')+' — '+esc(r.bvss_submissions?.artist_name||'Artist')+'</h3>'+(r.fit_band?fitBadge(r.fit_band):'')+chips((r.fit?.reasons||r.match_reasons||[]).map(x=>typeof x==='string'?x:(x.label||'Fit evidence')).slice(0,3))+'<div class="provenance">This route is visible only to the curator authorized for this playlist.</div><div style="display:flex;gap:8px;margin-top:14px"><button class="button dark small curator-decision" data-route="'+esc(r.id)+'" data-decision="accept">Accept</button><button class="button small curator-decision" data-route="'+esc(r.id)+'" data-decision="hold">Hold</button><button class="button small curator-decision" data-route="'+esc(r.id)+'" data-decision="reject">Decline</button></div></article>').join(''):'<div class="detail-card">No assigned routes yet.</div>')+
+   (routes.length?routes.map(r=>{const p=r.placement;const decisionControls=['queued','opened','hold'].includes(r.status)?'<div style="display:flex;gap:8px;margin-top:14px"><button class="button dark small curator-decision" data-route="'+esc(r.id)+'" data-decision="accept">Accept</button><button class="button small curator-decision" data-route="'+esc(r.id)+'" data-decision="hold">Hold</button><button class="button small curator-decision" data-route="'+esc(r.id)+'" data-decision="reject">Decline</button></div>':p?.status==='scheduled'?'<div style="margin-top:14px"><button class="button dark small report-added" data-placement="'+esc(p.id)+'">I’ve added it</button></div>':p?.status==='pending_verification'?'<div class="notice" style="margin-top:14px">Pending verification. CuratorOS has not called this Live yet.</div>':p?.status==='live'?'<div class="notice" style="margin-top:14px">Verified Live'+(p.actual_position!=null?' · Position '+esc(Number(p.actual_position)+1):'')+'</div>':'';return '<article class="inbox-card"><div class="eyebrow-row"><span>'+esc(r.bvss_playlists?.canonical_name||'Playlist')+'</span><span>'+esc(p?.status||r.status)+'</span></div><h3>'+esc(r.bvss_submissions?.song_title||'Submission')+' — '+esc(r.bvss_submissions?.artist_name||'Artist')+'</h3>'+(r.fit_band?fitBadge(r.fit_band):'')+chips((r.fit?.reasons||r.match_reasons||[]).map(x=>typeof x==='string'?x:(x.label||'Fit evidence')).slice(0,3))+'<div class="provenance">This route is visible only to the curator authorized for this playlist.</div>'+decisionControls+'</article>'}).join(''):'<div class="detail-card">No assigned routes yet.</div>')+
    '</div>';
 }
 
@@ -219,6 +219,23 @@ async function adminPage(){
  '</div></section></main>';
 }
 async function inboxPage(){const {data}=await supabase.auth.getSession();state.session=data.session;return '<main>'+pageHero('Curator workspace','Inbox.','Each playlist route is independent. Accepting one route never accepts the submission everywhere.')+'<section class="section"><div class="shell" id="curator-root">'+(state.session?await curatorWorkspace('inbox'):authForm())+'</div></section></main>'}
+async function curatorData(){
+ const {data}=await supabase.auth.getSession();state.session=data.session;if(!state.session)return null;
+ const r=await fetch('/api/curator',{headers:{Authorization:'Bearer '+state.session.access_token}});
+ if(!r.ok)return null;return r.json();
+}
+async function placementsPage(){
+ const d=await curatorData();
+ if(!d)return '<main>'+pageHero('Curator workspace','Placements.','Sign in with an approved curator account.')+'<section class="section"><div class="shell">'+authForm()+'</div></section></main>';
+ const rows=(d.routes||[]).filter(r=>r.placement);
+ return '<main>'+pageHero('Curator workspace','Placements.','Accepted is intent. Live is evidence.')+'<section class="section"><div class="shell"><table class="status-table"><thead><tr><th>Track</th><th>Playlist</th><th>Placement</th><th>Schedule</th><th>Next action</th></tr></thead><tbody>'+rows.map(r=>{const p=r.placement;let action='—';if(p.status==='scheduled')action='<button class="button dark small report-added" data-placement="'+esc(p.id)+'">I’ve added it</button>';else if(p.status==='pending_verification')action='Await playlist observation';else if(p.status==='live')action='Verified'+(p.actual_position!=null?' · position '+esc(Number(p.actual_position)+1):'');return '<tr><td>'+esc(r.bvss_submissions?.song_title||'Track')+'<br><span class="provenance">'+esc(r.bvss_submissions?.artist_name||'')+'</span></td><td>'+esc(r.bvss_playlists?.canonical_name||'Playlist')+'</td><td>'+esc(p.status)+'</td><td>'+esc(p.scheduled_for||'Not scheduled')+'</td><td>'+action+'</td></tr>'}).join('')+'</tbody></table>'+(rows.length?'':'<div class="detail-card">No placements yet.</div>')+'</div></section></main>';
+}
+async function analyticsPage(){
+ const d=await curatorData();
+ if(!d)return '<main>'+pageHero('Curator workspace','Analytics.','Sign in with an approved curator account.')+'<section class="section"><div class="shell">'+authForm()+'</div></section></main>';
+ const f=d.facts||{},u=d.usage||{},e=d.entitlement||{};
+ return '<main>'+pageHero('Curator workspace','Analytics.','Operational facts only. Metrics stay unavailable until we have enough real observations.')+'<section class="section"><div class="shell"><div class="grid3"><div class="tile"><span class="tile-number">Verified playlists</span><h3>'+esc(f.verified_playlist_count??0)+'</h3><p>Verified public playlist claims tied to your curator account.</p></div><div class="tile"><span class="tile-number">Reviews completed</span><h3>'+esc(f.reviews_completed??0)+'</h3><p>Recorded decisions. No invented acceptance benchmark.</p></div><div class="tile"><span class="tile-number">Routes this month</span><h3>'+esc(u.routes_this_month??0)+'</h3><p>Capacity: '+esc(e.max_monthly_routes??'not configured')+'.</p></div></div><div class="detail-card" style="margin-top:20px"><div class="eyebrow">Response data</div><h2>'+(f.median_response_hours==null?'Not enough data':esc(Math.round(Number(f.median_response_hours)))+'h median response')+'</h2><p>CuratorOS only exposes measured operational facts. Small samples are not framed as reputation scores.</p></div></div></section></main>';
+}
 function notFound(){return '<main>'+pageHero('404','Not found.','That CuratorOS page does not exist.')+'<section class="section"><div class="shell"><a data-link class="button dark" href="/">Back home</a></div></section></main>'}
 
 async function render(){
@@ -239,6 +256,8 @@ async function render(){
   else if(p.startsWith('/learn/'))content=articlePage(p.split('/')[2]);
   else if(p==='/apply')content=await applyPage();
   else if(p==='/app/inbox')content=await inboxPage();
+  else if(p==='/app/placements')content=await placementsPage();
+  else if(p==='/app/analytics')content=await analyticsPage();
   else if(p==='/admin')content=await adminPage();
   else if(p==='/submissions/status')content=await statusPage();
   else content=notFound();
