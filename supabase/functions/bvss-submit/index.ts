@@ -127,6 +127,7 @@ Deno.serve(async(req)=>{
           .in("slug",preferred_slugs)
       : {data:[] as any[]};
     const preferredIds=(preferred||[]).map((p:any)=>p.id);
+    const preferredSet=new Set(preferredIds);
 
     let originPlaylist:any=null;
     if(origin_playlist){
@@ -173,6 +174,64 @@ Deno.serve(async(req)=>{
     const moods=Array.from(new Set(
       moods_input.map((value)=>moodByKey.get(norm(value))).filter((value):value is string=>Boolean(value))
     )).slice(0,8);
+
+    if(route_mode==="selected_only"){
+      const selected=(playlists||[]).filter((p:any)=>preferredSet.has(p.id));
+      const selectedIds=selected.map((p:any)=>p.id);
+      const [{data:openRoutes},{data:priorTrackRoutes}]=await Promise.all([
+        selectedIds.length
+          ? supabase.from("bvss_submission_routes").select("playlist_id").in("playlist_id",selectedIds).in("status",["queued","opened","hold"])
+          : Promise.resolve({data:[] as any[]}),
+        spotify_track_id&&selectedIds.length
+          ? supabase.from("bvss_submission_routes")
+              .select("playlist_id,routed_at,bvss_submissions!inner(spotify_track_id)")
+              .in("playlist_id",selectedIds)
+              .eq("bvss_submissions.spotify_track_id",spotify_track_id)
+          : Promise.resolve({data:[] as any[]})
+      ]);
+      const openCount=new Map<string,number>();
+      for(const route of openRoutes||[]) openCount.set(route.playlist_id,(openCount.get(route.playlist_id)||0)+1);
+      const priorByPlaylist=new Map<string,string>();
+      for(const route of priorTrackRoutes||[]){
+        const prev=priorByPlaylist.get(route.playlist_id);
+        if(!prev||new Date(route.routed_at).getTime()>new Date(prev).getTime()) priorByPlaylist.set(route.playlist_id,route.routed_at);
+      }
+
+      const materialTags=[genre,...moods,...comparable_artists].map(norm);
+      const unavailable:any[]=[];
+      for(const p of selected){
+        const reasons:string[]=[];
+        if(release_state==="unreleased"&&p.accepts_unreleased===false) reasons.push("unreleased_not_accepted");
+        if(is_explicit&&p.accepts_explicit===false) reasons.push("explicit_not_accepted");
+        const hard=(p.hard_no_tags||[]).map(norm).filter(Boolean);
+        if(hard.some((tag:string)=>materialTags.includes(tag))) reasons.push("hard_no_rule");
+        if((openCount.get(p.id)||0)>=Number(p.max_open_routes||100)) reasons.push("at_capacity");
+        const prior=priorByPlaylist.get(p.id);
+        if(prior&&Number(p.route_cooldown_days||0)>0&&new Date(prior).getTime()>Date.now()-Number(p.route_cooldown_days)*86400000) reasons.push("cooldown_active");
+        if(reasons.length) unavailable.push({slug:p.slug,reasons});
+      }
+
+      const partnerSelected=selected.filter((p:any)=>p.network_owner_type==="partner"&&p.curator_id);
+      if(partnerSelected.length){
+        const curatorIds=Array.from(new Set(partnerSelected.map((p:any)=>p.curator_id)));
+        const [{data:ents},{data:usage}]=await Promise.all([
+          supabase.from("bvss_curator_entitlements").select("curator_id,max_monthly_routes").in("curator_id",curatorIds),
+          supabase.from("bvss_curator_usage_monthly").select("curator_id,routes_this_month").in("curator_id",curatorIds)
+        ]);
+        const maxBy=new Map((ents||[]).map((e:any)=>[e.curator_id,Number(e.max_monthly_routes||0)]));
+        const usedBy=new Map((usage||[]).map((u:any)=>[u.curator_id,Number(u.routes_this_month||0)]));
+        for(const p of partnerSelected){
+          if((maxBy.get(p.curator_id)||0)<=(usedBy.get(p.curator_id)||0)) unavailable.push({slug:p.slug,reasons:["curator_capacity"]});
+        }
+      }
+
+      if(unavailable.length)
+        return new Response(JSON.stringify({
+          error:"route_unavailable",
+          message:"One or more selected playlists cannot receive this track right now.",
+          unavailable
+        }),{status:409,headers:h});
+    }
 
     const now=new Date().toISOString();
     const duplicate_fingerprint=await sha256([
@@ -231,7 +290,6 @@ Deno.serve(async(req)=>{
     const ng=norm(genre);
     const nm=moods.map(norm);
     const na=comparable_artists.map(norm);
-    const preferredSet=new Set(preferredIds);
     const ranked=(playlists||[]).map((p:any)=>{
       let score=0; const reasons:string[]=[];
       if(preferredSet.has(p.id)){score+=35;reasons.push("artist selected this playlist");}
