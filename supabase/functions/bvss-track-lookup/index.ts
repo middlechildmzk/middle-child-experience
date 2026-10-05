@@ -1,9 +1,15 @@
 
 const allowed = new Set(["https://bvssfvm.com","https://www.bvssfvm.com","http://localhost:3000"]);
+const previewOrigin = /^https:\/\/middle-child-experience-[a-z0-9-]+-middlechildmzks-projects\.vercel\.app$/i;
+
+function allowedOrigin(origin:string|null){
+  if (!origin) return "https://bvssfvm.com";
+  return allowed.has(origin) || previewOrigin.test(origin) ? origin : "https://bvssfvm.com";
+}
 
 function cors(origin:string|null){
   return {
-    "Access-Control-Allow-Origin": origin && allowed.has(origin) ? origin : "https://bvssfvm.com",
+    "Access-Control-Allow-Origin": allowedOrigin(origin),
     "Access-Control-Allow-Headers":"content-type",
     "Access-Control-Allow-Methods":"GET, OPTIONS",
     "Vary":"Origin",
@@ -102,29 +108,123 @@ async function spotifyToken(){
   return body.access_token as string;
 }
 
+function spotifyCredentialsConfigured(){
+  return Boolean(Deno.env.get("SPOTIFY_CLIENT_ID") && Deno.env.get("SPOTIFY_CLIENT_SECRET"));
+}
+
+function soundchartsCredentialsConfigured(){
+  return Boolean(
+    (Deno.env.get("SOUNDCHARTS_APP_ID") && Deno.env.get("SOUNDCHARTS_API_KEY")) ||
+    (Deno.env.get("SOUNDCHARTS_CLIENT_ID") && Deno.env.get("SOUNDCHARTS_CLIENT_SECRET"))
+  );
+}
+
+async function soundchartsHeaders(){
+  const appId=Deno.env.get("SOUNDCHARTS_APP_ID");
+  const apiKey=Deno.env.get("SOUNDCHARTS_API_KEY");
+  if(appId&&apiKey) return {"x-app-id":appId,"x-api-key":apiKey};
+
+  const clientId=Deno.env.get("SOUNDCHARTS_CLIENT_ID");
+  const clientSecret=Deno.env.get("SOUNDCHARTS_CLIENT_SECRET");
+  if(!clientId||!clientSecret) return null;
+  const params=new URLSearchParams({grant_type:"client_credentials"});
+  const teamId=Deno.env.get("SOUNDCHARTS_TEAM_ID");
+  if(teamId) params.set("team_id",teamId);
+  const tokenResponse=await fetch("https://account.soundcharts.com/oauth/token",{
+    method:"POST",
+    headers:{
+      "authorization":"Basic "+btoa(clientId+":"+clientSecret),
+      "content-type":"application/x-www-form-urlencoded"
+    },
+    body:params
+  });
+  if(!tokenResponse.ok) return null;
+  const token=await tokenResponse.json().catch(()=>null);
+  return token?.access_token ? {"authorization":"Bearer "+token.access_token} : null;
+}
+
+function spotifyIdFromIdentifier(item:any){
+  const direct=typeof item?.identifier==="string" ? item.identifier.trim() : "";
+  if(/^[A-Za-z0-9]{22}$/.test(direct)) return direct;
+  const url=typeof item?.url==="string" ? item.url : "";
+  return spotifyTrackId(url);
+}
+
+async function searchSoundcharts(q:string){
+  const headers=await soundchartsHeaders();
+  if(!headers) return {error:"spotify_search_unconfigured",configured:false,status:503};
+
+  const search=await fetch(
+    "https://customer.api.soundcharts.com/api/v2/song/search/"+encodeURIComponent(q)+"?limit=8",
+    {headers}
+  );
+  if(search.status===403) return {error:"soundcharts_song_search_not_entitled",configured:false,status:503};
+  if(search.status===404) return {status:200,configured:true,results:[]};
+  if(!search.ok) return {error:"soundcharts_song_search_failed",configured:true,status:search.status};
+
+  const body=await search.json().catch(()=>({}));
+  const candidates=(body?.items||[]).slice(0,8);
+  const results:any[]=[];
+
+  await Promise.all(candidates.map(async(raw:any)=>{
+    const song=raw?.song||raw;
+    const uuid=typeof song?.uuid==="string" ? song.uuid : "";
+    if(!uuid) return;
+
+    const idsRes=await fetch(
+      "https://customer.api.soundcharts.com/api/v2/song/"+encodeURIComponent(uuid)+"/identifiers?platform=spotify&onlyDefault=true&limit=5",
+      {headers}
+    );
+    if(!idsRes.ok) return;
+    const idsBody=await idsRes.json().catch(()=>({}));
+    const identifier=(idsBody?.items||[]).find((x:any)=>x?.platformCode==="spotify") || (idsBody?.items||[])[0];
+    const spotifyId=spotifyIdFromIdentifier(identifier);
+    if(!spotifyId) return;
+
+    results.push({
+      source:"spotify",
+      spotify_track_id:spotifyId,
+      spotify_url:"https://open.spotify.com/track/"+spotifyId,
+      title:song?.name||null,
+      artist_name:song?.creditName||null,
+      artwork_url:song?.imageUrl||null,
+      release_date:song?.releaseDate||null,
+      is_explicit:null,
+      album_name:null
+    });
+  }));
+
+  return {status:200,configured:true,results:results.slice(0,8)};
+}
+
 async function searchSpotify(q:string){
   const token=await spotifyToken();
-  if(!token) return {error:"spotify_search_unconfigured",configured:false,status:503};
-  const res=await fetch("https://api.spotify.com/v1/search?type=track&limit=8&q="+encodeURIComponent(q),{
-    headers:{"Authorization":"Bearer "+token}
-  });
-  if(!res.ok) return {error:"spotify_search_failed",configured:true,status:res.status};
-  const body=await res.json();
-  return {
-    status:200,
-    configured:true,
-    results:(body.tracks?.items||[]).map((t:any)=>({
-      source:"spotify",
-      spotify_track_id:t.id,
-      spotify_url:t.external_urls?.spotify||("https://open.spotify.com/track/"+t.id),
-      title:t.name,
-      artist_name:(t.artists||[]).map((a:any)=>a.name).join(", "),
-      artwork_url:t.album?.images?.[0]?.url||null,
-      release_date:t.album?.release_date||null,
-      is_explicit:Boolean(t.explicit),
-      album_name:t.album?.name||null
-    }))
-  };
+  if(token){
+    const res=await fetch("https://api.spotify.com/v1/search?type=track&limit=8&q="+encodeURIComponent(q),{
+      headers:{"Authorization":"Bearer "+token}
+    });
+    if(res.ok){
+      const body=await res.json();
+      return {
+        status:200,
+        configured:true,
+        results:(body.tracks?.items||[]).map((t:any)=>({
+          source:"spotify",
+          spotify_track_id:t.id,
+          spotify_url:t.external_urls?.spotify||("https://open.spotify.com/track/"+t.id),
+          title:t.name,
+          artist_name:(t.artists||[]).map((a:any)=>a.name).join(", "),
+          artwork_url:t.album?.images?.[0]?.url||null,
+          release_date:t.album?.release_date||null,
+          is_explicit:Boolean(t.explicit),
+          album_name:t.album?.name||null
+        }))
+      };
+    }
+  }
+
+  if(soundchartsCredentialsConfigured()) return searchSoundcharts(q);
+  return {error:"spotify_search_unconfigured",configured:false,status:503};
 }
 
 Deno.serve(async(req)=>{
@@ -148,8 +248,10 @@ Deno.serve(async(req)=>{
       return new Response(JSON.stringify(result.results?{ok:true,configured:result.configured,results:result.results}:{ok:false,configured:result.configured,error:result.error}),{status:result.status,headers:h});
     }
 
-    const token=await spotifyToken();
-    return new Response(JSON.stringify({ok:true,spotify_text_search_configured:Boolean(token)}),{headers:h});
+    return new Response(JSON.stringify({
+      ok:true,
+      spotify_text_search_configured:spotifyCredentialsConfigured()||soundchartsCredentialsConfigured()
+    }),{headers:h});
   }catch(e){
     return new Response(JSON.stringify({ok:false,error:"track_lookup_failed",detail:e instanceof Error?e.message:String(e)}),{status:500,headers:h});
   }
