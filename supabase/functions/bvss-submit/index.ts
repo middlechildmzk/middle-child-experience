@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { assessFit } from "../_shared/fit.ts";
 
 const allowed = new Set(["https://bvssfvm.com","https://www.bvssfvm.com","http://localhost:3000"]);
 function cors(origin:string|null){
@@ -287,65 +288,65 @@ Deno.serve(async(req)=>{
       if(claimErr) throw claimErr;
     }
 
-    const ng=norm(genre);
-    const nm=moods.map(norm);
-    const na=comparable_artists.map(norm);
-    const ranked=(playlists||[]).map((p:any)=>{
-      let score=0; const reasons:string[]=[];
-      if(preferredSet.has(p.id)){score+=35;reasons.push("artist selected this playlist");}
-      if(norm(p.primary_genre)===ng){score+=35;reasons.push("primary genre match");}
-      else if((p.secondary_genres||[]).some((g:string)=>norm(g)===ng)){score+=28;reasons.push("secondary genre match");}
-      else if((p.seo_keywords||[]).some((k:string)=>norm(k).includes(ng)||ng.includes(norm(k)))){score+=18;reasons.push("genre/keyword overlap");}
-      const moodHits=(p.moods||[]).map(norm).filter((x:string)=>nm.includes(x)).length;
-      if(moodHits){score+=Math.min(24,moodHits*8);reasons.push(String(moodHits)+" mood match"+(moodHits>1?"es":""));}
-      const artistHits=(p.anchor_artists||[]).map(norm).filter((x:string)=>na.includes(x)).length;
-      if(artistHits){score+=Math.min(20,artistHits*10);reasons.push(String(artistHits)+" comparable-artist match"+(artistHits>1?"es":""));}
-      return {...p,score:Math.min(100,score),reasons};
-    }).filter((x:any)=>x.score>=15||(route_mode==="selected_only"&&preferredSet.has(x.id)))
-      .sort((a:any,b:any)=>b.score-a.score||Number(preferredSet.has(b.id))-Number(preferredSet.has(a.id)))
+    // Evidence-based fit bands. Numeric legacy scores are no longer used for routing.
+    const assessed=(playlists||[]).map((p:any)=>{
+      const fit=assessFit({genre,moods,comparable_artists},p);
+      return {...p,fit};
+    });
+    const bandOrder=(band:string|null)=>band==="strong_fit"?0:band==="worth_a_look"?1:band==="long_shot"?2:3;
+    const ranked=assessed
+      .filter((p:any)=>preferredSet.has(p.id)||p.fit.band==="strong_fit"||p.fit.band==="worth_a_look")
+      .sort((a:any,b:any)=>bandOrder(a.fit.band)-bandOrder(b.fit.band)||Number(preferredSet.has(b.id))-Number(preferredSet.has(a.id)))
       .slice(0,8);
 
-    if(ranked.length){
-      const matches=ranked.map((p:any,i:number)=>({
-        submission_id:submission.id,playlist_id:p.id,score:p.score,reasons:p.reasons,rank:i+1,matcher_version:"network-v3"
-      }));
-      const {error:mErr}=await supabase.from("bvss_submission_matches").insert(matches);
-      if(mErr) throw mErr;
-    }
-
     const selectedRanked=route_mode==="selected_only"
-      ? ranked.filter((p:any)=>preferredSet.has(p.id))
+      ? assessed.filter((p:any)=>preferredSet.has(p.id))
       : ranked;
+
     const bvssRoutes=(route_mode==="selected_only"
       ? selectedRanked.filter((p:any)=>p.network_owner_type==="bvss")
-      : ranked.filter((p:any)=>p.network_owner_type==="bvss").slice(0,4));
+      : ranked.filter((p:any)=>p.network_owner_type==="bvss"&&["strong_fit","worth_a_look"].includes(p.fit.band)).slice(0,4));
+
     let partnerRoutes:any[]=[];
     if(network_opt_in){
-      const candidates=(route_mode==="selected_only"?selectedRanked:ranked)
-        .filter((p:any)=>p.network_owner_type==="partner"&&p.curator_id);
-      const curatorIds=Array.from(new Set(candidates.map((p:any)=>p.curator_id)));
-      const [{data:entitlements},{data:usage}]=curatorIds.length ? await Promise.all([
-        supabase.from("bvss_curator_entitlements").select("curator_id,max_monthly_routes").in("curator_id",curatorIds),
-        supabase.from("bvss_curator_usage_monthly").select("curator_id,routes_this_month").in("curator_id",curatorIds)
-      ]) : [{data:[]},{data:[]}];
-      const maxBy=new Map((entitlements||[]).map((e:any)=>[e.curator_id,Number(e.max_monthly_routes||0)]));
-      const usedBy=new Map((usage||[]).map((u:any)=>[u.curator_id,Number(u.routes_this_month||0)]));
-      partnerRoutes=candidates.filter((p:any)=>{
-        const max=maxBy.get(p.curator_id)??0;
-        const used=usedBy.get(p.curator_id)??0;
-        return max>0&&used<max;
-      });
+      partnerRoutes=(route_mode==="selected_only"?selectedRanked:ranked)
+        .filter((p:any)=>p.network_owner_type==="partner"&&p.curator_id&&(route_mode==="selected_only"||["strong_fit","worth_a_look"].includes(p.fit.band)));
       if(route_mode!=="selected_only") partnerRoutes=partnerRoutes.slice(0,4);
     }
 
-    const routes=[...bvssRoutes,...partnerRoutes].map((p:any)=>({
-      submission_id:submission.id,playlist_id:p.id,curator_id:p.curator_id||null,
+    const routeTargets=[...bvssRoutes,...partnerRoutes];
+    const reservePayload=routeTargets.map((p:any,i:number)=>({
+      playlist_id:p.id,
       route_type:preferredSet.has(p.id)?"preferred":p.network_owner_type==="bvss"?"bvss_internal":"matched",
-      status:"queued",match_score:p.score,match_reasons:p.reasons
+      fit_band:p.fit.band,
+      fit_evidence:{
+        label:p.fit.label,
+        signals:p.fit.signals,
+        dimensions_evaluated:p.fit.dimensions_evaluated,
+        insufficient_reason:p.fit.insufficient_reason,
+        reasons:(p.fit.signals||[]).map((s:any)=>s.detail)
+      },
+      rank:i+1
     }));
-    if(routes.length){
-      const {error:rErr}=await supabase.from("bvss_submission_routes").insert(routes);
-      if(rErr) throw rErr;
+
+    let routes:any[]=[];
+    if(reservePayload.length){
+      const {data:reserved,error:reserveErr}=await supabase.rpc("bvss_reserve_routes",{
+        p_submission_id:submission.id,p_routes:reservePayload
+      });
+      if(reserveErr){
+        await supabase.from("bvss_submissions").delete().eq("id",submission.id);
+        throw reserveErr;
+      }
+      if(!reserved?.ok){
+        await supabase.from("bvss_submissions").delete().eq("id",submission.id);
+        return new Response(JSON.stringify({
+          error:reserved?.error||"route_reservation_failed",
+          message:"One or more selected playlists became unavailable before the submission could be reserved.",
+          unavailable:reserved?.unavailable||[]
+        }),{status:409,headers:h});
+      }
+      routes=reserved.routes||[];
     }
 
     await supabase.from("bvss_submission_status_events").insert({
@@ -370,7 +371,9 @@ Deno.serve(async(req)=>{
       status_token:submission.artist_status_token,
       status_url:"https://bvssfvm.com/submissions/status?token="+submission.artist_status_token,
       suggested_playlists:(route_mode==="selected_only"?selectedRanked:ranked).map((p:any)=>({
-        slug:p.slug,name:p.canonical_name,score:p.score,reasons:p.reasons,
+        slug:p.slug,name:p.canonical_name,fit_band:p.fit.label,
+        reasons:(p.fit.signals||[]).map((s:any)=>s.detail),
+        caveat:p.fit.insufficient_reason||null,
         network_owner_type:p.network_owner_type
       })),
       routed_to:{bvss:bvssRoutes.length,partner_curators:partnerRoutes.length},
