@@ -30,11 +30,11 @@
     }
   });
 
-  import('/curatoros/app.js?v=20261005-1555')
+  import('/curatoros/app-v2.js?v=20261005-1600')
     .then(() => {
       window.setTimeout(() => {
         if ((app.textContent || '').includes('Loading CuratorOS interface')) {
-          showError('Client loaded but did not render.', 'app.js imported successfully, but the loading shell was still present after ' + (Date.now() - startedAt) + ' ms.');
+          showError('Client loaded but did not render.', 'app-v2.js imported successfully, but the loading shell was still present after ' + (Date.now() - startedAt) + ' ms.');
         }
       }, 2500);
     })
