@@ -237,7 +237,38 @@ Deno.serve(async(req)=>{
         .select("id,status,verification_code,submitted_at").maybeSingle();
       if(error) throw error;
       if(!data) return new Response(JSON.stringify({error:"claim_not_found"}),{status:404,headers:h});
-      return new Response(JSON.stringify({ok:true,claim:data,message:"Verification request is queued for BVSS FVM review."}),{headers:h});
+      return new Response(JSON.stringify({ok:true,claim:data,message:"Verification request is queued for CuratorOS review."}),{headers:h});
+    }
+
+    if(action==="update_playlist_criteria"){
+      const playlist_id=clean(body.playlist_id,80);
+      const primary_genre=clean(body.primary_genre,80);
+      const secondary_genres=list(body.secondary_genres,8,80);
+      const moods=list(body.moods,12,60);
+      const hard_no_tags=list(body.hard_no_tags,12,80);
+      const review_sla_hours=body.review_sla_hours==null||body.review_sla_hours===""?null:Number(body.review_sla_hours);
+      const max_open_routes=Number(body.max_open_routes||100);
+      const route_cooldown_days=Number(body.route_cooldown_days??30);
+      if(!playlist_id||!primary_genre) return new Response(JSON.stringify({error:"playlist_and_primary_genre_required"}),{status:400,headers:h});
+      if(review_sla_hours!==null&&(!Number.isInteger(review_sla_hours)||review_sla_hours<1||review_sla_hours>720))
+        return new Response(JSON.stringify({error:"invalid_review_sla"}),{status:400,headers:h});
+      if(!Number.isInteger(max_open_routes)||max_open_routes<1||max_open_routes>10000)
+        return new Response(JSON.stringify({error:"invalid_max_open_routes"}),{status:400,headers:h});
+      if(!Number.isInteger(route_cooldown_days)||route_cooldown_days<0||route_cooldown_days>365)
+        return new Response(JSON.stringify({error:"invalid_cooldown"}),{status:400,headers:h});
+      const {data:playlist,error}=await db.from("bvss_playlists").update({
+        primary_genre,secondary_genres,moods,hard_no_tags,
+        accepts_unreleased:Boolean(body.accepts_unreleased),
+        accepts_explicit:Boolean(body.accepts_explicit),
+        review_sla_hours,max_open_routes,route_cooldown_days,
+        submission_criteria:clean(body.submission_criteria,1200)||null,
+        updated_at:new Date().toISOString()
+      }).eq("id",playlist_id).eq("curator_id",current.id)
+        .select("id,slug,canonical_name,primary_genre,secondary_genres,moods,hard_no_tags,accepts_unreleased,accepts_explicit,review_sla_hours,max_open_routes,route_cooldown_days,submission_criteria")
+        .maybeSingle();
+      if(error) throw error;
+      if(!playlist) return new Response(JSON.stringify({error:"playlist_not_found"}),{status:404,headers:h});
+      return new Response(JSON.stringify({ok:true,playlist}),{headers:h});
     }
 
     if(action==="set_playlist_status"){
