@@ -1,7 +1,6 @@
 export default async function handler(req,res){
   try{
-    const host=process.env.VERCEL_URL||req.headers.host;
-    const clientResponse=await fetch('https://'+host+'/app.js');
+    const clientResponse=await fetch('https://curatoros-rho.vercel.app/app.js');
     const source=(await clientResponse.text())
       .replace(/^import\s+\{\s*createClient\s*\}[^;]+;\s*/,'');
     // Compile only. Do not execute browser code.
