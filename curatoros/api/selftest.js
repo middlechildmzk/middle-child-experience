@@ -1,12 +1,14 @@
+import { readFileSync } from 'node:fs';
+
 export default async function handler(req,res){
   try{
-    const host=req.headers['x-forwarded-host']||req.headers.host||'curatoros-rho.vercel.app';
-    const proto=req.headers['x-forwarded-proto']||'https';
-    const clientResponse=await fetch(proto+'://'+host+'/app.js');
-    const source=(await clientResponse.text())
-      .replace(/^import\s+\{\s*createClient\s*\}[^;]+;\s*/,'');
+    let raw;
+    try{ raw=readFileSync(process.cwd()+'/app.js','utf8'); }
+    catch{ raw=await (await fetch('https://curatoros-rho.vercel.app/app.js')).text(); }
+    const source=raw.replace(/^import\s+\{\s*createClient\s*\}[^;]+;\s*/,'');
     // Compile only. Do not execute browser code.
     new Function(source);
+
     const [playlists,track,spotify]=await Promise.all([
       fetch('https://myrtdfyjoxvtubusrrmf.supabase.co/functions/v1/bvss-playlists'),
       fetch('https://myrtdfyjoxvtubusrrmf.supabase.co/functions/v1/bvss-track-lookup?q='+encodeURIComponent('Never Alone Middle Child')),
