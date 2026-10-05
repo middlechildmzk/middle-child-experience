@@ -69,6 +69,8 @@ Deno.serve(async(req)=>{
     const download_object_path=clean(body.download_object_path,300)||null;
     const download_permission=Boolean(body.download_permission);
     const network_opt_in=Boolean(body.network_opt_in);
+    const route_mode=clean(body.route_mode,30)==="selected_only"?"selected_only":"matched";
+    const source_surface=clean(body.source_surface,40)==="curatoros"?"curatoros":"bvssfvm.com";
     const artwork_url=safeUrl(body.artwork_url,800);
     const identified_track=body.identified_track&&typeof body.identified_track==="object"&&!Array.isArray(body.identified_track)
       ? body.identified_track : {};
@@ -133,13 +135,22 @@ Deno.serve(async(req)=>{
     }
 
     const {data:playlists,error:playlistError}=await supabase.from("bvss_playlists")
-      .select("id,slug,canonical_name,primary_genre,secondary_genres,moods,seo_keywords,anchor_artists,network_owner_type,curator_id,verification_status,network_routing_enabled")
+      .select("id,slug,canonical_name,primary_genre,secondary_genres,moods,seo_keywords,anchor_artists,network_owner_type,curator_id,verification_status,network_routing_enabled,accepts_unreleased,accepts_explicit,hard_no_tags,max_open_routes,route_cooldown_days,network_organization_id")
       .eq("submission_status","open")
       .eq("lifecycle_state","active")
       .eq("website_status","published")
       .eq("verification_status","verified")
       .eq("network_routing_enabled",true);
     if(playlistError) throw playlistError;
+
+    if(route_mode==="selected_only"){
+      if(!preferred_slugs.length)
+        return new Response(JSON.stringify({error:"route_selection_required",message:"Choose at least one playlist before submitting."}),{status:400,headers:h});
+      const available=new Set((playlists||[]).map((p:any)=>p.slug));
+      const unavailable=preferred_slugs.filter((slug)=>!available.has(slug));
+      if(unavailable.length)
+        return new Response(JSON.stringify({error:"route_unavailable",message:"One or more selected playlists are no longer accepting submissions.",unavailable}),{status:409,headers:h});
+    }
 
     // Use the same live playlist vocabulary for both form inputs and routing.
     // This keeps arbitrary spelling/casing from silently breaking matches.
@@ -186,7 +197,11 @@ Deno.serve(async(req)=>{
     const {data:submission,error:insertError}=await supabase.from("bvss_submissions").insert({
       artist_name,email,song_title,release_state,spotify_url,spotify_track_id,release_date,genre,moods,
       comparable_artists,is_explicit,notes,preferred_playlist_ids:preferredIds,
-      submission_source:originPlaylist?"bvssfvm.com/playlists/"+originPlaylist.slug:"bvssfvm.com",
+      submission_source:source_surface==="curatoros"
+        ?"curatoros"
+        :originPlaylist
+          ?"bvssfvm.com/playlists/"+originPlaylist.slug
+          :"bvssfvm.com",
       artist_socials,private_stream_url,download_source,download_object_path,
       download_external_url:download_source==="external"?download_external_url:null,
       download_permission:download_source!=="none"&&download_permission,
@@ -240,10 +255,16 @@ Deno.serve(async(req)=>{
       if(mErr) throw mErr;
     }
 
-    const bvssRoutes=ranked.filter((p:any)=>p.network_owner_type==="bvss").slice(0,4);
+    const selectedRanked=route_mode==="selected_only"
+      ? ranked.filter((p:any)=>preferredSet.has(p.id))
+      : ranked;
+    const bvssRoutes=(route_mode==="selected_only"
+      ? selectedRanked.filter((p:any)=>p.network_owner_type==="bvss")
+      : ranked.filter((p:any)=>p.network_owner_type==="bvss").slice(0,4));
     let partnerRoutes:any[]=[];
     if(network_opt_in){
-      const candidates=ranked.filter((p:any)=>p.network_owner_type==="partner"&&p.curator_id);
+      const candidates=(route_mode==="selected_only"?selectedRanked:ranked)
+        .filter((p:any)=>p.network_owner_type==="partner"&&p.curator_id);
       const curatorIds=Array.from(new Set(candidates.map((p:any)=>p.curator_id)));
       const [{data:entitlements},{data:usage}]=curatorIds.length ? await Promise.all([
         supabase.from("bvss_curator_entitlements").select("curator_id,max_monthly_routes").in("curator_id",curatorIds),
@@ -255,7 +276,8 @@ Deno.serve(async(req)=>{
         const max=maxBy.get(p.curator_id)??0;
         const used=usedBy.get(p.curator_id)??0;
         return max>0&&used<max;
-      }).slice(0,4);
+      });
+      if(route_mode!=="selected_only") partnerRoutes=partnerRoutes.slice(0,4);
     }
 
     const routes=[...bvssRoutes,...partnerRoutes].map((p:any)=>({
@@ -277,7 +299,9 @@ Deno.serve(async(req)=>{
 
     await supabase.from("bvss_web_events").insert({
       event_name:"submit_complete",path:"/submit",playlist_id:originPlaylist?.id||null,
-      utm:originPlaylist?{origin_playlist:originPlaylist.slug,network_opt_in,release_state}:{network_opt_in,release_state}
+      utm:originPlaylist
+        ?{origin_playlist:originPlaylist.slug,network_opt_in,release_state,route_mode,source_surface}
+        :{network_opt_in,release_state,route_mode,source_surface}
     });
 
     return new Response(JSON.stringify({
