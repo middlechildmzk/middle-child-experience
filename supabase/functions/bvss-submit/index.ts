@@ -162,7 +162,6 @@ Deno.serve(async(req)=>{
       network_opt_in,network_consent_at:network_opt_in?now:null,
       terms_version:"artist-submission-2026-09",
       submitter_ip_hash:requester_hash,
-      duplicate_fingerprint,
       source_url,
       source_platform,
       artwork_url,
