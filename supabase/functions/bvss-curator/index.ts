@@ -172,7 +172,7 @@ Deno.serve(async(req)=>{
         anchor_artists,target_track_count:Number(body.target_track_count||60),
         public_status:"private",submission_status:"paused",update_cadence:clean(body.update_cadence,40)||"weekly",
         middle_child_eligible:false,subflower_eligible:false,website_status:"hidden",lifecycle_state:"experimental",
-        curation_philosophy:clean(body.curation_philosophy,1200)||"Independent curator playlist participating in the BVSS FVM curator network beta.",
+        curation_philosophy:clean(body.curation_philosophy,1200)||"Independent curator playlist participating in the CuratorOS founding beta.",
         submission_criteria:clean(body.submission_criteria,1200)||"Tracks are considered independently by the curator. Placement is never guaranteed.",
         display_order:1000,network_owner_type:"partner",curator_id:current.id,verification_status:"pending",
         network_routing_enabled:false,source_metadata:{curator_beta:true,submitted_by:user.id}
@@ -183,8 +183,59 @@ Deno.serve(async(req)=>{
         curator_id:current.id,playlist_id:p.id,verification_code,status:"pending"
       }).select("*").single();
       if(cErr) throw cErr;
+
+      const identity=current.professional_profile_id&&current.workspace_id
+        ? {professional_profile_id:current.professional_profile_id,workspace_id:current.workspace_id}
+        : await provisionIdentity(db,user.id,current.display_name,current.handle);
+      const propertyKey="spotify:playlist:"+spid;
+      let property:any=null;
+      const {data:existingProperty,error:existingPropertyErr}=await db.from("properties")
+        .select("id").eq("canonical_property_key",propertyKey).maybeSingle();
+      if(existingPropertyErr) throw existingPropertyErr;
+      if(existingProperty){
+        property=existingProperty;
+      }else{
+        const {data:newProperty,error:propertyErr}=await db.from("properties").insert({
+          workspace_id:identity.workspace_id,
+          created_by:user.id,
+          name:canonical_name,
+          property_type:"spotify_playlist",
+          platform:"spotify",
+          url:"https://open.spotify.com/playlist/"+spid,
+          platform_url:"https://open.spotify.com/playlist/"+spid,
+          spotify_playlist_id:spid,
+          canonical_property_key:propertyKey,
+          genre_tags:[primary_genre,...secondary_genres],
+          activity_status:"unknown",
+          verification_status:"unverified",
+          evidence_strength:1,
+          source:"curatoros_founding_beta",
+          relationship_stage:"identified"
+        }).select("id").single();
+        if(propertyErr) throw propertyErr;
+        property=newProperty;
+      }
+      await db.from("bvss_playlists").update({property_id:property.id}).eq("id",p.id);
+      const {count:existingCanonicalClaim}=await db.from("property_claims")
+        .select("id",{count:"exact",head:true})
+        .eq("property_id",property.id)
+        .eq("claimant_user_id",user.id);
+      if(!existingCanonicalClaim){
+        const {error:claimLinkErr}=await db.from("property_claims").insert({
+          property_id:property.id,
+          claimant_user_id:user.id,
+          professional_profile_id:identity.professional_profile_id,
+          claimant_workspace_id:identity.workspace_id,
+          verification_method:"website_token",
+          evidence_url:"https://open.spotify.com/playlist/"+spid,
+          evidence_notes:"CuratorOS description challenge: "+verification_code,
+          status:"pending"
+        });
+        if(claimLinkErr) throw claimLinkErr;
+      }
+
       return new Response(JSON.stringify({
-        ok:true,playlist:p,claim,
+        ok:true,playlist:{...p,property_id:property.id},claim,
         instructions:"Temporarily add "+verification_code+" to the Spotify playlist description, then return here and request verification. CuratorOS approval is required before the playlist can receive submissions."
       }),{status:201,headers:h});
     }
@@ -197,7 +248,7 @@ Deno.serve(async(req)=>{
         .select("id,status,verification_code,submitted_at").maybeSingle();
       if(error) throw error;
       if(!data) return new Response(JSON.stringify({error:"claim_not_found"}),{status:404,headers:h});
-      return new Response(JSON.stringify({ok:true,claim:data,message:"Verification request is queued for BVSS FVM review."}),{headers:h});
+      return new Response(JSON.stringify({ok:true,claim:data,message:"Verification request is queued for CuratorOS review."}),{headers:h});
     }
 
     if(action==="set_playlist_status"){
