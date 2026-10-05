@@ -37,7 +37,7 @@ async function payload(db:any){
     {data:facts,error:fErr}
   ]=await Promise.all([
     db.from("bvss_curator_profiles")
-      .select("id,user_id,handle,display_name,contact_email,bio,website_url,spotify_profile_url,social_links,genres,moods,status,plan,public_profile,application_notes,terms_accepted_at,approved_at,created_at")
+      .select("id,user_id,professional_profile_id,workspace_id,handle,display_name,contact_email,bio,website_url,spotify_profile_url,social_links,genres,moods,status,plan,public_profile,application_notes,terms_accepted_at,approved_at,created_at")
       .in("status",["pending","approved","suspended"]).order("created_at"),
     db.from("bvss_curator_playlist_claims")
       .select("id,curator_id,playlist_id,verification_code,verification_method,status,submitted_at,verified_at,notes,bvss_curator_profiles(handle,display_name,status),bvss_playlists(slug,canonical_name,spotify_url,primary_genre,verification_status)")
@@ -69,7 +69,7 @@ Deno.serve(async(req)=>{
       const status=action==="approve_curator"?"approved":action==="reject_curator"?"rejected":"suspended";
       const patch:any={status,application_notes:clean(body.notes,2000)||null};
       if(status==="approved"){patch.approved_at=new Date().toISOString();patch.approved_by=user.id;patch.public_profile=true;patch.suspended_at=null;patch.suspension_reason=null;}
-      if(status==="suspended"){patch.suspended_at=new Date().toISOString();patch.suspension_reason=clean(body.notes,2000)||"Suspended by BVSS FVM";}
+      if(status==="suspended"){patch.suspended_at=new Date().toISOString();patch.suspension_reason=clean(body.notes,2000)||"Suspended by CuratorOS";}
       const {data,error}=await db.from("bvss_curator_profiles").update(patch).eq("id",curator_id).select("id,handle,display_name,status,public_profile").maybeSingle();
       if(error) throw error;
       if(!data) return new Response(JSON.stringify({error:"curator_not_found"}),{status:404,headers:h});
@@ -79,6 +79,23 @@ Deno.serve(async(req)=>{
           can_download_permitted_audio:true,analytics_level:"basic",
           features:{network_beta:true,playlist_verification:true,artist_downloads:true}
         },{onConflict:"curator_id"});
+      }
+      const {data:canonical}=await db.from("bvss_curator_profiles")
+        .select("professional_profile_id").eq("id",curator_id).maybeSingle();
+      if(canonical?.professional_profile_id){
+        if(status==="approved"){
+          await db.from("professional_profiles").update({
+            verification_status:"verified",is_public:true,capacity_status:"open",updated_at:new Date().toISOString()
+          }).eq("id",canonical.professional_profile_id);
+        }else if(status==="rejected"){
+          await db.from("professional_profiles").update({
+            verification_status:"rejected",is_public:false,updated_at:new Date().toISOString()
+          }).eq("id",canonical.professional_profile_id);
+        }else if(status==="suspended"){
+          await db.from("professional_profiles").update({
+            capacity_status:"paused",is_public:false,updated_at:new Date().toISOString()
+          }).eq("id",canonical.professional_profile_id);
+        }
       }
       if(status==="suspended"){
         await db.from("bvss_playlists").update({network_routing_enabled:false,submission_status:"paused",website_status:"hidden"}).eq("curator_id",curator_id);
@@ -114,8 +131,22 @@ Deno.serve(async(req)=>{
       };
       const {data:playlist,error:pErr}=await db.from("bvss_playlists").update(playlistPatch)
         .eq("id",claim.playlist_id)
-        .select("id,slug,canonical_name,verification_status,public_status,website_status,submission_status,network_routing_enabled").single();
+        .select("id,slug,canonical_name,property_id,verification_status,public_status,website_status,submission_status,network_routing_enabled").single();
       if(pErr) throw pErr;
+      if(playlist.property_id){
+        await db.from("property_claims").update({
+          status:verified?"approved":"rejected",
+          reviewer_notes:clean(body.notes,2000)||null,
+          reviewed_by:user.id,
+          reviewed_at:now,
+          updated_at:now
+        }).eq("property_id",playlist.property_id).eq("status","pending");
+        await db.from("properties").update({
+          verification_status:verified?"verified":"rejected",
+          evidence_strength:verified?3:1,
+          updated_at:now
+        }).eq("id",playlist.property_id);
+      }
       return new Response(JSON.stringify({ok:true,playlist}),{headers:h});
     }
 
