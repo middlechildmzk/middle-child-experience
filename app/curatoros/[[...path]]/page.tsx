@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'CuratorOS — Submit once. Reach the right playlists.',
@@ -26,7 +27,7 @@ export default function CuratorOSPage() {
           <p>The marketplace shell loaded. The interactive client is starting.</p>
         </div>
       </div>
-      <script type="module" src="/curatoros/app.js" />
+      <Script id="curatoros-client" src="/curatoros/app.js" type="module" strategy="afterInteractive" />
     </div>
   );
 }
