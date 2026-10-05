@@ -71,7 +71,8 @@ const supabase={auth:{
 const root=document.getElementById('app');
 const BASE='/curatoros';
 
-const state={mode:'artist',playlists:null,curators:null,session:null,submit:{track:null,genre:'',moods:[],selected:[],step:1,results:[]}};
+const state={mode:'artist',playlists:null,curators:null,session:null,submit:{track:null,genre:'',moods:[],selected:[],step:1,results:[],lastQuery:''}};
+let lastRenderedRoute=null;
 const esc=(v)=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const slug=(v)=>String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const norm=(v)=>String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
@@ -96,11 +97,17 @@ function shellMarkup(content){
  const artist=[['Discover','/playlists'],['Submit Music','/submit'],['Playlists','/playlists'],['Curators','/curators'],['Genres','/genres'],['Free Tools','/tools'],['Learn','/learn']];
  const curator=[['Inbox','/app/inbox'],['Playlists','/app/playlists'],['Placements','/app/placements'],['Analytics','/app/analytics'],['Profile','/app/profile']];
  const nav=state.mode==='artist'?artist:curator;
+ const current=route();
+ const active=(h)=>current===h||current.startsWith(h+'/');
+ const links=nav.map(([l,h])=>'<a data-link class="'+(active(h)?'active':'')+'" href="'+h+'">'+l+'</a>').join('');
+ const actions=state.mode==='artist'
+   ? '<div class="nav-actions"><a data-link class="button dark small" href="/submit">Submit Music</a><a data-link class="button small outline desktop" href="/apply">Apply as Curator</a></div>'
+   : '<div class="nav-actions"><a data-link class="button dark small" href="/app/inbox">Open Inbox</a><a data-link class="button small outline desktop" href="/apply">Curator Setup</a></div>';
  return '<div class="statusbar"><span>SYSTEM</span><strong>Canonical backend: ArtistOS / Playlist OS / CuratorOS</strong><span class="status-accent">Founding beta</span></div>'+
  '<header class="site-header"><div class="nav-shell"><div class="brand">CuratorOS</div><span class="spec-pill">BETA</span>'+
  '<div class="mode-toggle"><button data-mode="artist" class="'+(state.mode==='artist'?'active':'')+'">Artist</button><button data-mode="curator" class="'+(state.mode==='curator'?'active':'')+'">Curator</button></div>'+
- '<nav class="nav-links">'+nav.map(([l,h])=>'<a data-link href="'+h+'">'+l+'</a>').join('')+'</nav>'+
- '<div class="nav-actions"><a data-link class="button dark small" href="/submit">Submit Music</a><a data-link class="button small outline desktop" href="/apply">Apply as Curator</a></div></div></header>'+
+ '<nav class="nav-links">'+links+'</nav>'+actions+'</div>'+
+ '<div class="mobile-nav"><button data-mode="artist" class="'+(state.mode==='artist'?'active':'')+'">Artist</button><button data-mode="curator" class="'+(state.mode==='curator'?'active':'')+'">Curator</button>'+links+'</div></header>'+
  content+
  '<footer class="footer"><div class="shell footer-grid"><div><div class="brand big">CuratorOS</div><p>Neutral playlist submission infrastructure. BVSS FVM is Verified Network #001.</p></div><div><strong>Artists</strong><a data-link href="/submit">Submit music</a><a data-link href="/playlists">Discover playlists</a><a data-link href="/tools">Free tools</a></div><div><strong>Curators</strong><a data-link href="/apply">Apply as curator</a><a data-link href="/app/inbox">Inbox</a><a data-link href="/learn/playlist-submission-management">Operations guide</a></div><div><strong>Principles</strong><span>No guaranteed placement</span><span>Independent decisions</span><span>Evidence-backed status</span></div></div></footer>';
 }
@@ -222,13 +229,27 @@ async function submitPage(){
  const qs=new URLSearchParams(location.search);if(qs.get('genre'))state.submit.genre=genres.find(g=>norm(g)===norm(qs.get('genre')))||state.submit.genre;if(qs.get('playlist')&&!state.submit.selected.includes(qs.get('playlist')))state.submit.selected=[qs.get('playlist')];
  return '<main>'+pageHero('Universal submission','Find the song. See the fit. Submit once.','Released tracks use a canonical Spotify identity. You choose the routes. Every playlist decision stays independent.')+'<section class="section"><div class="shell detail-grid"><div class="detail-card"><div class="stepbar"><span class="'+(state.submit.step===1?'active':'')+'">1 Track</span><span class="'+(state.submit.step===2?'active':'')+'">2 Fit</span><span class="'+(state.submit.step===3?'active':'')+'">3 Submit</span></div><div id="submit-stage">'+submitStage(ps,genres,moods)+'</div><div id="submit-message"></div></div><aside class="detail-card"><div class="eyebrow">Why this is different</div><h2>No black-box blast.</h2><p>You see each route before submitting. Fit labels are evidence judgments, not opaque percentages. Acceptance starts a placement workflow; it does not create a fake Live placement.</p></aside></div></section></main>';
 }
+function submitTrackSummary(t,backStep){
+ const art=t?.artwork_url?'<img src="'+esc(t.artwork_url)+'" alt="">':'<div class="track-placeholder">♪</div>';
+ return '<div class="submit-track-summary">'+art+'<div><div class="eyebrow">Selected track</div><h3>'+esc(t?.title||'Unknown track')+'</h3><p>'+esc(t?.artist_name||'Unknown artist')+(t?.release_date?' · '+esc(String(t.release_date).slice(0,10)):'')+'</p></div><button type="button" class="button small submit-back" data-submit-back="'+backStep+'">Change</button></div>';
+}
 function submitStage(ps,genres,moods){
- if(state.submit.step===1)return '<div class="eyebrow">Canonical track search</div><h2>Find the exact song.</h2><div class="hero-search" style="margin-top:18px"><input id="submit-q" value="'+esc(new URLSearchParams(location.search).get('q')||'')+'" placeholder="Artist + song or Spotify track URL"><button id="submit-search">Search</button></div><div id="submit-results" class="route-list" style="margin-top:18px"></div>';
- if(state.submit.step===2&&state.submit.track){const ranked=state.submit.genre?ps.map(p=>({p,f:fit(p,state.submit.genre,state.submit.moods,[])})).filter(x=>x.f.hasEvidence).sort((a,b)=>['Strong fit','Worth a look','Long shot'].indexOf(a.f.band)-['Strong fit','Worth a look','Long shot'].indexOf(b.f.band)).slice(0,10):[];return '<div class="eyebrow">Fit & routing</div><h2>'+esc(state.submit.track.title)+'</h2><p>'+esc(state.submit.track.artist_name)+' · '+esc(state.submit.track.release_date||'release date unavailable')+'</p><div class="field"><label>Primary genre</label><select id="submit-genre"><option value="">Choose approved genre…</option>'+genres.map(g=>'<option '+(g===state.submit.genre?'selected':'')+'>'+esc(g)+'</option>').join('')+'</select></div><div class="field" style="margin-top:12px"><label>Moods</label><div class="chips" id="submit-moods">'+moods.slice(0,30).map(m=>'<button type="button" class="chip '+(state.submit.moods.includes(m)?'active':'')+'" data-mood="'+esc(m)+'">'+esc(m)+'</button>').join('')+'</div></div><div class="route-list" style="margin-top:18px">'+ranked.map(({p,f})=>'<label class="route-card"><input type="checkbox" data-route="'+esc(p.slug)+'" '+(state.submit.selected.includes(p.slug)?'checked':'')+'><div><h3>'+esc(p.canonical_name)+'</h3><div class="provenance">'+(p.network_owner_type==='bvss'?'BVSS FVM · #001':'Independent curator')+'</div><ul>'+f.reasons.map(r=>'<li>'+esc(r)+'</li>').join('')+f.caveats.map(r=>'<li>Caveat: '+esc(r)+'</li>').join('')+'</ul></div>'+fitBadge(f.band)+'</label>').join('')+'</div><button id="submit-next" class="button dark" style="margin-top:18px" '+(!state.submit.genre||!state.submit.selected.length?'disabled':'')+'>Continue with '+state.submit.selected.length+' route'+(state.submit.selected.length===1?'':'s')+' →</button>';}
- if(state.submit.step===3&&state.submit.track)return '<div class="eyebrow">Review & submit</div><h2>One submission. '+state.submit.selected.length+' independent routes.</h2><div class="form-grid"><div class="field"><label>Artist name</label><input id="submit-artist" value="'+esc(state.submit.track.artist_name||'')+'"></div><div class="field"><label>Email</label><input id="submit-email" type="email"></div><div class="field full"><label>Pitch note (optional)</label><textarea id="submit-notes" placeholder="One or two useful sentences for the curator."></textarea></div></div><div class="notice" style="margin:18px 0">Submission is free. Curators decide independently. A submission never buys or guarantees placement.</div><button class="button dark" id="submit-final">Submit to selected playlists</button>';
+ if(state.submit.step===1)return '<div class="eyebrow">Canonical track search</div><h2>Find the exact song.</h2><p class="helper-copy">Type the artist + song title or paste a Spotify track URL. Results appear automatically as you type.</p><div class="hero-search" style="margin-top:18px"><input id="submit-q" autocomplete="off" value="'+esc(new URLSearchParams(location.search).get('q')||state.submit.lastQuery||'')+'" placeholder="Artist + song or Spotify track URL"><button id="submit-search">Search</button></div><div id="submit-results" class="route-list" style="margin-top:18px"></div>';
+ if(state.submit.step===2&&state.submit.track){
+   const ranked=state.submit.genre?ps.map(p=>({p,f:fit(p,state.submit.genre,state.submit.moods,[])})).filter(x=>x.f.hasEvidence).sort((a,b)=>['Strong fit','Worth a look','Long shot'].indexOf(a.f.band)-['Strong fit','Worth a look','Long shot'].indexOf(b.f.band)).slice(0,10):[];
+   const results=state.submit.genre
+     ? (ranked.length?'<div class="route-list" style="margin-top:18px">'+ranked.map(({p,f})=>'<label class="route-card"><input type="checkbox" data-route="'+esc(p.slug)+'" '+(state.submit.selected.includes(p.slug)?'checked':'')+'><div><h3>'+esc(p.canonical_name)+'</h3><div class="provenance">'+(p.network_owner_type==='bvss'?'BVSS FVM · #001':'Independent curator')+'</div><ul>'+f.reasons.map(r=>'<li>'+esc(r)+'</li>').join('')+f.caveats.map(r=>'<li>Caveat: '+esc(r)+'</li>').join('')+'</ul></div>'+fitBadge(f.band)+'</label>').join('')+'</div>':'<div class="empty-state" style="margin-top:18px">No eligible playlist routes currently match this genre and mood profile. Try a broader mood selection or another approved genre.</div>')
+     : '<div class="empty-state" style="margin-top:18px">Choose the closest primary genre to reveal eligible playlist routes.</div>';
+   return '<div class="eyebrow">Fit & routing</div><h2>Choose where this track belongs.</h2>'+submitTrackSummary(state.submit.track,1)+'<div class="field"><label>Primary genre</label><select id="submit-genre"><option value="">Choose approved genre…</option>'+genres.map(g=>'<option '+(g===state.submit.genre?'selected':'')+'>'+esc(g)+'</option>').join('')+'</select></div><div class="field" style="margin-top:12px"><label>Moods</label><div class="chips" id="submit-moods">'+moods.slice(0,30).map(m=>'<button type="button" class="chip '+(state.submit.moods.includes(m)?'active':'')+'" data-mood="'+esc(m)+'">'+esc(m)+'</button>').join('')+'</div><p class="helper-copy">Pick only the moods that materially describe the track. CuratorOS uses them to explain fit, not to manufacture a score.</p></div>'+results+'<div class="submit-actions"><button type="button" class="button submit-back" data-submit-back="1">← Track</button><button id="submit-next" class="button dark" '+(!state.submit.genre||!state.submit.selected.length?'disabled':'')+'>Continue with '+state.submit.selected.length+' route'+(state.submit.selected.length===1?'':'s')+' →</button></div>';
+ }
+ if(state.submit.step===3&&state.submit.track){
+   const selectedNames=state.submit.selected.map(s=>ps.find(p=>p.slug===s)?.canonical_name).filter(Boolean);
+   return '<div class="eyebrow">Review & submit</div><h2>One submission. '+state.submit.selected.length+' independent route'+(state.submit.selected.length===1?'':'s')+'.</h2>'+submitTrackSummary(state.submit.track,2)+'<div class="empty-state"><strong>Selected playlists</strong><div class="chips">'+selectedNames.map(n=>'<span class="chip">'+esc(n)+'</span>').join('')+'</div></div><div class="form-grid" style="margin-top:18px"><div class="field"><label>Artist name</label><input id="submit-artist" value="'+esc(state.submit.track.artist_name||'')+'"></div><div class="field"><label>Email</label><input id="submit-email" type="email" autocomplete="email"></div><div class="field full"><label>Pitch note (optional)</label><textarea id="submit-notes" maxlength="600" placeholder="One or two useful sentences for the curator."></textarea><span class="helper-copy">Keep it specific and short. Placement is never guaranteed.</span></div></div><div class="notice" style="margin:18px 0">Submission is free. Curators decide independently. Acceptance starts a placement workflow; it does not mean the track is Live.</div><div class="submit-actions"><button type="button" class="button submit-back" data-submit-back="2">← Fit</button><button class="button dark" id="submit-final">Submit to selected playlists</button></div>';
+ }
  return '';
 }
 
+async function statusPage
 async function statusPage(){
  const token=new URLSearchParams(location.search).get('token')||'';if(!token)return '<main>'+pageHero('Private artist status','Track every decision.','One submission can have different outcomes on different playlists.')+'<section class="section"><div class="shell"><div class="notice error">Missing private status token.</div></div></section></main>';
  const r=await fetch(BASE+'/api/status?token='+encodeURIComponent(token));if(!r.ok)return '<main>'+pageHero('Private artist status','Status unavailable.','The token may be invalid or expired.')+'</main>';const d=await r.json();
@@ -345,8 +366,10 @@ async function analyticsPage(){
 function notFound(){return '<main>'+pageHero('404','Not found.','That CuratorOS page does not exist.')+'<section class="section"><div class="shell"><a data-link class="button dark" href="/">Back home</a></div></section></main>'}
 
 async function renderCuratorOS(){
- root.innerHTML=shellMarkup('<main><section class="section"><div class="shell">Loading CuratorOS…</div></section></main>');window.scrollTo(0,0);
  const p=route();let content;
+ if(p.startsWith('/app/')||p==='/apply'||p==='/admin')state.mode='curator';
+ else if(p==='/'||p==='/submit'||p.startsWith('/playlists')||p.startsWith('/curators')||p.startsWith('/genres')||p.startsWith('/tools')||p.startsWith('/learn')||p.startsWith('/submissions/status'))state.mode='artist';
+ if(lastRenderedRoute!==p)root.innerHTML=shellMarkup('<main><section class="section"><div class="shell">Loading CuratorOS…</div></section></main>');
  try{
   if(p==='/')content=await home();
   else if(p==='/playlists')content=await playlistsPage();
@@ -370,25 +393,52 @@ async function renderCuratorOS(){
   else if(p==='/submissions/status')content=await statusPage();
   else content=notFound();
  }catch(e){content='<main>'+pageHero('System','CuratorOS hit an error.','The public shell is live, but this data surface could not load right now.')+'<section class="section"><div class="shell"><div class="notice error">'+esc(e.message||String(e))+'</div></div></section></main>'}
- root.innerHTML=shellMarkup(content);wireInteractions();
+ root.innerHTML=shellMarkup(content);lastRenderedRoute=p;wireInteractions();
 }
 
-function navigate(href){history.pushState({},'',BASE+href);renderCuratorOS()}
+function navigate(href){history.pushState({},'',BASE+href);window.scrollTo({top:0,behavior:'instant'});renderCuratorOS()}
+function bindInternalLinks(scope=document){
+ scope.querySelectorAll('[data-link]').forEach(a=>a.addEventListener('click',e=>{const href=a.getAttribute('href');if(href&&href.startsWith('/')){e.preventDefault();navigate(href)}}));
+}
 function wireInteractions(){
- document.querySelectorAll('[data-link]').forEach(a=>a.addEventListener('click',e=>{const href=a.getAttribute('href');if(href&&href.startsWith('/')){e.preventDefault();navigate(href)}}));
- document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{state.mode=b.dataset.mode;renderCuratorOS()}));
- const hero=document.getElementById('hero-go');if(hero)hero.onclick=()=>{const q=document.getElementById('hero-search').value.trim();if(q)navigate('/submit?q='+encodeURIComponent(q))};
- const grid=document.getElementById('playlist-grid');if(grid)document.querySelectorAll('[data-genre]').forEach(btn=>btn.onclick=async()=>{document.querySelectorAll('[data-genre]').forEach(x=>x.classList.remove('active'));btn.classList.add('active');const g=btn.dataset.genre;const ps=(await getPlaylists()).filter(p=>p.lifecycle_state==='active'&&p.verification_status==='verified'&&(!g||[p.primary_genre,...(p.secondary_genres||[])].includes(g)));grid.innerHTML=ps.map(playlistCard).join('');bind()});
+ bindInternalLinks();
+ document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{state.mode=b.dataset.mode;const target=state.mode==='curator'?'/app/inbox':'/';if(route()!==target)navigate(target);else renderCuratorOS()}));
+ const hero=document.getElementById('hero-go');
+ const runHero=()=>{const q=document.getElementById('hero-search')?.value.trim();if(q)navigate('/submit?q='+encodeURIComponent(q))};
+ if(hero)hero.onclick=runHero;
+ const heroInput=document.getElementById('hero-search');if(heroInput)heroInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runHero()}});
+ const grid=document.getElementById('playlist-grid');if(grid)document.querySelectorAll('[data-genre]').forEach(btn=>btn.onclick=async()=>{document.querySelectorAll('[data-genre]').forEach(x=>x.classList.remove('active'));btn.classList.add('active');const g=btn.dataset.genre;const ps=(await getPlaylists()).filter(p=>p.lifecycle_state==='active'&&p.verification_status==='verified'&&(!g||[p.primary_genre,...(p.secondary_genres||[])].includes(g)));grid.innerHTML=ps.map(playlistCard).join('');bindInternalLinks(grid)});
  bindSubmit();bindTools();bindAuth();
 }
 function bindSubmit(){
- const s=document.getElementById('submit-search');if(s)s.onclick=async()=>{const q=document.getElementById('submit-q').value.trim();const box=document.getElementById('submit-results');if(!q)return;box.innerHTML='<div class="provenance">Searching…</div>';const r=await fetch(BASE+'/api/track?q='+encodeURIComponent(q));const b=await r.json();const results=b.track?[b.track]:(b.results||[]);box.innerHTML=results.length?results.map((t,i)=>'<button class="route-card choose-track" data-index="'+i+'"><span>♪</span><span><strong>'+esc(t.title)+'</strong><br><small>'+esc(t.artist_name)+'</small></span><span>Choose →</span></button>').join(''):'<div class="notice error">No track found. Try the exact Spotify track URL.</div>';state.submit.results=results;document.querySelectorAll('.choose-track').forEach(btn=>btn.onclick=()=>{state.submit.track=results[Number(btn.dataset.index)];state.submit.step=2;renderCuratorOS()})};
+ const input=document.getElementById('submit-q'),button=document.getElementById('submit-search'),box=document.getElementById('submit-results');
+ let searchTimer=null,requestSeq=0;
+ const performSearch=async(raw)=>{
+   const q=String(raw||'').trim();if(!q||!box)return;
+   const seq=++requestSeq;state.submit.lastQuery=q;box.innerHTML='<div class="provenance">Searching Spotify…</div>';
+   try{
+     const r=await fetch(BASE+'/api/track?q='+encodeURIComponent(q));const b=await r.json();
+     if(seq!==requestSeq)return;
+     const results=b.track?[b.track]:(b.results||[]);state.submit.results=results;
+     box.innerHTML=results.length?results.map((t,i)=>{const art=t.artwork_url?'<img src="'+esc(t.artwork_url)+'" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:7px">':'<span class="track-placeholder" style="width:48px;height:48px">♪</span>';return '<button class="route-card choose-track" data-index="'+i+'">'+art+'<span><strong>'+esc(t.title)+'</strong><br><small>'+esc(t.artist_name)+(t.release_date?' · '+esc(String(t.release_date).slice(0,10)):'')+'</small></span><span>Choose →</span></button>'}).join(''):'<div class="empty-state">No track found yet. Try “artist + exact song title” or paste the Spotify track URL.</div>';
+     document.querySelectorAll('.choose-track').forEach(btn=>btn.onclick=()=>{state.submit.track=results[Number(btn.dataset.index)];state.submit.step=2;renderCuratorOS()});
+   }catch(e){if(seq===requestSeq)box.innerHTML='<div class="notice error">Track search could not complete. Please try again.</div>'}
+ };
+ if(button)button.onclick=()=>performSearch(input?.value);
+ if(input){
+   input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(searchTimer);performSearch(input.value)}});
+   input.addEventListener('input',()=>{clearTimeout(searchTimer);const q=input.value.trim();if(q.length<3){if(box)box.innerHTML='';return}searchTimer=setTimeout(()=>performSearch(q),450)});
+   const initial=input.value.trim();if(initial.length>=3&&state.submit.lastQuery!==initial)setTimeout(()=>performSearch(initial),80);
+ }
+ document.querySelectorAll('.submit-back').forEach(b=>b.onclick=()=>{state.submit.step=Number(b.dataset.submitBack)||1;renderCuratorOS()});
  const genre=document.getElementById('submit-genre');if(genre)genre.onchange=()=>{state.submit.genre=genre.value;state.submit.moods=[];state.submit.selected=[];renderCuratorOS()};
  document.querySelectorAll('#submit-moods [data-mood]').forEach(b=>b.onclick=()=>{const m=b.dataset.mood;state.submit.moods=state.submit.moods.includes(m)?state.submit.moods.filter(x=>x!==m):[...state.submit.moods,m].slice(0,8);renderCuratorOS()});
- document.querySelectorAll('[data-route]').forEach(c=>c.onchange=()=>{const x=c.dataset.route;state.submit.selected=c.checked?[...new Set([...state.submit.selected,x])].slice(0,8):state.submit.selected.filter(v=>v!==x);renderCuratorOS()});
+ document.querySelectorAll('[data-route]').forEach(c=>c.onchange=()=>{const x=c.dataset.route;state.submit.selected=c.checked?[...new Set([...state.submit.selected,x])].slice(0,8):state.submit.selected.filter(v=>v!==x);const next=document.getElementById('submit-next');if(next){next.disabled=!state.submit.genre||!state.submit.selected.length;next.textContent='Continue with '+state.submit.selected.length+' route'+(state.submit.selected.length===1?'':'s')+' →'}});
  const next=document.getElementById('submit-next');if(next)next.onclick=()=>{state.submit.step=3;renderCuratorOS()};
- const final=document.getElementById('submit-final');if(final)final.onclick=async()=>{const artist=document.getElementById('submit-artist').value.trim(),email=document.getElementById('submit-email').value.trim(),notes=document.getElementById('submit-notes').value.trim(),msg=document.getElementById('submit-message');if(!artist||!email.includes('@')){msg.innerHTML='<div class="notice error">Artist name and a valid email are required.</div>';return}final.disabled=true;final.textContent='Submitting…';const t=state.submit.track;const r=await fetch(BASE+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({release_state:'released',artist_name:artist,email,song_title:t.title,spotify_url:t.spotify_url,release_date:t.release_date?String(t.release_date).slice(0,10):null,genre:state.submit.genre,moods:state.submit.moods,comparable_artists:[],is_explicit:Boolean(t.is_explicit),notes,preferred_playlists:state.submit.selected,network_opt_in:true,route_mode:'selected_only',source_surface:'curatoros',identified_track:t,artwork_url:t.artwork_url,website:''})});const b=await r.json();if(!r.ok){msg.innerHTML='<div class="notice error">'+esc(b.message||b.error||'Submission failed')+'</div>';final.disabled=false;final.textContent='Submit to selected playlists';return}msg.innerHTML='<div class="notice"><strong>Submission created.</strong><br>BVSS routes: '+esc(b.routed_to?.bvss??0)+' · Independent routes: '+esc(b.routed_to?.partner_curators??0)+'<br><a data-link href="/submissions/status?token='+esc(b.status_token)+'">Track every decision →</a></div>';wireInteractions()};
+ const final=document.getElementById('submit-final');if(final)final.onclick=async()=>{const artist=document.getElementById('submit-artist').value.trim(),email=document.getElementById('submit-email').value.trim(),notes=document.getElementById('submit-notes').value.trim(),msg=document.getElementById('submit-message');if(!artist||!email.includes('@')){msg.innerHTML='<div class="notice error">Artist name and a valid email are required.</div>';return}final.disabled=true;final.textContent='Submitting…';const t=state.submit.track;const r=await fetch(BASE+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({release_state:'released',artist_name:artist,email,song_title:t.title,spotify_url:t.spotify_url,release_date:t.release_date?String(t.release_date).slice(0,10):null,genre:state.submit.genre,moods:state.submit.moods,comparable_artists:[],is_explicit:Boolean(t.is_explicit),notes,preferred_playlists:state.submit.selected,network_opt_in:true,route_mode:'selected_only',source_surface:'curatoros',identified_track:t,artwork_url:t.artwork_url,website:''})});const b=await r.json();if(!r.ok){msg.innerHTML='<div class="notice error">'+esc(b.message||b.error||'Submission failed')+'</div>';final.disabled=false;final.textContent='Submit to selected playlists';return}msg.innerHTML='<div class="success-card"><strong>Submission created.</strong><br>BVSS routes: '+esc(b.routed_to?.bvss??0)+' · Independent routes: '+esc(b.routed_to?.partner_curators??0)+'<br><a data-link href="/submissions/status?token='+esc(b.status_token)+'"><strong>Track every decision →</strong></a></div>';bindInternalLinks(msg)};
 }
+
+function bindTools(){
 function bindTools(){
  document.querySelectorAll('#tool-moods [data-mood],#gm-moods [data-mood]').forEach(b=>b.onclick=()=>{b.classList.toggle('active');if(b.closest('#gm-moods')){const g=document.getElementById('gm-genre').value;const ms=[...document.querySelectorAll('#gm-moods .active')].map(x=>x.dataset.mood);document.getElementById('gm-output').textContent=(g||'Choose a genre')+(ms.length?' · '+ms.join(' · '):'')}});
  const rec=document.getElementById('tool-recognize');if(rec)rec.onclick=async()=>{const q=document.getElementById('tool-track').value.trim(),m=document.getElementById('tool-message');const r=await fetch(BASE+'/api/track?q='+encodeURIComponent(q));const b=await r.json();const t=b.track||(b.results||[])[0];m.textContent=t?'Recognized '+t.title+' — '+t.artist_name:'No track found. Try the Spotify URL.';runFitTool()};
