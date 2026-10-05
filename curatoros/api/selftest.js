@@ -9,18 +9,24 @@ export default async function handler(req,res){
     // Compile only. Do not execute browser code.
     new Function(source);
 
-    const [playlists,track,spotify]=await Promise.all([
+    const [playlists,track,spotify,spotifyConfig]=await Promise.all([
       fetch('https://myrtdfyjoxvtubusrrmf.supabase.co/functions/v1/bvss-playlists'),
       fetch('https://myrtdfyjoxvtubusrrmf.supabase.co/functions/v1/bvss-track-lookup?q='+encodeURIComponent('Never Alone Middle Child')),
       fetch('https://myrtdfyjoxvtubusrrmf.supabase.co/functions/v1/bvss-spotify-owner',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:'curator_start'})
+      }),
+      fetch('https://myrtdfyjoxvtubusrrmf.supabase.co/functions/v1/bvss-spotify-owner',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'configuration_status'})
       })
     ]);
     const playlistBody=await playlists.json().catch(()=>({}));
     const trackBody=await track.json().catch(()=>({}));
     const spotifyBody=await spotify.json().catch(()=>({}));
+    const spotifyConfigBody=await spotifyConfig.json().catch(()=>({}));
     res.status(200).json({
       ok:true,
       client_syntax:'valid',
@@ -29,7 +35,9 @@ export default async function handler(req,res){
       track_lookup_api:track.status,
       never_alone_recognized:Array.isArray(trackBody.results)&&trackBody.results.some(x=>x.spotify_track_id==='4CzteKxZWpQw81hZPbUXj1'),
       spotify_owner_api:spotify.status,
-      spotify_owner_auth_guard:spotify.status===401&&spotifyBody.error==='not_authenticated'
+      spotify_owner_auth_guard:spotify.status===401&&spotifyBody.error==='not_authenticated',
+      spotify_app_configured:spotifyConfig.status===200&&spotifyConfigBody.spotify_app_configured===true,
+      spotify_redirect_uri:spotifyConfigBody.redirect_uri||null
     });
   }catch(error){
     res.status(500).json({ok:false,error:String(error?.message||error)});
