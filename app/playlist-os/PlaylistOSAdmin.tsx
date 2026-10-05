@@ -324,23 +324,79 @@ function NetworkIntelligence({ data, playlists }: { data: Dashboard; playlists: 
   );
 }
 
-function ReviewCard({ submission, playlists, token, refresh }: { submission: any; playlists: any[]; token: string; refresh: () => void }) {
+function ReviewCard({ submission, playlists: _playlists, token, refresh }: { submission: any; playlists: any[]; token: string; refresh: () => void }) {
   const suggestions = submission.suggested_matches || [];
-  const suggestedPlaylist = suggestions[0]?.bvss_playlists?.slug || '';
-  const [playlist, setPlaylist] = useState(suggestedPlaylist);
+  const routes = submission.bvss_routes || [];
+  const activeRoutes = routes.filter((route: any) => ['queued', 'opened', 'hold'].includes(route.status));
+  const routeStateKey = activeRoutes.map((route: any) => route.id + ':' + route.status).join('|');
+  const [playlist, setPlaylist] = useState('');
   const [notes, setNotes] = useState('');
+  const [reasons, setReasons] = useState<string[]>([]);
+  const [holdUntil, setHoldUntil] = useState(() => {
+    const d = new Date(Date.now() + 7 * 86400000);
+    return d.toISOString().slice(0, 10);
+  });
   const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const declineReasons: [string, string][] = [
+    ['energy_mismatch', 'Energy mismatch'],
+    ['not_my_genre_lane', 'Not my genre lane'],
+    ['production_not_ready', 'Production not ready'],
+    ['too_similar_to_recent_adds', 'Too similar to recent adds'],
+    ['wrong_mood', 'Wrong mood'],
+    ['vocal_style', 'Vocal style'],
+    ['mix_master', 'Mix / master'],
+    ['other', 'Other'],
+  ];
+
+  useEffect(() => {
+    if (!activeRoutes.length) {
+      if (playlist) setPlaylist('');
+      return;
+    }
+    const stillActive = activeRoutes.some((route: any) => route.bvss_playlists?.slug === playlist);
+    if (!stillActive) setPlaylist(activeRoutes[0]?.bvss_playlists?.slug || '');
+  }, [routeStateKey, playlist]);
 
   async function review(decision: 'hold' | 'accept' | 'reject') {
-    if (decision === 'accept' && !playlist) return;
+    if (!playlist) { setMessage('Choose the playlist this decision is for.'); return; }
+    if (decision === 'reject' && !reasons.length) { setMessage('Choose at least one decline reason.'); return; }
+
     setBusy(true);
-    await fetch(playlistApiBase + '/bvss-admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ action: 'review', submission_id: submission.id, decision, playlist_slug: playlist || null, review_notes: notes || null }),
-    });
-    setBusy(false);
-    refresh();
+    setMessage('');
+    try {
+      const response = await fetch(playlistApiBase + '/bvss-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({
+          action: 'review',
+          submission_id: submission.id,
+          decision,
+          playlist_slug: playlist,
+          review_notes: notes || null,
+          reasons: decision === 'reject' ? reasons : [],
+          hold_until: decision === 'hold' ? new Date(holdUntil + 'T23:59:00').toISOString() : null,
+        }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setMessage('Not saved: ' + (body.error || 'request failed') + '.');
+        return;
+      }
+      setMessage(
+        decision === 'accept'
+          ? 'Accepted for ' + playlist + '. Other routed playlists still need their own decisions.'
+          : decision === 'hold'
+            ? 'Held for ' + playlist + ' until ' + holdUntil + '.'
+            : 'Declined for ' + playlist + '.',
+      );
+      setNotes('');
+      setReasons([]);
+      refresh();
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function download() {
@@ -377,19 +433,49 @@ function ReviewCard({ submission, playlists, token, refresh }: { submission: any
           )}
         </div>
       </div>
+
       <div className="chip-row">{(submission.moods || []).map((m: string) => <span className="chip" key={m}>{m}</span>)}</div>
       {submission.notes && <p>{submission.notes}</p>}
-      {!!suggestions.length && <p className="muted">Routing: {suggestions.map((m: any) => (m.bvss_playlists?.canonical_name || 'Playlist') + ' (' + m.score + ')').join(' · ')}</p>}
-      <div className="os-review-controls">
-        <select value={playlist} onChange={(e) => setPlaylist(e.target.value)}>
-          <option value="">Assign playlist…</option>
-          {playlists.map((p) => <option value={p.slug} key={p.slug}>{p.canonical_name}</option>)}
-        </select>
-        <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Review / rotation notes" />
-        <button disabled={busy} onClick={() => review('accept')}>Accept</button>
-        <button disabled={busy} onClick={() => review('hold')}>Hold</button>
-        <button disabled={busy} onClick={() => review('reject')}>Reject</button>
+
+      <div className="chip-row" aria-label="Routed playlist decisions">
+        {routes.map((route: any) => (
+          <span className="chip" key={route.id}>
+            {route.bvss_playlists?.canonical_name || 'Playlist'} · {route.status === 'accepted' ? 'Accepted' : route.status === 'rejected' ? 'Declined' : route.status === 'hold' ? 'Hold' : 'Needs review'}
+          </span>
+        ))}
       </div>
+
+      {!!suggestions.length && <p className="muted">Each routed playlist gets an independent curator decision. Accepting one playlist does not accept the others.</p>}
+
+      {activeRoutes.length > 0 ? (
+        <>
+          <div className="os-review-controls">
+            <select value={playlist} onChange={(e) => setPlaylist(e.target.value)} aria-label="Playlist decision">
+              {activeRoutes.map((route: any) => (
+                <option value={route.bvss_playlists?.slug || ''} key={route.id}>
+                  {route.bvss_playlists?.canonical_name || 'Playlist'} · {route.status === 'hold' ? 'on hold' : 'needs review'}
+                </option>
+              ))}
+            </select>
+            <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Review / rotation notes" maxLength={2000} />
+            <input type="date" aria-label="Hold until" min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)} max={new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)} value={holdUntil} onChange={(e) => setHoldUntil(e.target.value)} />
+            <button disabled={busy} onClick={() => review('accept')}>Accept selected playlist</button>
+            <button disabled={busy} onClick={() => review('hold')}>Hold selected playlist</button>
+            <button disabled={busy || !reasons.length} onClick={() => review('reject')}>Decline selected playlist</button>
+          </div>
+          <div className="chip-row" aria-label="Decline reasons">
+            {declineReasons.map(([code, label]) => (
+              <label className="chip" key={code}>
+                <input type="checkbox" checked={reasons.includes(code)} onChange={() => setReasons((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code])} /> {label}
+              </label>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p className="muted">All routed playlists have a decision.</p>
+      )}
+
+      {message && <p className="muted" role="status">{message}</p>}
     </article>
   );
 }
