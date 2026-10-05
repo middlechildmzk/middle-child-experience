@@ -45,6 +45,20 @@ function isSpotifyTrackUrl(value: string) {
   return /^https:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?track\/[A-Za-z0-9]{22}(?:\?.*)?$/i.test(value.trim());
 }
 
+function taxonomyKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function uniqueTaxonomy(values: string[]) {
+  const seen = new Map<string, string>();
+  for (const raw of values) {
+    const value = String(raw || '').trim();
+    const key = taxonomyKey(value);
+    if (key && !seen.has(key)) seen.set(key, value);
+  }
+  return Array.from(seen.values()).sort((a, b) => a.localeCompare(b));
+}
+
 export default function SubmissionForm({
   playlists,
   initialPlaylist,
@@ -65,6 +79,8 @@ export default function SubmissionForm({
   const [title, setTitle] = useState('');
   const [releaseDate, setReleaseDate] = useState('');
   const [isExplicit, setIsExplicit] = useState(false);
+  const [genre, setGenre] = useState('');
+  const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [preferred, setPreferred] = useState<string[]>(initial);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [privateLink, setPrivateLink] = useState('');
@@ -73,6 +89,40 @@ export default function SubmissionForm({
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState('');
   const [result, setResult] = useState<Result | null>(null);
+
+  const genreOptions = useMemo(
+    () => uniqueTaxonomy(
+      playlists
+        .filter((playlist) => playlist.submission_status === 'open' && playlist.lifecycle_state === 'active')
+        .flatMap((playlist) => [playlist.primary_genre, ...(playlist.secondary_genres || [])]),
+    ),
+    [playlists],
+  );
+
+  const allMoodOptions = useMemo(
+    () => uniqueTaxonomy(
+      playlists
+        .filter((playlist) => playlist.submission_status === 'open' && playlist.lifecycle_state === 'active')
+        .flatMap((playlist) => playlist.moods || []),
+    ),
+    [playlists],
+  );
+
+  const suggestedMoods = useMemo(() => {
+    if (!genre) return allMoodOptions.slice(0, 14);
+    const key = taxonomyKey(genre);
+    const matched = playlists.filter((playlist) =>
+      [playlist.primary_genre, ...(playlist.secondary_genres || [])]
+        .some((value) => taxonomyKey(value) === key),
+    );
+    const relevant = uniqueTaxonomy(matched.flatMap((playlist) => playlist.moods || []));
+    return (relevant.length ? relevant : allMoodOptions).slice(0, 14);
+  }, [genre, playlists, allMoodOptions]);
+
+  const extraMoods = useMemo(
+    () => allMoodOptions.filter((mood) => !suggestedMoods.some((value) => taxonomyKey(value) === taxonomyKey(mood))),
+    [allMoodOptions, suggestedMoods],
+  );
 
   useEffect(() => {
     if (mode !== 'released') return;
@@ -203,6 +253,15 @@ export default function SubmissionForm({
     return slot.path as string;
   }
 
+  function toggleMood(mood: string) {
+    setSelectedMoods((current) => {
+      const exists = current.some((value) => taxonomyKey(value) === taxonomyKey(mood));
+      if (exists) return current.filter((value) => taxonomyKey(value) !== taxonomyKey(mood));
+      if (current.length >= 8) return current;
+      return [...current, mood];
+    });
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formEl = event.currentTarget;
@@ -221,6 +280,12 @@ export default function SubmissionForm({
         return;
       }
 
+      const canonicalGenre = genreOptions.find((value) => taxonomyKey(value) === taxonomyKey(genre));
+      if (!canonicalGenre) {
+        setResult({ ok: false, error: 'unknown_genre', message: 'Choose a genre from the approved list so we can route the track correctly.' });
+        return;
+      }
+
       const form = new FormData(formEl);
       let downloadObjectPath: string | null = null;
 
@@ -236,8 +301,8 @@ export default function SubmissionForm({
         song_title: title,
         spotify_url: mode === 'released' ? selectedTrack?.spotify_url : null,
         release_date: releaseDate || null,
-        genre: form.get('genre'),
-        moods: String(form.get('moods') || '').split(',').map((v) => v.trim()).filter(Boolean),
+        genre: canonicalGenre,
+        moods: selectedMoods,
         comparable_artists: String(form.get('comparable_artists') || '').split(',').map((v) => v.trim()).filter(Boolean),
         is_explicit: isExplicit,
         notes: form.get('notes') || null,
@@ -277,6 +342,8 @@ export default function SubmissionForm({
 
       if (response.ok) {
         formEl.reset();
+        setGenre('');
+        setSelectedMoods([]);
         setPreferred(initial);
         setAudioFile(null);
         setPrivateLink('');
@@ -440,9 +507,63 @@ export default function SubmissionForm({
 
           <div className="form-grid">
             <div className="field"><label htmlFor="email">Email</label><input id="email" name="email" type="email" required maxLength={254} /></div>
-            <div className="field"><label htmlFor="genre">Primary genre</label><input id="genre" name="genre" required placeholder="Melodic bass" /></div>
-            <div className="field"><label htmlFor="moods">Moods <span className="muted">(optional)</span></label><input id="moods" name="moods" placeholder="emotional, euphoric" /></div>
-            <div className="field"><label htmlFor="comparable_artists">Sounds like <span className="muted">(optional)</span></label><input id="comparable_artists" name="comparable_artists" placeholder="Dabin, San Holo" /></div>
+            <div className="field">
+              <label htmlFor="genre">Primary genre</label>
+              <select
+                id="genre"
+                value={genre}
+                onChange={(event) => {
+                  setGenre(event.target.value);
+                  setSelectedMoods([]);
+                }}
+                required
+              >
+                <option value="">Choose the closest genre…</option>
+                {genreOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+              <small className="muted">Uses the same approved genre vocabulary as our live playlist routing.</small>
+            </div>
+            <div className="field span-2 taxonomy-field">
+              <label>Moods <span className="muted">(optional · choose up to 8)</span></label>
+              <div className="chip-row taxonomy-chips">
+                {suggestedMoods.map((mood) => {
+                  const selected = selectedMoods.some((value) => taxonomyKey(value) === taxonomyKey(mood));
+                  return (
+                    <button
+                      key={mood}
+                      type="button"
+                      className={selected ? 'chip taxonomy-chip selected' : 'chip taxonomy-chip'}
+                      aria-pressed={selected}
+                      onClick={() => toggleMood(mood)}
+                    >
+                      {mood}
+                    </button>
+                  );
+                })}
+              </div>
+              {!!extraMoods.length && (
+                <details className="taxonomy-more">
+                  <summary>More moods</summary>
+                  <div className="chip-row taxonomy-chips">
+                    {extraMoods.map((mood) => {
+                      const selected = selectedMoods.some((value) => taxonomyKey(value) === taxonomyKey(mood));
+                      return (
+                        <button
+                          key={mood}
+                          type="button"
+                          className={selected ? 'chip taxonomy-chip selected' : 'chip taxonomy-chip'}
+                          aria-pressed={selected}
+                          onClick={() => toggleMood(mood)}
+                        >
+                          {mood}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </details>
+              )}
+            </div>
+            <div className="field span-2"><label htmlFor="comparable_artists">Sounds like <span className="muted">(optional)</span></label><input id="comparable_artists" name="comparable_artists" placeholder="Dabin, San Holo" /></div>
           </div>
 
           <label className="network-opt-in-control compact-network-opt-in">
