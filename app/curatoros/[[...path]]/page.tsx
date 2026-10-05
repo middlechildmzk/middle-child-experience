@@ -19,7 +19,13 @@ export default function CuratorOSPage() {
       }}
     >
       <link rel="stylesheet" href="/curatoros/styles.css" />
-      <div id="app" />
+      <div id="app">
+        <div style={{ maxWidth: 760, margin: '72px auto', padding: 32, border: '1px solid #111', background: '#FCFCFA', color: '#111' }}>
+          <div style={{ fontFamily: 'monospace', fontSize: 12, textTransform: 'uppercase', letterSpacing: '.08em' }}>CuratorOS</div>
+          <h1 style={{ fontSize: 42, margin: '12px 0' }}>Loading CuratorOS interface…</h1>
+          <p>The marketplace shell loaded. The interactive client is starting.</p>
+        </div>
+      </div>
       <script type="module" src="/curatoros/app.js" />
     </div>
   );
