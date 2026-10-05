@@ -28,7 +28,7 @@ const articles=[
 
 function chrome(content){
  const artist=[['Discover','/playlists'],['Submit Music','/submit'],['Playlists','/playlists'],['Curators','/curators'],['Genres','/genres'],['Free Tools','/tools'],['Learn','/learn']];
- const curator=[['Inbox','/app/inbox'],['Playlists','/apply'],['Placements','/app/placements'],['Analytics','/app/analytics'],['Profile','/apply']];
+ const curator=[['Inbox','/app/inbox'],['Playlists','/app/playlists'],['Placements','/app/placements'],['Analytics','/app/analytics'],['Profile','/app/profile']];
  const nav=state.mode==='artist'?artist:curator;
  return '<div class="statusbar"><span>SYSTEM</span><strong>Canonical backend: ArtistOS / Playlist OS / CuratorOS</strong><span class="status-accent">Founding beta</span></div>'+
  '<header class="site-header"><div class="nav-shell"><div class="brand">CuratorOS</div><span class="spec-pill">BETA</span>'+
@@ -235,6 +235,16 @@ async function adminPage(){
  '</div></section></main>';
 }
 async function inboxPage(){const {data}=await supabase.auth.getSession();state.session=data.session;return '<main>'+pageHero('Curator workspace','Inbox.','Each playlist route is independent. Accepting one route never accepts the submission everywhere.')+'<section class="section"><div class="shell" id="curator-root">'+(state.session?await curatorWorkspace('inbox'):authForm())+'</div></section></main>'}
+async function curatorPlaylistsPage(){
+ const {data}=await supabase.auth.getSession();state.session=data.session;
+ return '<main>'+pageHero('Curator workspace','Your playlists.','Claim supply, define routing criteria and control when each playlist accepts submissions.')+'<section class="section"><div class="shell" id="curator-root">'+(state.session?await curatorWorkspace('apply'):authForm())+'</div></section></main>';
+}
+async function curatorProfilePage(){
+ const d=await curatorData();
+ if(!d)return '<main>'+pageHero('Curator workspace','Profile.','Sign in to manage your public curator identity.')+'<section class="section"><div class="shell">'+authForm()+'</div></section></main>';
+ const p=d.profile||{};
+ return '<main>'+pageHero('Curator workspace','Profile.','Your curator identity is independent from any network membership.')+'<section class="section"><div class="shell"><div class="auth-card"><div class="form-grid"><div class="field"><label>Display name</label><input id="profile-name" value="'+esc(p.display_name||'')+'"></div><div class="field"><label>Website</label><input id="profile-site" value="'+esc(p.website_url||'')+'"></div><div class="field full"><label>Editorial bio</label><textarea id="profile-bio">'+esc(p.bio||'')+'</textarea></div><div class="field full"><label>Genres (comma separated)</label><input id="profile-genres" value="'+esc((p.genres||[]).join(', '))+'"></div></div><button class="button dark" id="profile-save" style="margin-top:14px">Save profile</button><div id="profile-message"></div></div></div></section></main>';
+}
 async function curatorData(){
  const {data}=await supabase.auth.getSession();state.session=data.session;if(!state.session)return null;
  const r=await fetch('/api/curator',{headers:{Authorization:'Bearer '+state.session.access_token}});
@@ -272,6 +282,8 @@ async function render(){
   else if(p.startsWith('/learn/'))content=articlePage(p.split('/')[2]);
   else if(p==='/apply')content=await applyPage();
   else if(p==='/app/inbox')content=await inboxPage();
+  else if(p==='/app/playlists')content=await curatorPlaylistsPage();
+  else if(p==='/app/profile')content=await curatorProfilePage();
   else if(p==='/app/placements')content=await placementsPage();
   else if(p==='/app/analytics')content=await analyticsPage();
   else if(p==='/admin')content=await adminPage();
