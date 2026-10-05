@@ -350,9 +350,11 @@ Deno.serve(async(req)=>{
 
     await supabase.from("bvss_submission_status_events").insert({
       submission_id:submission.id,event_type:"submitted",public_label:"Submission received",
-      public_detail:network_opt_in
-        ?"Your track entered the BVSS FVM review queue and may also be routed to approved independent curators when there is a strong fit."
-        :"Your track entered the BVSS FVM review queue."
+      public_detail:source_surface==="curatoros"&&route_mode==="selected_only"
+        ?"Your track was submitted to "+routes.length+" selected playlist route"+(routes.length===1?"":"s")+". Each curator decides independently."
+        :network_opt_in
+          ?"Your track entered the BVSS FVM review queue and may also be routed to approved independent curators when there is a strong fit."
+          :"Your track entered the BVSS FVM review queue."
     });
 
     await supabase.from("bvss_web_events").insert({
@@ -367,7 +369,7 @@ Deno.serve(async(req)=>{
       submission:{id:submission.id,status:submission.status,submitted_at:submission.submitted_at,release_state},
       status_token:submission.artist_status_token,
       status_url:"https://bvssfvm.com/submissions/status?token="+submission.artist_status_token,
-      suggested_playlists:ranked.map((p:any)=>({
+      suggested_playlists:(route_mode==="selected_only"?selectedRanked:ranked).map((p:any)=>({
         slug:p.slug,name:p.canonical_name,score:p.score,reasons:p.reasons,
         network_owner_type:p.network_owner_type
       })),
