@@ -33,6 +33,7 @@ begin
     return jsonb_build_object('ok',false,'error','duplicate_playlist_route');
   end if;
 
+  -- Lock every target playlist in deterministic order before evaluating capacity.
   for rec in
     select value from jsonb_array_elements(p_routes)
     order by value->>'playlist_id'
@@ -50,6 +51,7 @@ begin
     end if;
   end loop;
 
+  -- Evaluate all routes before writing any route so selected-route reservation is all-or-none.
   for rec in select value from jsonb_array_elements(p_routes)
   loop
     v_playlist_id := (rec.value->>'playlist_id')::uuid;
