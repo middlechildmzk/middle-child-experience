@@ -33,7 +33,7 @@ const playlistId=(url:string)=>{
   const m=url.match(/^https:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?playlist\/([A-Za-z0-9]{22})(?:\?.*)?$/i);
   return m?m[1]:null;
 };
-const code=()=>("BVSSFVM-"+crypto.randomUUID().replace(/-/g,"").slice(0,7).toUpperCase());
+const code=()=>("CURATOROS-"+crypto.randomUUID().replace(/-/g,"").slice(0,7).toUpperCase());
 // Transition-function error codes -> HTTP status.
 const httpFor=(e:string)=>["route_not_found","placement_not_found"].includes(e)?404:e==="curator_not_approved"||e==="not_bvss_route"||e==="invalid_actor"?403:["already_decided","route_withdrawn","invalid_route_state","invalid_placement_state","track_already_placed_on_playlist","only_live_can_complete","only_unverified_can_cancel"].includes(e)?409:400;
 async function rpc(db:any,fn:string,args:Record<string,unknown>,h:Record<string,string>){
@@ -46,6 +46,15 @@ async function rpc(db:any,fn:string,args:Record<string,unknown>,h:Record<string,
 async function profileFor(db:any,userId:string){
   const {data,error}=await db.from("bvss_curator_profiles").select("*").eq("user_id",userId).maybeSingle();
   if(error) throw error;
+  return data;
+}
+
+async function provisionIdentity(db:any,userId:string,displayName:string,handle:string){
+  const {data,error}=await db.rpc("curatoros_provision_curator_identity",{
+    p_user_id:userId,p_display_name:displayName,p_handle:handle
+  });
+  if(error) throw error;
+  if(!data?.ok) throw new Error(data?.error||"identity_provision_failed");
   return data;
 }
 
@@ -116,7 +125,8 @@ Deno.serve(async(req)=>{
         if(error){ if(error.code==="23505") return new Response(JSON.stringify({error:"handle_unavailable"}),{status:409,headers:h}); throw error; }
         result=data;
       }
-      return new Response(JSON.stringify({ok:true,profile:result}),{status:201,headers:h});
+      const identity=await provisionIdentity(db,user.id,result.display_name,result.handle);
+      return new Response(JSON.stringify({ok:true,profile:result,identity}),{status:201,headers:h});
     }
 
     const current=profile||await profileFor(db,user.id);
@@ -175,7 +185,7 @@ Deno.serve(async(req)=>{
       if(cErr) throw cErr;
       return new Response(JSON.stringify({
         ok:true,playlist:p,claim,
-        instructions:"Temporarily add "+verification_code+" to the Spotify playlist description, then return here and request verification. BVSS FVM approval is required before the playlist can receive network submissions."
+        instructions:"Temporarily add "+verification_code+" to the Spotify playlist description, then return here and request verification. CuratorOS approval is required before the playlist can receive submissions."
       }),{status:201,headers:h});
     }
 
