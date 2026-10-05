@@ -1,9 +1,8 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
-export default async function handler(_req,res){
+export default async function handler(req,res){
   try{
-    const source=fs.readFileSync(path.join(process.cwd(),'app.js'),'utf8')
+    const host=process.env.VERCEL_URL||req.headers.host;
+    const clientResponse=await fetch('https://'+host+'/app.js');
+    const source=(await clientResponse.text())
       .replace(/^import\s+\{\s*createClient\s*\}[^;]+;\s*/,'');
     // Compile only. Do not execute browser code.
     new Function(source);
