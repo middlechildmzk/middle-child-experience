@@ -158,11 +158,65 @@ async function applyPage(){
 }
 function authForm(){return '<div class="auth-card"><div class="eyebrow">Curator account</div><h2>Sign in or create an account.</h2><div class="form-grid"><div class="field full"><label>Email</label><input id="auth-email" type="email"></div><div class="field full"><label>Password</label><input id="auth-password" type="password"></div></div><div style="display:flex;gap:8px;margin-top:16px"><button id="auth-signin" class="button dark">Sign in</button><button id="auth-signup" class="button">Create account</button></div><div id="auth-message"></div></div>'}
 async function curatorWorkspace(mode='apply'){
- if(!state.session)return authForm();const r=await fetch('/api/curator',{headers:{Authorization:'Bearer '+state.session.access_token}});const d=await r.json();
+ if(!state.session)return authForm();
+ const r=await fetch('/api/curator',{headers:{Authorization:'Bearer '+state.session.access_token}});
+ const d=await r.json();
  if(!r.ok)return '<div class="notice error">'+esc(d.error||'Curator workspace unavailable')+'</div>';
- if(mode==='apply'&&!d.profile)return '<div class="auth-card"><div class="eyebrow">Step 1 · curator identity</div><h2>Apply to the Founding Curator Beta.</h2><div class="form-grid"><div class="field"><label>Display name</label><input id="apply-name"></div><div class="field"><label>Handle</label><input id="apply-handle"></div><div class="field full"><label>Editorial bio</label><textarea id="apply-bio"></textarea></div><div class="field full"><label>Genres (comma separated)</label><input id="apply-genres" placeholder="future bass, melodic dubstep"></div></div><button id="apply-submit" class="button dark" style="margin-top:16px">Submit application</button><div id="apply-message"></div></div>';
- if(mode==='apply')return '<div class="detail-grid"><div class="detail-card"><div class="eyebrow">Application</div><h2>'+esc(d.profile.display_name)+'</h2><p>Status: <strong>'+esc(d.profile.status)+'</strong></p><p>'+esc(d.profile.bio||'')+'</p><div class="notice">CuratorOS is neutral infrastructure. You are not joining BVSS FVM.</div></div><aside class="detail-card"><div class="eyebrow">Add a playlist</div><h2>Claim supply.</h2><div class="field"><label>Spotify playlist URL</label><input id="claim-url"></div><div class="field"><label>Playlist name</label><input id="claim-name"></div><div class="field"><label>Primary genre</label><input id="claim-genre"></div><button id="claim-add" class="button dark" style="margin-top:14px">Add playlist</button><div id="claim-message"></div><p class="provenance">Description-token verification is available in the current beta path. Spotify owner OAuth remains the preferred ownership proof as the external-curator connection is generalized.</p></aside>';
- const routes=d.routes||[];return '<div><div class="section-head"><div><div class="eyebrow">Curator workspace</div><h2>Inbox</h2></div><span class="provenance">Account: '+esc(d.profile?.status||'unknown')+'</span></div>'+(routes.length?routes.map(r=>'<article class="inbox-card"><div class="eyebrow-row"><span>'+esc(r.bvss_playlists?.canonical_name||'Playlist')+'</span><span>'+esc(r.status)+'</span></div><h3>'+esc(r.bvss_submissions?.song_title||'Submission')+' — '+esc(r.bvss_submissions?.artist_name||'Artist')+'</h3>'+(r.fit_band?fitBadge(r.fit_band):'')+chips((r.fit?.reasons||r.match_reasons||[]).map(x=>typeof x==='string'?x:(x.label||'Fit evidence')).slice(0,3))+'<div style="display:flex;gap:8px;margin-top:14px"><button class="button dark small curator-decision" data-route="'+esc(r.id)+'" data-decision="accept">Accept</button><button class="button small curator-decision" data-route="'+esc(r.id)+'" data-decision="hold">Hold</button><button class="button small curator-decision" data-route="'+esc(r.id)+'" data-decision="reject">Decline</button></div></article>').join(''):'<div class="detail-card">No assigned routes yet.</div>')+'</div>';
+
+ if(mode==='apply'&&!d.profile){
+   return '<div class="auth-card"><div class="eyebrow">Step 1 · curator identity</div><h2>Apply to the Founding Curator Beta.</h2><div class="form-grid"><div class="field"><label>Display name</label><input id="apply-name"></div><div class="field"><label>Handle</label><input id="apply-handle"></div><div class="field full"><label>Editorial bio</label><textarea id="apply-bio"></textarea></div><div class="field full"><label>Genres you curate</label><input id="apply-genres" placeholder="future bass, melodic dubstep"></div></div><div class="notice" style="margin-top:14px">You are applying to CuratorOS, not to the BVSS FVM label. Editorial decisions remain yours.</div><button id="apply-submit" class="button dark" style="margin-top:16px">Submit application</button><div id="apply-message"></div></div>';
+ }
+
+ if(mode==='apply'){
+   const live=await getPlaylists();
+   const genres=[...new Set(live.flatMap(p=>[p.primary_genre,...(p.secondary_genres||[])]).filter(Boolean))].sort();
+   const playlistRows=(d.playlists||[]).map(p=>{
+     const claim=(d.claims||[]).find(x=>x.playlist_id===p.id);
+     return '<article class="detail-card curator-playlist" data-playlist="'+esc(p.id)+'" style="margin-top:16px">'+
+       '<div class="eyebrow-row"><span>'+esc(p.verification_status)+' claim</span><span>'+esc(p.submission_status)+'</span></div>'+
+       '<h2>'+esc(p.canonical_name)+'</h2>'+
+       (claim?'<div class="notice">'+(claim.status==='verified'?'Ownership verified.':'Description verification code: <strong>'+esc(claim.verification_code)+'</strong>')+'</div>':'')+
+       '<div class="form-grid" style="margin-top:14px">'+
+         '<div class="field"><label>Primary genre</label><select data-field="primary_genre">'+genres.map(g=>'<option '+(g===p.primary_genre?'selected':'')+'>'+esc(g)+'</option>').join('')+'</select></div>'+
+         '<div class="field"><label>Secondary genres</label><input data-field="secondary_genres" value="'+esc((p.secondary_genres||[]).join(', '))+'"></div>'+
+         '<div class="field"><label>Moods</label><input data-field="moods" value="'+esc((p.moods||[]).join(', '))+'"></div>'+
+         '<div class="field"><label>Hard NO tags</label><input data-field="hard_no_tags" value="'+esc((p.hard_no_tags||[]).join(', '))+'" placeholder="covers, ai vocals"></div>'+
+         '<div class="field"><label>Review SLA hours</label><input data-field="review_sla_hours" type="number" min="1" max="720" value="'+esc(p.review_sla_hours??168)+'"></div>'+
+         '<div class="field"><label>Max open routes</label><input data-field="max_open_routes" type="number" min="1" max="10000" value="'+esc(p.max_open_routes??100)+'"></div>'+
+         '<div class="field"><label>Cooldown days</label><input data-field="route_cooldown_days" type="number" min="0" max="365" value="'+esc(p.route_cooldown_days??30)+'"></div>'+
+         '<div class="field"><label><input data-field="accepts_unreleased" type="checkbox" '+(p.accepts_unreleased?'checked':'')+'> Accept unreleased</label><label><input data-field="accepts_explicit" type="checkbox" '+(p.accepts_explicit?'checked':'')+'> Accept explicit</label></div>'+
+         '<div class="field full"><label>Submission criteria</label><textarea data-field="submission_criteria">'+esc(p.submission_criteria||'')+'</textarea></div>'+
+       '</div>'+
+       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="button dark small save-criteria" data-playlist="'+esc(p.id)+'">Save criteria</button>'+
+       (claim&&claim.status!=='verified'?'<button class="button small request-verify" data-playlist="'+esc(p.id)+'">I added the code · request verification</button>':'')+
+       (p.verification_status==='verified'?'<button class="button small toggle-playlist" data-playlist="'+esc(p.id)+'" data-next="'+(p.submission_status==='open'?'paused':'open')+'">'+(p.submission_status==='open'?'Pause submissions':'Open submissions')+'</button>':'')+
+       '</div><div class="provenance playlist-action-message" style="margin-top:9px"></div></article>';
+   }).join('');
+
+   return '<div class="detail-grid"><div><div class="detail-card"><div class="eyebrow">Curator identity</div><h2>'+esc(d.profile.display_name)+'</h2><p>Status: <strong>'+esc(d.profile.status)+'</strong></p><p>'+esc(d.profile.bio||'')+'</p><div class="notice">CuratorOS is neutral infrastructure. BVSS FVM is Verified Network #001, not the owner of your profile.</div></div>'+
+     '<div class="section-head" style="margin-top:28px;margin-bottom:0"><div><div class="eyebrow">Your supply</div><h2>Playlist claims & routing criteria</h2></div></div>'+
+     (playlistRows||'<div class="detail-card" style="margin-top:16px">No playlists added yet.</div>')+
+     '</div><aside class="detail-card"><div class="eyebrow">Add a playlist</div><h2>Claim supply.</h2><div class="field"><label>Spotify playlist URL</label><input id="claim-url"></div><div class="field"><label>Playlist name</label><input id="claim-name"></div><div class="field"><label>Primary genre</label><select id="claim-genre"><option value="">Choose…</option>'+genres.map(g=>'<option>'+esc(g)+'</option>').join('')+'</select></div><button id="claim-add" class="button dark" style="margin-top:14px">Add playlist</button><div id="claim-message"></div><p class="provenance">Founding beta supports the description-code ownership challenge. Read-only Spotify owner OAuth is the preferred proof path as external-account connection is generalized.</p></aside></div>';
+ }
+
+ const routes=d.routes||[];
+ return '<div><div class="section-head"><div><div class="eyebrow">Curator workspace</div><h2>Inbox</h2></div><span class="provenance">Account: '+esc(d.profile?.status||'unknown')+'</span></div>'+
+   (routes.length?routes.map(r=>'<article class="inbox-card"><div class="eyebrow-row"><span>'+esc(r.bvss_playlists?.canonical_name||'Playlist')+'</span><span>'+esc(r.status)+'</span></div><h3>'+esc(r.bvss_submissions?.song_title||'Submission')+' — '+esc(r.bvss_submissions?.artist_name||'Artist')+'</h3>'+(r.fit_band?fitBadge(r.fit_band):'')+chips((r.fit?.reasons||r.match_reasons||[]).map(x=>typeof x==='string'?x:(x.label||'Fit evidence')).slice(0,3))+'<div class="provenance">This route is visible only to the curator authorized for this playlist.</div><div style="display:flex;gap:8px;margin-top:14px"><button class="button dark small curator-decision" data-route="'+esc(r.id)+'" data-decision="accept">Accept</button><button class="button small curator-decision" data-route="'+esc(r.id)+'" data-decision="hold">Hold</button><button class="button small curator-decision" data-route="'+esc(r.id)+'" data-decision="reject">Decline</button></div></article>').join(''):'<div class="detail-card">No assigned routes yet.</div>')+
+   '</div>';
+}
+
+async function adminPage(){
+ const {data}=await supabase.auth.getSession();state.session=data.session;
+ if(!state.session)return '<main>'+pageHero('Founding beta admin','Approve supply. Protect the marketplace.','Curator approval, playlist verification, suspension and safety decisions are separate audited controls.')+'<section class="section"><div class="shell">'+authForm()+'</div></section></main>';
+ const r=await fetch('/api/admin',{headers:{Authorization:'Bearer '+state.session.access_token}});
+ if(!r.ok)return '<main>'+pageHero('Founding beta admin','Admin access required.','Sign in with the existing CuratorOS/BVSS operator account.')+'<section class="section"><div class="shell"><div class="notice error">This account is not an approved marketplace administrator.</div></div></section></main>';
+ const d=await r.json();
+ return '<main>'+pageHero('Founding beta admin','Approval & safety.','Approve curator identities and playlist claims independently. Suspensions stop new routing without erasing history.')+
+ '<section class="section"><div class="shell"><div class="section-head"><div><div class="eyebrow">Identity queue</div><h2>Curators</h2></div><span class="provenance">'+(d.curators||[]).length+' records</span></div>'+
+ ((d.curators||[]).length?(d.curators||[]).map(x=>'<article class="inbox-card"><div class="eyebrow-row"><span>'+esc(x.handle)+'</span><span>'+esc(x.status)+'</span></div><h3>'+esc(x.display_name)+'</h3><p>'+esc(x.bio||'No bio provided.')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="button dark small admin-action" data-action="approve_curator" data-curator="'+esc(x.id)+'">Approve</button><button class="button small admin-action" data-action="reject_curator" data-curator="'+esc(x.id)+'">Reject</button><button class="button small admin-action" data-action="suspend_curator" data-curator="'+esc(x.id)+'">Suspend</button></div></article>').join(''):'<div class="detail-card">No curator applications waiting.</div>')+
+ '<div class="section-head" style="margin-top:40px"><div><div class="eyebrow">Ownership queue</div><h2>Playlist claims</h2></div></div>'+
+ ((d.claims||[]).length?(d.claims||[]).map(x=>'<article class="inbox-card"><div class="eyebrow-row"><span>'+esc(x.bvss_curator_profiles?.display_name||'Curator')+'</span><span>'+esc(x.status)+'</span></div><h3>'+esc(x.bvss_playlists?.canonical_name||'Playlist')+'</h3><p class="provenance">Description challenge: '+esc(x.verification_code||'Unavailable')+'</p><div style="display:flex;gap:8px"><button class="button dark small admin-action" data-action="verify_claim" data-claim="'+esc(x.id)+'">Verify claim</button><button class="button small admin-action" data-action="reject_claim" data-claim="'+esc(x.id)+'">Reject</button></div></article>').join(''):'<div class="detail-card">No playlist claims waiting.</div>')+
+ '</div></section></main>';
 }
 async function inboxPage(){const {data}=await supabase.auth.getSession();state.session=data.session;return '<main>'+pageHero('Curator workspace','Inbox.','Each playlist route is independent. Accepting one route never accepts the submission everywhere.')+'<section class="section"><div class="shell" id="curator-root">'+(state.session?await curatorWorkspace('inbox'):authForm())+'</div></section></main>'}
 function notFound(){return '<main>'+pageHero('404','Not found.','That CuratorOS page does not exist.')+'<section class="section"><div class="shell"><a data-link class="button dark" href="/">Back home</a></div></section></main>'}
@@ -185,6 +239,7 @@ async function render(){
   else if(p.startsWith('/learn/'))content=articlePage(p.split('/')[2]);
   else if(p==='/apply')content=await applyPage();
   else if(p==='/app/inbox')content=await inboxPage();
+  else if(p==='/admin')content=await adminPage();
   else if(p==='/submissions/status')content=await statusPage();
   else content=notFound();
  }catch(e){content='<main>'+pageHero('System','CuratorOS hit an error.','The public shell is live, but this data surface could not load right now.')+'<section class="section"><div class="shell"><div class="notice error">'+esc(e.message||String(e))+'</div></div></section></main>'}
