@@ -32,11 +32,20 @@ const playlistId=(url:string)=>{
   const m=url.match(/^https:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?playlist\/([A-Za-z0-9]{22})(?:\?.*)?$/i);
   return m?m[1]:null;
 };
-const code=()=>("BVSSFVM-"+crypto.randomUUID().replace(/-/g,"").slice(0,7).toUpperCase());
+const code=()=>("CURATOROS-"+crypto.randomUUID().replace(/-/g,"").slice(0,7).toUpperCase());
 
 async function profileFor(db:any,userId:string){
   const {data,error}=await db.from("bvss_curator_profiles").select("*").eq("user_id",userId).maybeSingle();
   if(error) throw error;
+  return data;
+}
+
+async function provisionIdentity(db:any,userId:string,displayName:string,handle:string){
+  const {data,error}=await db.rpc("curatoros_provision_curator_identity",{
+    p_user_id:userId,p_display_name:displayName,p_handle:handle
+  });
+  if(error) throw error;
+  if(!data?.ok) throw new Error(data?.error||"identity_provision_failed");
   return data;
 }
 
@@ -102,7 +111,8 @@ Deno.serve(async(req)=>{
         if(error){ if(error.code==="23505") return new Response(JSON.stringify({error:"handle_unavailable"}),{status:409,headers:h}); throw error; }
         result=data;
       }
-      return new Response(JSON.stringify({ok:true,profile:result}),{status:201,headers:h});
+      const identity=await provisionIdentity(db,user.id,result.display_name,result.handle);
+      return new Response(JSON.stringify({ok:true,profile:result,identity}),{status:201,headers:h});
     }
 
     const current=profile||await profileFor(db,user.id);
@@ -159,9 +169,55 @@ Deno.serve(async(req)=>{
         curator_id:current.id,playlist_id:p.id,verification_code,status:"pending"
       }).select("*").single();
       if(cErr) throw cErr;
+
+      // Link the founding-beta playlist to the canonical ArtistOS identity/property graph.
+      const identity=current.professional_profile_id&&current.workspace_id
+        ? {professional_profile_id:current.professional_profile_id,workspace_id:current.workspace_id}
+        : await provisionIdentity(db,user.id,current.display_name,current.handle);
+      const propertyKey="spotify:playlist:"+spid;
+      let property:any=null;
+      const {data:existingProperty,error:existingPropertyErr}=await db.from("properties")
+        .select("id").eq("canonical_property_key",propertyKey).maybeSingle();
+      if(existingPropertyErr) throw existingPropertyErr;
+      if(existingProperty){
+        property=existingProperty;
+      }else{
+        const {data:newProperty,error:propertyErr}=await db.from("properties").insert({
+          workspace_id:identity.workspace_id,
+          created_by:user.id,
+          name:canonical_name,
+          property_type:"spotify_playlist",
+          platform:"spotify",
+          url:"https://open.spotify.com/playlist/"+spid,
+          platform_url:"https://open.spotify.com/playlist/"+spid,
+          spotify_playlist_id:spid,
+          canonical_property_key:propertyKey,
+          genre_tags:[primary_genre,...secondary_genres],
+          activity_status:"unknown",
+          verification_status:"unverified",
+          evidence_strength:1,
+          source:"curatoros_founding_beta",
+          relationship_stage:"identified"
+        }).select("id").single();
+        if(propertyErr) throw propertyErr;
+        property=newProperty;
+      }
+      await db.from("bvss_playlists").update({property_id:property.id}).eq("id",p.id);
+      const {error:claimLinkErr}=await db.from("property_claims").insert({
+        property_id:property.id,
+        claimant_user_id:user.id,
+        professional_profile_id:identity.professional_profile_id,
+        claimant_workspace_id:identity.workspace_id,
+        verification_method:"website_token",
+        evidence_url:"https://open.spotify.com/playlist/"+spid,
+        evidence_notes:"CuratorOS description challenge: "+verification_code,
+        status:"pending"
+      });
+      if(claimLinkErr&&claimLinkErr.code!=="23505") throw claimLinkErr;
+
       return new Response(JSON.stringify({
-        ok:true,playlist:p,claim,
-        instructions:"Temporarily add "+verification_code+" to the Spotify playlist description, then return here and request verification. BVSS FVM approval is required before the playlist can receive network submissions."
+        ok:true,playlist:{...p,property_id:property.id},claim,
+        instructions:"Temporarily add "+verification_code+" to the Spotify playlist description, then return here and request verification. CuratorOS approval is required before the playlist can receive submissions."
       }),{status:201,headers:h});
     }
 
