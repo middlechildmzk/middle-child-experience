@@ -105,49 +105,22 @@ Deno.serve(async(req)=>{
 
     if(action==="verify_claim"||action==="reject_claim"){
       const claim_id=clean(body.claim_id,80);
-      const {data:claim,error:clErr}=await db.from("bvss_curator_playlist_claims")
-        .select("id,curator_id,playlist_id,status,bvss_curator_profiles(status)")
-        .eq("id",claim_id).maybeSingle();
-      if(clErr) throw clErr;
-      if(!claim) return new Response(JSON.stringify({error:"claim_not_found"}),{status:404,headers:h});
-      if(action==="verify_claim"&&(claim.bvss_curator_profiles as any)?.status!=="approved")
-        return new Response(JSON.stringify({error:"approve_curator_first"}),{status:409,headers:h});
-
-      const verified=action==="verify_claim";
-      const now=new Date().toISOString();
-      const {error:uErr}=await db.from("bvss_curator_playlist_claims").update({
-        status:verified?"verified":"rejected",verified_at:verified?now:null,verified_by:user.id,
-        notes:clean(body.notes,2000)||null
-      }).eq("id",claim.id);
-      if(uErr) throw uErr;
-
-      const playlistPatch:any=verified ? {
-        verification_status:"verified",verified_at:now,verified_by:user.id,
-        public_status:"public",website_status:"published",lifecycle_state:"active",
-        submission_status:"open",network_routing_enabled:true
-      } : {
-        verification_status:"rejected",network_routing_enabled:false,submission_status:"paused",
-        public_status:"private",website_status:"hidden"
-      };
-      const {data:playlist,error:pErr}=await db.from("bvss_playlists").update(playlistPatch)
-        .eq("id",claim.playlist_id)
-        .select("id,slug,canonical_name,property_id,verification_status,public_status,website_status,submission_status,network_routing_enabled").single();
-      if(pErr) throw pErr;
-      if(playlist.property_id){
-        await db.from("property_claims").update({
-          status:verified?"approved":"rejected",
-          reviewer_notes:clean(body.notes,2000)||null,
-          reviewed_by:user.id,
-          reviewed_at:now,
-          updated_at:now
-        }).eq("property_id",playlist.property_id).eq("status","pending");
-        await db.from("properties").update({
-          verification_status:verified?"verified":"rejected",
-          evidence_strength:verified?3:1,
-          updated_at:now
-        }).eq("id",playlist.property_id);
+      const {data,error}=await db.rpc("curatoros_decide_playlist_claim",{
+        p_claim_id:claim_id||null,
+        p_reviewer:user.id,
+        p_decision:action==="verify_claim"?"approve":"reject",
+        p_notes:clean(body.notes,2000)||null
+      });
+      if(error) throw error;
+      if(!data?.ok){
+        const status=data?.error==="claim_not_found"?404:data?.error==="approve_curator_first"?409:400;
+        return new Response(JSON.stringify({error:data?.error||"claim_transition_failed"}),{status,headers:h});
       }
-      return new Response(JSON.stringify({ok:true,playlist}),{headers:h});
+      const {data:playlist,error:pErr}=await db.from("bvss_playlists")
+        .select("id,slug,canonical_name,property_id,verification_status,public_status,website_status,submission_status,network_routing_enabled")
+        .eq("id",data.playlist_id).single();
+      if(pErr) throw pErr;
+      return new Response(JSON.stringify({ok:true,playlist,claim:data}),{headers:h});
     }
 
     if(action==="resolve_report"){
