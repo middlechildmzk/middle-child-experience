@@ -20,7 +20,7 @@ export default function CuratorOSPage() {
     >
       <link rel="stylesheet" href="/curatoros/styles.css" />
       <div id="app" />
-      <script type="module" src="/curatoros/app.js" />
+      <script src="/curatoros/app.js" defer />
     </div>
   );
 }
