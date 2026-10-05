@@ -55,8 +55,8 @@ Deno.serve(async(req)=>{
     const email=clean(body.email,254).toLowerCase();
     const song_title=clean(body.song_title,200);
     const rawSpotify=clean(body.spotify_url,320);
-    const genre=clean(body.genre,120);
-    const moods=list(body.moods,8,60);
+    const genre_input=clean(body.genre,120);
+    const moods_input=list(body.moods,8,60);
     const comparable_artists=list(body.comparable_artists,8,100);
     const notes=clean(body.notes,4000)||null;
     const release_date=clean(body.release_date,10)||null;
@@ -73,7 +73,7 @@ Deno.serve(async(req)=>{
     const identified_track=body.identified_track&&typeof body.identified_track==="object"&&!Array.isArray(body.identified_track)
       ? body.identified_track : {};
 
-    if(!artist_name||!song_title||!genre||!email.includes("@"))
+    if(!artist_name||!song_title||!genre_input||!email.includes("@"))
       return new Response(JSON.stringify({error:"missing_required_fields"}),{status:400,headers:h});
 
     if(release_date&&!/^\d{4}-\d{2}-\d{2}$/.test(release_date))
@@ -131,6 +131,28 @@ Deno.serve(async(req)=>{
       const {data}=await supabase.from("bvss_playlists").select("id,slug").eq("slug",origin_playlist).maybeSingle();
       originPlaylist=data||null;
     }
+
+    // Use the same live playlist vocabulary for both form inputs and routing.
+    // This keeps arbitrary spelling/casing from silently breaking matches.
+    const genreByKey=new Map<string,string>();
+    const moodByKey=new Map<string,string>();
+    for(const p of playlists||[]){
+      for(const value of [p.primary_genre,...(p.secondary_genres||[])]){
+        const label=clean(value,120); if(label&&!genreByKey.has(norm(label))) genreByKey.set(norm(label),label);
+      }
+      for(const value of p.moods||[]){
+        const label=clean(value,60); if(label&&!moodByKey.has(norm(label))) moodByKey.set(norm(label),label);
+      }
+    }
+    const genre=genreByKey.get(norm(genre_input))||null;
+    if(!genre) return new Response(JSON.stringify({
+      error:"unknown_genre",
+      message:"Choose a genre from the approved suggestions so we can route the track correctly."
+    }),{status:400,headers:h});
+
+    const moods=Array.from(new Set(
+      moods_input.map((value)=>moodByKey.get(norm(value))).filter((value):value is string=>Boolean(value))
+    )).slice(0,8);
 
     const now=new Date().toISOString();
     const duplicate_fingerprint=await sha256([
