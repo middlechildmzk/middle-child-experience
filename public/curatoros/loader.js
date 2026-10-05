@@ -30,7 +30,7 @@
     }
   });
 
-  import('/curatoros/app-v2.js?v=20261005-1600')
+  import('/curatoros/app-v2.js?v=20261005-1606')
     .then(() => {
       window.setTimeout(() => {
         if ((app.textContent || '').includes('Loading CuratorOS interface')) {
