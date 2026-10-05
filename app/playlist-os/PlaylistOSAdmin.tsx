@@ -12,6 +12,7 @@ type Dashboard = {
   totals: Record<string, number>;
   playlists: any[];
   queue: any[];
+  placements?: any[];
   integrations: any[];
   metrics_history?: Record<string, { metric_date: string; followers: number | null; track_count: number | null; source: string; observed_at: string }[]>;
   actions?: {
@@ -324,22 +325,57 @@ function NetworkIntelligence({ data, playlists }: { data: Dashboard; playlists: 
   );
 }
 
+const DECLINE_REASONS: [string, string][] = [
+  ['energy_mismatch', 'Energy mismatch'],
+  ['not_my_genre_lane', 'Not my genre lane'],
+  ['production_not_ready', 'Production not there yet'],
+  ['too_similar_to_recent_adds', 'Too similar to recent adds'],
+  ['wrong_mood', 'Wrong mood for this playlist'],
+  ['vocal_style', 'Vocal style'],
+  ['mix_master', 'Mix/master'],
+  ['other', 'Other'],
+];
+const FIT_LABEL: Record<string, string> = { strong_fit: 'Strong fit', worth_a_look: 'Worth a look', long_shot: 'Long shot' };
+const PLACEMENT_LABEL: Record<string, string> = {
+  scheduled: 'Scheduled', pending_verification: 'Pending sync confirmation (≤24h)', live: 'Live',
+  removed: 'Removed', completed: 'Completed', cancelled: 'Cancelled',
+};
+const isoDay = (days: number) => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+
+async function adminPost(token: string, body: Record<string, unknown>) {
+  const response = await fetch(playlistApiBase + '/bvss-admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify(body),
+  });
+  const result = await response.json().catch(() => ({}));
+  return { ok: response.ok, result };
+}
+
 function ReviewCard({ submission, playlists, token, refresh }: { submission: any; playlists: any[]; token: string; refresh: () => void }) {
   const suggestions = submission.suggested_matches || [];
   const suggestedPlaylist = suggestions[0]?.bvss_playlists?.slug || '';
   const [playlist, setPlaylist] = useState(suggestedPlaylist);
   const [notes, setNotes] = useState('');
+  const [reasons, setReasons] = useState<string[]>([]);
+  const [holdUntil, setHoldUntil] = useState(isoDay(7));
   const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
 
   async function review(decision: 'hold' | 'accept' | 'reject') {
-    if (decision === 'accept' && !playlist) return;
+    if (!playlist) { setMessage('Pick the playlist this decision is for.'); return; }
+    if (decision === 'reject' && !reasons.length) { setMessage('Pick at least one decline reason.'); return; }
     setBusy(true);
-    await fetch(playlistApiBase + '/bvss-admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ action: 'review', submission_id: submission.id, decision, playlist_slug: playlist || null, review_notes: notes || null }),
+    setMessage('');
+    const { ok, result } = await adminPost(token, {
+      action: 'review', submission_id: submission.id, decision, playlist_slug: playlist,
+      review_notes: notes || null,
+      reasons: decision === 'reject' ? reasons : [],
+      hold_until: decision === 'hold' ? new Date(holdUntil + 'T23:59:00').toISOString() : null,
     });
     setBusy(false);
+    if (!ok) { setMessage('Not saved: ' + (result.error || 'request failed') + '. Nothing changed; try again.'); return; }
+    setMessage(decision === 'accept' ? 'Accepted. Scheduled until the playlist sync confirms it.' : decision === 'hold' ? 'On hold until ' + holdUntil + '.' : 'Declined.');
     refresh();
   }
 
@@ -379,18 +415,133 @@ function ReviewCard({ submission, playlists, token, refresh }: { submission: any
       </div>
       <div className="chip-row">{(submission.moods || []).map((m: string) => <span className="chip" key={m}>{m}</span>)}</div>
       {submission.notes && <p>{submission.notes}</p>}
-      {!!suggestions.length && <p className="muted">Routing: {suggestions.map((m: any) => (m.bvss_playlists?.canonical_name || 'Playlist') + ' (' + m.score + ')').join(' · ')}</p>}
+      {!!suggestions.length && (
+        <details>
+          <summary className="muted">Routing: {suggestions.map((m: any) => (m.bvss_playlists?.canonical_name || 'Playlist') + ' (' + (m.fit_band ? FIT_LABEL[m.fit_band] : 'not enough evidence') + ')').join(' · ')}</summary>
+          {suggestions.map((m: any) => (
+            <div key={m.playlist_id}>
+              <strong>{m.bvss_playlists?.canonical_name}</strong> · Fit signal (inferred)
+              <ul>
+                {(m.fit?.signals || []).map((sig: any, i: number) => <li key={i}>{sig.kind === 'aligned' ? '✓' : '✕'} {sig.detail}{sig.material ? '' : ' (minor)'}</li>)}
+                {m.fit?.insufficient_reason && <li>{m.fit.insufficient_reason}</li>}
+              </ul>
+            </div>
+          ))}
+        </details>
+      )}
+      {(submission.bvss_routes || []).filter((r: any) => r.status === 'hold').map((r: any) => (
+        <p className="muted" key={r.id}>On hold for {r.bvss_playlists?.canonical_name} until {String(r.hold_until).slice(0, 10)}</p>
+      ))}
+      <div className="chip-row" aria-label="Decline reasons">
+        {DECLINE_REASONS.map(([code, label]) => (
+          <label className="chip" key={code}>
+            <input type="checkbox" checked={reasons.includes(code)} onChange={() => setReasons((c) => c.includes(code) ? c.filter((x) => x !== code) : [...c, code])} /> {label}
+          </label>
+        ))}
+      </div>
       <div className="os-review-controls">
         <select value={playlist} onChange={(e) => setPlaylist(e.target.value)}>
           <option value="">Assign playlist…</option>
           {playlists.map((p) => <option value={p.slug} key={p.slug}>{p.canonical_name}</option>)}
         </select>
-        <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Review / rotation notes" />
+        <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Review notes (decline note max 280)" maxLength={2000} />
+        <input type="date" aria-label="Hold until" min={isoDay(1)} max={isoDay(30)} value={holdUntil} onChange={(e) => setHoldUntil(e.target.value)} />
         <button disabled={busy} onClick={() => review('accept')}>Accept</button>
         <button disabled={busy} onClick={() => review('hold')}>Hold</button>
-        <button disabled={busy} onClick={() => review('reject')}>Reject</button>
+        <button disabled={busy || !reasons.length} onClick={() => review('reject')}>Decline</button>
       </div>
+      {message && <p className="muted" role="status">{message}</p>}
     </article>
+  );
+}
+
+function SpotifyOwnerCard({ token, refresh }: { token: string; refresh: () => void }) {
+  const [state, setState] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  async function call(action: string) {
+    const response = await fetch(playlistApiBase + '/bvss-spotify-owner', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ action }),
+    });
+    return { ok: response.ok, body: await response.json().catch(() => ({})) };
+  }
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get('spotify');
+    if (result) setMessage(result.startsWith('connected') ? 'Spotify owner account connected (read-only).' : 'Spotify connection not saved: ' + result.replace(/_/g, ' ') + '.');
+    call('status').then(({ ok, body }) => ok && setState(body));
+  }, [token]);
+  async function connect() {
+    setBusy(true);
+    const { ok, body } = await call('start');
+    setBusy(false);
+    if (ok && body.url) window.location.href = body.url;
+    else setMessage('Could not start: ' + (body.error || 'request failed'));
+  }
+  async function observe() {
+    setBusy(true);
+    const { body } = await call('observe');
+    setBusy(false);
+    setMessage(body.error ? 'Check failed: ' + body.error : 'Checked ' + body.playlists + ' playlists · ' + body.placements_live + ' placement(s) confirmed live' + (body.failed ? ' · ' + body.failed + ' failed' : '') + '.');
+    refresh();
+    call('status').then(({ ok, body: b }) => ok && setState(b));
+  }
+  const conn = state?.connection;
+  return (
+    <div className="card">
+      <p className="eyebrow">Placement verification</p>
+      <h3>Spotify owner connection</h3>
+      {conn ? (
+        <p>Connected as <strong>{conn.account_id}</strong> · read-only ({(conn.scopes || []).join(', ')}) · owns {(conn.owned_playlists_checked || []).length} BVSS playlists · last check {state.last_sync_at ? String(state.last_sync_at).slice(0, 16).replace('T', ' ') + ' UTC' : 'not yet'}{state.status === 'degraded' ? ' · needs attention: ' + (conn.last_result?.error || 'last check failed') : ''}</p>
+      ) : (
+        <p className="muted">Not connected. Placements stay "Pending sync confirmation" until the account that owns the BVSS playlists is connected.</p>
+      )}
+      <div className="actions">
+        <button className="button button-small" disabled={busy} onClick={connect}>{conn ? 'Reconnect' : 'Connect Spotify owner account'}</button>
+        {conn && <button className="button button-secondary button-small" disabled={busy} onClick={observe}>{busy ? 'Checking…' : 'Check playlists now'}</button>}
+      </div>
+      {message && <p className="muted" role="status">{message}</p>}
+    </div>
+  );
+}
+
+function PlacementsPanel({ placements, token, refresh }: { placements: any[]; token: string; refresh: () => void }) {
+  const [busy, setBusy] = useState('');
+  const [message, setMessage] = useState('');
+  async function act(body: Record<string, unknown>, done: string) {
+    setBusy(String(body.placement_id));
+    const { ok, result } = await adminPost(token, body);
+    setBusy('');
+    setMessage(ok ? done : 'Not saved: ' + (result.error || 'request failed'));
+    if (ok) refresh();
+  }
+  if (!placements.length) return <p className="muted">No placements yet. Accepted tracks appear here; they show as live once the playlist sync confirms them.</p>;
+  return (
+    <div>
+      <table className="os-table">
+        <thead><tr><th>Track</th><th>Playlist</th><th>Status</th><th>Accepted</th><th>Live since</th><th>Evidence</th><th /></tr></thead>
+        <tbody>
+          {placements.map((p) => (
+            <tr key={p.id}>
+              <td>{p.bvss_submissions?.song_title} · {p.bvss_submissions?.artist_name}</td>
+              <td>{p.bvss_playlists?.canonical_name}</td>
+              <td><span className="status-pill">{PLACEMENT_LABEL[p.status] || p.status}</span></td>
+              <td>{p.accepted_at ? String(p.accepted_at).slice(0, 10) : '—'}</td>
+              <td>{p.placed_at ? String(p.placed_at).slice(0, 10) + (p.actual_position != null ? ' · #' + (p.actual_position + 1) : '') : '—'}</td>
+              <td>{p.verification_source ? p.verification_source + ' · ' + String(p.verified_live_at).slice(0, 16).replace('T', ' ') : 'not verified'}</td>
+              <td>
+                {p.status === 'scheduled' && p.bvss_playlists?.spotify_url && <a className="button button-secondary button-small" href={p.bvss_playlists.spotify_url} target="_blank" rel="noreferrer">Open in Spotify</a>}
+                {p.status === 'scheduled' && <button disabled={!!busy} onClick={() => act({ action: 'report_added', placement_id: p.id }, 'Pending sync confirmation.')}>I've added it</button>}
+                {(p.status === 'scheduled' || p.status === 'pending_verification') && <button disabled={!!busy} onClick={() => act({ action: 'end_placement', placement_id: p.id, outcome: 'cancelled' }, 'Placement cancelled.')}>Cancel</button>}
+                {p.status === 'live' && <button disabled={!!busy} onClick={() => act({ action: 'end_placement', placement_id: p.id, outcome: 'completed' }, 'Placement completed.')}>Complete</button>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {message && <p className="muted" role="status">{message}</p>}
+    </div>
   );
 }
 
@@ -782,6 +933,11 @@ export default function PlaylistOSAdmin() {
       <section className="os-section">
         <div className="os-section-head"><div><p className="eyebrow">Review queue</p><h2>{data.queue.length} submissions waiting</h2></div></div>
         <div className="os-review-grid">{data.queue.length ? data.queue.map((s) => <ReviewCard key={s.id} submission={s} playlists={playlistRows} token={session.access_token} refresh={load} />) : <p className="muted">Queue clear.</p>}</div>
+      </section>
+      <section className="os-section">
+        <div className="os-section-head"><div><p className="eyebrow">Placements</p><h2>Accepted → scheduled → live</h2></div><p className="muted">Live only after the playlist sync finds the track.</p></div>
+        <SpotifyOwnerCard token={session.access_token} refresh={load} />
+        <PlacementsPanel placements={data.placements || []} token={session.access_token} refresh={load} />
       </section>
 
       {!!data.legacy_playlists?.length && (
