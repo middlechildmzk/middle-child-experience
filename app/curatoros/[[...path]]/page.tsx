@@ -27,7 +27,7 @@ export default function CuratorOSPage() {
           <p>The marketplace shell loaded. The interactive client is starting.</p>
         </div>
       </div>
-      <Script id="curatoros-client" src="/curatoros/app.js" type="module" strategy="afterInteractive" />
+      <Script id="curatoros-loader" src="/curatoros/loader.js" strategy="afterInteractive" />
     </div>
   );
 }
