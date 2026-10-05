@@ -132,6 +132,15 @@ Deno.serve(async(req)=>{
       originPlaylist=data||null;
     }
 
+    const {data:playlists,error:playlistError}=await supabase.from("bvss_playlists")
+      .select("id,slug,canonical_name,primary_genre,secondary_genres,moods,seo_keywords,anchor_artists,network_owner_type,curator_id,verification_status,network_routing_enabled")
+      .eq("submission_status","open")
+      .eq("lifecycle_state","active")
+      .eq("website_status","published")
+      .eq("verification_status","verified")
+      .eq("network_routing_enabled",true);
+    if(playlistError) throw playlistError;
+
     // Use the same live playlist vocabulary for both form inputs and routing.
     // This keeps arbitrary spelling/casing from silently breaking matches.
     const genreByKey=new Map<string,string>();
@@ -203,15 +212,6 @@ Deno.serve(async(req)=>{
       }).eq("object_path",download_object_path).eq("status","pending");
       if(claimErr) throw claimErr;
     }
-
-    const {data:playlists,error:playlistError}=await supabase.from("bvss_playlists")
-      .select("id,slug,canonical_name,primary_genre,secondary_genres,moods,seo_keywords,anchor_artists,network_owner_type,curator_id,verification_status,network_routing_enabled")
-      .eq("submission_status","open")
-      .eq("lifecycle_state","active")
-      .eq("website_status","published")
-      .eq("verification_status","verified")
-      .eq("network_routing_enabled",true);
-    if(playlistError) throw playlistError;
 
     const ng=norm(genre);
     const nm=moods.map(norm);
