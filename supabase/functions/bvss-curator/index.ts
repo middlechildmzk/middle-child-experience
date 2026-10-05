@@ -166,7 +166,7 @@ Deno.serve(async(req)=>{
         anchor_artists,target_track_count:Number(body.target_track_count||60),
         public_status:"private",submission_status:"paused",update_cadence:clean(body.update_cadence,40)||"weekly",
         middle_child_eligible:false,subflower_eligible:false,website_status:"hidden",lifecycle_state:"experimental",
-        curation_philosophy:clean(body.curation_philosophy,1200)||"Independent curator playlist participating in the BVSS FVM curator network beta.",
+        curation_philosophy:clean(body.curation_philosophy,1200)||"Independent curator playlist participating in the CuratorOS founding beta.",
         submission_criteria:clean(body.submission_criteria,1200)||"Tracks are considered independently by the curator. Placement is never guaranteed.",
         display_order:1000,network_owner_type:"partner",curator_id:current.id,verification_status:"pending",
         network_routing_enabled:false,source_metadata:{curator_beta:true,submitted_by:user.id}
@@ -211,17 +211,23 @@ Deno.serve(async(req)=>{
         property=newProperty;
       }
       await db.from("bvss_playlists").update({property_id:property.id}).eq("id",p.id);
-      const {error:claimLinkErr}=await db.from("property_claims").insert({
-        property_id:property.id,
-        claimant_user_id:user.id,
-        professional_profile_id:identity.professional_profile_id,
-        claimant_workspace_id:identity.workspace_id,
-        verification_method:"website_token",
-        evidence_url:"https://open.spotify.com/playlist/"+spid,
-        evidence_notes:"CuratorOS description challenge: "+verification_code,
-        status:"pending"
-      });
-      if(claimLinkErr&&claimLinkErr.code!=="23505") throw claimLinkErr;
+      const {count:existingCanonicalClaim}=await db.from("property_claims")
+        .select("id",{count:"exact",head:true})
+        .eq("property_id",property.id)
+        .eq("claimant_user_id",user.id);
+      if(!existingCanonicalClaim){
+        const {error:claimLinkErr}=await db.from("property_claims").insert({
+          property_id:property.id,
+          claimant_user_id:user.id,
+          professional_profile_id:identity.professional_profile_id,
+          claimant_workspace_id:identity.workspace_id,
+          verification_method:"website_token",
+          evidence_url:"https://open.spotify.com/playlist/"+spid,
+          evidence_notes:"CuratorOS description challenge: "+verification_code,
+          status:"pending"
+        });
+        if(claimLinkErr) throw claimLinkErr;
+      }
 
       return new Response(JSON.stringify({
         ok:true,playlist:{...p,property_id:property.id},claim,
