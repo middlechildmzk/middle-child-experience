@@ -53,5 +53,7 @@ jobs:
         run: npm run test:source-health
       - name: Learn guide publication checks
         run: npm run test:learn
+      - name: Playlist Fit Checker matcher
+        run: npm run test:tools
       - name: Typecheck
         run: npm run typecheck

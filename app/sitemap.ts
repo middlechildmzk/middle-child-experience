@@ -60,6 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     { url: siteUrl + '/free-spotify-playlist-submission', changeFrequency: 'daily', priority: 0.9 },
+    { url: siteUrl + '/tools/playlist-fit-checker', changeFrequency: 'weekly', priority: 0.85 },
     { url: siteUrl + '/submit', changeFrequency: 'monthly', priority: 0.78 },
     { url: siteUrl + '/press', changeFrequency: 'monthly', priority: 0.65 },
     { url: siteUrl + '/brand', changeFrequency: 'monthly', priority: 0.5 },

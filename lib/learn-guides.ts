@@ -812,6 +812,7 @@ export const guides: LearnGuide[] = [
       {
         heading: 'Using a curator network',
         paragraphs: [
+          'If you are not sure which of our playlists fits, the [Playlist Fit Checker](/tools/playlist-fit-checker) matches your genre, moods and listening moment against each open playlist and explains every match.',
           'Networks save time because the fit information is in one place and one submission can reach several playlists. Check who curates them and whether anything about the decision is for sale.',
           'In our case: BVSS FVM playlists are programmed by BVSS FVM, and CuratorOS playlists by the in-house CuratorOS team, which operates alongside us. They are not independent third-party curators and none of them are Spotify editorial playlists. Submission is free, and each playlist your song fits gets a human decision.',
         ],
@@ -826,6 +827,7 @@ export const guides: LearnGuide[] = [
       { question: 'How can I tell if a playlist is real?', answer: 'Look for a coherent sound, recent updates and an identifiable curator, and avoid anything that sells streams or placement. Our [scams guide](/learn/spotify-promotion-scams) covers Spotify’s own warning signs.' },
     ],
     related: [
+      { href: '/tools/playlist-fit-checker', label: 'Playlist Fit Checker', detail: 'Find playlists in our network that fit your song.' },
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with fit filters and free submission.' },
       { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial, algorithmic and independent routes.' },
       { href: '/learn/how-to-pitch-playlist-curators', label: 'How to pitch playlist curators', detail: 'Templates, a worked example and why curators pass.' },
@@ -914,6 +916,7 @@ export const guides: LearnGuide[] = [
         paragraphs: [
           'In our review workflow a curator who passes must choose at least one reason: energy mismatch, not my genre lane, wrong mood, too similar to recent adds, vocal style, production not ready, mix / master, or other. Several describe fit with one playlist rather than the quality of the song, which is why the same song can be declined by one playlist and accepted by another.',
           'What each reason means and what to do next is on its own page: [why playlist curators reject songs](/learn/why-playlist-curators-reject-songs).',
+          'Before you pitch our network, the [Playlist Fit Checker](/tools/playlist-fit-checker) shows which playlists fit your song’s genre, moods and listening moment, so you can avoid the obvious mismatches.',
         ],
       },
       {
@@ -949,6 +952,7 @@ export const guides: LearnGuide[] = [
       { question: 'Should I pay to pitch curators?', answer: 'Spotify says to be highly skeptical of services that charge to be considered, and that selling placement breaks its terms. Submission to our playlists is free.' },
     ],
     related: [
+      { href: '/tools/playlist-fit-checker', label: 'Playlist Fit Checker', detail: 'Check which playlists fit before you pitch.' },
       { href: '/learn/why-playlist-curators-reject-songs', label: 'Why curators reject songs', detail: 'Each decline reason and what to do next.' },
       { href: '/learn/find-spotify-playlist-curators', label: 'Find Spotify playlist curators', detail: 'Find playlists that fit before you pitch.' },
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Submit free to human-curated playlists.' },
@@ -1579,7 +1583,7 @@ export const guides: LearnGuide[] = [
         steps: [
           { title: 'Read the reason as information', body: 'It tells you about one playlist’s needs at one moment. Write it down next to the playlist in your tracker.' },
           { title: 'Decide: fit or readiness?', body: 'Fit reasons mean pitch elsewhere. Readiness reasons mean look at the recording before the next pitch.' },
-          { title: 'Find a better match', body: 'Use [this checklist](/learn/find-spotify-playlist-curators) to find playlists that fit the energy, genre and mood of the song.' },
+          { title: 'Find a better match', body: 'Use [this checklist](/learn/find-spotify-playlist-curators) to find playlists that fit the energy, genre and mood of the song, or the [Playlist Fit Checker](/tools/playlist-fit-checker) to match it against our network.' },
           { title: 'Tighten the pitch', body: 'Accurate genre, moods and comparable artists help every curator. [These templates](/learn/how-to-pitch-playlist-curators) keep it short.' },
           { title: 'Do not argue or resubmit straight away', body: 'A short thank-you is fine; a debate is not. Come back with your next release rather than the same song.' },
         ],
@@ -1598,6 +1602,7 @@ export const guides: LearnGuide[] = [
       { question: 'What does a hold mean?', answer: 'A hold is not a decline. The curator is keeping the song in their queue and will revisit it by a date shown on your status page.' },
     ],
     related: [
+      { href: '/tools/playlist-fit-checker', label: 'Playlist Fit Checker', detail: 'Reduce obvious genre and mood mismatches.' },
       { href: '/learn/how-to-pitch-playlist-curators', label: 'How to pitch playlist curators', detail: 'Templates that avoid the easy declines.' },
       { href: '/learn/find-spotify-playlist-curators', label: 'Find Spotify playlist curators', detail: 'Check fit before you submit.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'Accept, hold or decline, step by step.' },
