@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: '%s | BVSS FVM',
   },
   description:
-    'BVSS FVM is an independent electronic music label, curator network, and discovery platform for releases, playlists, submissions, licensing, and artist development.',
+    'BVSS FVM is an independent electronic music label and genre-spanning curator network for releases, playlists, submissions, licensing, and artist discovery.',
   applicationName: 'BVSS FVM',
   category: 'music',
   keywords: [
