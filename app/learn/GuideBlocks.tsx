@@ -55,7 +55,8 @@ function Table({ table }: { table: GuideTable }) {
                 index === 0 ? (
                   <th key={index} scope="row"><RichText text={cell} /></th>
                 ) : (
-                  <td key={index}><RichText text={cell} /></td>
+                  // data-label lets narrow screens show each cell with its column name.
+                  <td key={index} data-label={table.columns[index]}><RichText text={cell} /></td>
                 ),
               )}
             </tr>
