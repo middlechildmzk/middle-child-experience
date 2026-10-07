@@ -8,14 +8,14 @@ import PlaylistBrowser from './PlaylistBrowser';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Electronic Music Playlists',
+  title: 'Music Playlists | CuratorOS + BVSS FVM',
   description:
-    'Explore the BVSS FVM independent playlist network: emotional bass, drum & bass, house, UK garage, hardwave, chill electronic, bass music and more.',
+    'Explore human-curated playlists from CuratorOS and BVSS FVM across pop, indie, rock, R&B, hip-hop, electronic, country, moods, activities and more.',
   alternates: { canonical: '/playlists' },
   openGraph: {
     title: 'BVSS FVM Playlist Network',
     description:
-      'Human-curated electronic playlists built around real listening moments, discovery and independent artists.',
+      'Human-curated playlists across genres, moods and listening moments, built for discovery and independent artists.',
     url: '/playlists',
     type: 'website',
   },
@@ -37,7 +37,7 @@ export default async function PlaylistsPage() {
     '@type': 'CollectionPage',
     '@id': siteUrl + '/playlists#collection',
     name: 'BVSS FVM Playlist Network',
-    description: 'Human-curated electronic music playlists organized by sound, mood and listening intent.',
+    description: 'Human-curated music playlists from CuratorOS and BVSS FVM organized by sound, mood, activity and listening intent.',
     url: siteUrl + '/playlists',
     isPartOf: { '@type': 'WebSite', '@id': siteUrl + '/#website' },
     mainEntity: {
@@ -59,12 +59,14 @@ export default async function PlaylistsPage() {
         <p className="eyebrow">BVSS FVM playlist network</p>
         <h1>Find the lane that fits the moment.</h1>
         <p className="lead">
-          {network.length} active, human-curated electronic playlists — organized by sound, mood and
-          listener intent, with live audience measurement and one submission funnel for independent artists.
+          {network.length} active, human-curated playlists across genres, moods and listening moments —
+          with CuratorOS and BVSS FVM lanes, live audience measurement when available, and one submission
+          funnel for independent artists.
         </p>
         <div className="actions">
           <Link className="button" href="/submit">Submit music</Link>
           <a className="button button-secondary" href="#network">Explore the network</a>
+          <Link className="button button-secondary" href="/curators/curatoros">Meet CuratorOS</Link>
         </div>
       </section>
 
@@ -81,11 +83,12 @@ export default async function PlaylistsPage() {
 
       <section className="section" id="network">
         <div className="shell">
-          <p className="eyebrow">Browse by sound</p>
-          <h2>Built for discovery, not keyword stuffing.</h2>
+          <p className="eyebrow">Browse by sound, mood & curator</p>
+          <h2>Find a playlist with a real point of view.</h2>
           <p className="playlist-network-intro">
-            Every page shows the playlist's editorial lane, update cadence, live follower count when
-            measured, current rotation highlights, Spotify player, and a direct submission path.
+            Browse BVSS FVM's electronic catalog alongside CuratorOS genre, mood and activity playlists.
+            Every page shows its editorial lane, update cadence, Spotify player, curator identity, and a
+            direct submission path.
           </p>
           <PlaylistBrowser playlists={network} />
         </div>
