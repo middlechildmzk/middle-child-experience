@@ -490,6 +490,7 @@ export const guides: LearnGuide[] = [
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for and what accept, hold and decline mean.' },
       { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools and a release-by-release plan.' },
+      { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'How the common schemes work and what to do if a suspicious playlist adds you.' },
       { href: '/playlists/collections', label: 'Playlist collections', detail: 'Browse playlists by genre, mood and moment.' },
     ],
     sources: [
@@ -597,6 +598,7 @@ export const guides: LearnGuide[] = [
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
       { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial pitching, algorithmic playlists and independent curators.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for.' },
+      { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'How the common schemes work and what to do if a suspicious playlist adds you.' },
     ],
     sources: [
       { label: 'Promoting music on Spotify', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/by-en/artists/article/promoting-music-on-spotify/', accessed: '2026-10-07' },
@@ -607,6 +609,126 @@ export const guides: LearnGuide[] = [
       { label: 'Sharing your music', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/cm-en/artists/article/sharing-your-music/', accessed: '2026-10-07' },
       { label: 'Seeing playlists you’re added to', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/seeing-playlists-your-music-is-on/', accessed: '2026-10-07' },
       { label: 'Artificial streaming and paid 3rd-party services that guarantee streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/', accessed: '2026-10-07' },
+    ],
+  },
+  {
+    slug: 'spotify-promotion-scams',
+    topic: 'Spotify Promotion',
+    published: '2026-10-07',
+    updated: '2026-10-07',
+    seoTitle: 'Spotify Promotion Scams: Fake Streams & Suspicious Playlists',
+    title: 'Spotify Promotion Scams: Fake Streams & Suspicious Playlists',
+    description: 'How Spotify promotion scams work, what Spotify actually prohibits, how to check an offer before you pay, and what to do if a suspicious playlist adds your song.',
+    eyebrow: 'Spotify promotion · Artist safety',
+    lead: 'Most Spotify promotion scams sell one of two things: streams or playlist placements. Spotify’s position on both is the same. In its own words, it “strictly prohibits using any third party service that promises streams or playlist placement in exchange for money.” Here is how the common schemes work, how to check an offer, and what to do if your music ends up somewhere it should not be.',
+    sections: [
+      {
+        heading: 'What Spotify actually prohibits',
+        paragraphs: [
+          'Spotify defines an artificial stream as one that “doesn’t reflect genuine user listening intent,” including any attempt to manipulate streaming with automated processes such as bots or scripts. It says paid third-party services that guarantee streams are not legitimate, and that services promising guaranteed playlist placement in exchange for money break its terms.',
+          'Spotify lists what can happen when it confirms artificial streaming:',
+        ],
+        bullets: [
+          'Royalties tied to confirmed artificial streams can be withheld, and public stream counts corrected.',
+          'The song may be removed from Spotify playlists.',
+          'Distributors receive reports and may warn artists or, in serious or repeated cases, remove content or suspend accounts.',
+          'In repeated or egregious cases, Spotify can remove the manipulated content.',
+          'Labels and distributors can be charged a per-track fee when flagrant artificial streaming is detected.',
+        ],
+      },
+      {
+        heading: 'The scams we see most often',
+        paragraphs: [
+          'These patterns line up with Spotify’s published guidance. A single offer often mixes several.',
+        ],
+        table: {
+          caption: 'Common patterns and why they are a problem',
+          columns: ['Pattern', 'What it looks like', 'Why it is a problem'],
+          rows: [
+            ['Stream packages', 'A price per thousand streams, or a promised number of plays', 'Spotify says services that sell streams are not legitimate and can get your music removed.'],
+            ['Paid playlist placement', 'A fee in exchange for a promised add to a playlist', 'Spotify says selling placement for money breaks its terms.'],
+            ['Paying to be “considered”', 'A fee for review with vague terms about what happens next', 'Spotify says to treat services that charge to be considered with high skepticism. Know exactly what you are paying for.'],
+            ['Fake editorial pitching', 'Someone offers to pitch you to Spotify’s editors for a fee', 'Pitching is free inside Spotify for Artists and is done by people with access to your profile. Nobody can sell you an editorial spot.'],
+            ['Account access requests', 'A service asks for your Spotify for Artists or distributor login to “set things up”', 'No legitimate curator or promoter needs your login. Never share it.'],
+            ['Fake Spotify emails', 'Messages claiming to be Spotify asking for passwords, payment or downloads', 'Spotify says it never asks for your password or payment details by email, and real emails come from an address ending in @spotify.com.'],
+            ['Follower surges', 'Cheap follower packages or follow-for-follow schemes', 'Spotify lists short-lived surges in follower growth as a warning sign of artificial activity.'],
+          ],
+        },
+      },
+      {
+        heading: 'How to check an offer before you pay anything',
+        paragraphs: [
+          'Legitimate promotion can explain how real people will hear your music. Use these questions on any service, including us.',
+        ],
+        steps: [
+          { title: 'Ask what exactly you are paying for', body: 'Review time, advertising, PR outreach or a result? If the answer is a number of streams, followers or adds, walk away.' },
+          { title: 'Ask how listeners will find the song', body: 'A real answer names a channel: a playlist with an audience that fits, an ad campaign, press, social content. “Our network” with no detail is not an answer.' },
+          { title: 'Look at the playlists themselves', body: 'Open them on Spotify. Do the songs belong together? Is it clear who runs them? Is it updated? A playlist built for numbers rarely has a coherent sound.' },
+          { title: 'Keep your accounts to yourself', body: 'Share links, never logins. Pitching to Spotify’s editors is something you or your team does inside Spotify for Artists.' },
+          { title: 'Check the reviews and the method', body: 'Spotify’s advice for hiring a PR or marketing firm is to ask about its promotion methods directly and read reviews from artists who have worked with it.' },
+        ],
+        callout: {
+          kind: 'submit',
+          title: 'A free alternative to pay-to-be-considered',
+          body: 'Submitting to the BVSS FVM and CuratorOS playlists costs nothing. A curator listens and decides for each playlist your song fits, and nothing about that decision is for sale. See every open playlist on our [free submission page](/free-spotify-playlist-submission).',
+        },
+      },
+      {
+        heading: 'Warning signs in your own data',
+        paragraphs: [
+          'Spotify lists these signals in Spotify for Artists as possible signs of artificial streaming. None of them proves anything on its own. A real playlist placement or a moment on social media can also cause a spike, so look at them together and in context.',
+        ],
+        bullets: [
+          'A sudden spike in streams for no apparent reason, followed by a drop-off.',
+          'Streams from places where your music has not been active before.',
+          'Most streams coming from sources you cannot explain, such as “Other.”',
+          'Short-lived surges in follower growth.',
+        ],
+      },
+      {
+        heading: 'If your song lands on a suspicious playlist',
+        paragraphs: [
+          'Spotify notes that some services use bots on music without the artist’s consent, so this can happen even if you never paid anyone. Act quickly and keep a record.',
+        ],
+        steps: [
+          { title: 'Find the playlist', body: 'In Spotify for Artists, go to Music then Playlists to see which playlists your music is on. A playlist appears once at least 3 of your listeners have played your music there.' },
+          { title: 'Report it to Spotify', body: 'Use the [playlist reporter form](https://artists.spotify.com/c/playlist-reporter) in Spotify for Artists. Spotify says it investigates before taking action.' },
+          { title: 'Tell your distributor or label', body: 'Spotify’s advice is to share the unusual data with your distributor or label right away, because they can work with Spotify to resolve it.' },
+          { title: 'Keep notes', body: 'Screenshots of the playlist and your stats, dates, and any messages with whoever added you. If you did not ask for the placement, a clear record helps.' },
+        ],
+        callout: {
+          kind: 'warning',
+          title: 'Got a “Spotify” email asking for your password?',
+          body: 'Do not click anything. Spotify says real emails come from an address ending in @spotify.com and that it never asks for passwords or payment details by email. Forward suspicious messages to spoof@spotify.com and delete them.',
+        },
+      },
+      {
+        heading: 'What legitimate paid promotion looks like',
+        paragraphs: [
+          'Paying for promotion is not the problem; paying for a result that only manipulation can deliver is. Spotify’s own paid tools, including Marquee and Showcase display campaigns and Spotify Ads Manager, are legitimate ways to reach listeners. PR and marketing firms can be too, if their methods hold up to the questions above.',
+          'If you would rather not spend anything, there is a full free plan in [free Spotify promotion](/learn/free-spotify-promotion), and the honest routes onto playlists are in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).',
+        ],
+      },
+    ],
+    faq: [
+      { question: 'Will Spotify penalize me if someone else used bots on my song?', answer: 'Spotify says some services stream music without the artist’s consent. Its advice is to report the playlist and share the data with your distributor or label quickly so they can work with Spotify on it.' },
+      { question: 'Are paid playlist submission sites scams?', answer: 'Not necessarily, but Spotify says to treat services that charge to be considered for playlists with high skepticism. Make sure you know whether you are paying for review time or being sold a result.' },
+      { question: 'Does Spotify catch every fake stream?', answer: 'Spotify does not publish how it detects artificial streaming, so nobody outside Spotify can tell you what will or will not be caught. The safe assumption is that buying streams puts your music at risk.' },
+      { question: 'How do I report a fake Spotify email?', answer: 'Forward it to spoof@spotify.com and delete it. If you clicked a link or entered details, reset your password and update it anywhere you reused it.' },
+      { question: 'Is submitting to BVSS FVM a paid service?', answer: 'No. Submission to every BVSS FVM and CuratorOS playlist is free, and placement is never sold.' },
+    ],
+    related: [
+      { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Submit free to human-curated playlists. Placement is never sold.' },
+      { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'The legitimate routes: editors, algorithms and independent curators.' },
+      { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'A release-by-release plan with Spotify’s free tools.' },
+    ],
+    sources: [
+      { label: 'Artificial streaming', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/artificial-streaming', accessed: '2026-10-07' },
+      { label: 'Artificial streaming and paid 3rd-party services that guarantee streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/', accessed: '2026-10-07' },
+      { label: 'Is this Spotify email legit?', publisher: 'Spotify Support', href: 'https://support.spotify.com/us/article/spotify-email-legit/', accessed: '2026-10-07' },
+      { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-07' },
+      { label: 'Seeing playlists you’re added to', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/seeing-playlists-your-music-is-on/', accessed: '2026-10-07' },
+      { label: 'Promoting music on Spotify', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/by-en/artists/article/promoting-music-on-spotify/', accessed: '2026-10-07' },
     ],
   }
 ];
