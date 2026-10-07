@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPlaylist, getPlaylists, relatedPlaylists } from '../../../lib/playlist-os';
+import { collectionsForPlaylist } from '../../../lib/playlist-collections';
 import { describeFollowersPublic } from '../../../lib/source-health';
 import { siteUrl } from '../../../lib/site-url';
 import PlaylistAnalytics from '../PlaylistAnalytics';
@@ -54,6 +55,7 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
   const { playlist, highlights } = result;
   const all = await getPlaylists();
   const related = relatedPlaylists(playlist, all);
+  const collections = collectionsForPlaylist(playlist.slug);
   const updated = playlist.last_editorial_update_at || playlist.updated_at;
   const updatedLabel = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(updated));
 
@@ -259,6 +261,25 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
       </section>
+
+      {!!collections.length && (
+        <section className="section playlist-collection-links">
+          <div className="shell">
+            <p className="eyebrow">Explore by collection</p>
+            <h2>More playlists for this lane.</h2>
+            <div className="collection-related-grid">
+              {collections.map((collection) => (
+                <Link className="card collection-related-card" href={'/playlists/collections/' + collection.slug} key={collection.slug}>
+                  <p className="eyebrow">{collection.eyebrow}</p>
+                  <h3>{collection.title}</h3>
+                  <p>{collection.description}</p>
+                  <span className="card-link">Explore collection →</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="section">
         <div className="shell">
