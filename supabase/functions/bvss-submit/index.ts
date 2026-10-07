@@ -354,7 +354,7 @@ Deno.serve(async(req)=>{
       public_detail:source_surface==="curatoros"&&route_mode==="selected_only"
         ?"Your track was submitted to "+routes.length+" selected playlist route"+(routes.length===1?"":"s")+". Each curator decides independently."
         :network_opt_in
-          ?"Your track entered the BVSS FVM review queue and may also be routed to approved independent curators when there is a strong fit."
+          ?"Your track entered the review queue and may also be routed to matched, verified curator playlists you opted into. Each playlist receives a separate human decision."
           :"Your track entered the BVSS FVM review queue."
     });
 

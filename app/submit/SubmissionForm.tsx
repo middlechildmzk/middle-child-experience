@@ -8,6 +8,7 @@ import {
   supabasePublishableKey,
   supabaseUrl,
 } from '../../lib/playlist-os';
+import { playlistCuratorLabel, routingConsent } from '../../lib/playlist-identity';
 import { taxonomyKey, uniqueTaxonomy } from '../../lib/playlist-fit';
 
 const supabase = createClient(supabaseUrl, supabasePublishableKey);
@@ -77,6 +78,7 @@ export default function SubmissionForm({
   const [privateLink, setPrivateLink] = useState('');
   const [downloadPermission, setDownloadPermission] = useState(false);
   const [networkOptIn, setNetworkOptIn] = useState(false);
+  const consent = useMemo(() => routingConsent(playlists.filter((p) => p.lifecycle_state === 'active' && p.submission_status === 'open' && p.verification_status === 'verified' && p.network_routing_enabled)), [playlists]);
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState('');
   const [result, setResult] = useState<Result | null>(null);
@@ -377,11 +379,11 @@ export default function SubmissionForm({
         </div>
       )}
       <section className="song-source-card">
-        <div className="source-tabs" role="tablist" aria-label="Release status">
-          <button type="button" className={mode === 'released' ? 'source-tab active' : 'source-tab'} onClick={() => changeMode('released')}>
+        <div className="source-tabs" role="group" aria-label="Release status">
+          <button type="button" className={mode === 'released' ? 'source-tab active' : 'source-tab'} aria-pressed={mode === 'released'} onClick={() => changeMode('released')}>
             Released
           </button>
-          <button type="button" className={mode === 'unreleased' ? 'source-tab active' : 'source-tab'} onClick={() => changeMode('unreleased')}>
+          <button type="button" className={mode === 'unreleased' ? 'source-tab active' : 'source-tab'} aria-pressed={mode === 'unreleased'} onClick={() => changeMode('unreleased')}>
             Unreleased
           </button>
         </div>
@@ -576,20 +578,20 @@ export default function SubmissionForm({
             <div className="field span-2"><label htmlFor="comparable_artists">Sounds like <span className="muted">(optional)</span></label><input id="comparable_artists" name="comparable_artists" placeholder="Dabin, San Holo" /></div>
           </div>
 
-          {initialTarget?.network_owner_type === 'partner' ? (
+          {initialTarget?.network_owner_type === 'partner' && preferred.includes(initialTarget.slug) ? (
             <div className="submission-policy">
               <strong>Direct curator submission</strong>
               <p>
-                You are submitting directly to {initialTarget.bvss_curator_profiles?.display_name || 'this verified curator'}.
-                Your selected playlist is routed to that curator for independent review; placement is never guaranteed.
+                You are submitting directly to {playlistCuratorLabel(initialTarget)}.
+                Your selected playlist is routed to that team for human review; placement is never guaranteed.
               </p>
             </div>
-          ) : (
+          ) : consent.available ? (
             <label className="network-opt-in-control compact-network-opt-in">
               <input type="checkbox" checked={networkOptIn} onChange={(event) => setNetworkOptIn(event.target.checked)} />
-              <span><strong>Also send to matched independent curators</strong><small>Only approved, verified curator playlists. Optional. No guaranteed placement.</small></span>
+              <span><strong>{consent.label}</strong><small>{consent.detail}</small></span>
             </label>
-          )}
+          ) : null}
 
           <details className="submission-more">
             <summary>Optional details</summary>

@@ -167,3 +167,15 @@
 .selected-playlist-panel{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px;border:1px solid rgba(230,107,255,.4);border-radius:18px;background:rgba(230,107,255,.06)}.selected-playlist-panel img,.selected-playlist-panel .playlist-art-placeholder{width:56px;height:56px;border-radius:10px;object-fit:cover}.selected-playlist-panel>div{display:grid;gap:2px;min-width:0}.selected-playlist-panel .eyebrow{margin:0}.selected-playlist-panel strong{font-size:18px}.selected-playlist-panel small{color:var(--muted)}
 @media (max-width:860px){.fit-checker{grid-template-columns:1fr}}@media (max-width:480px){.fit-result{grid-template-columns:64px minmax(0,1fr);gap:12px;padding:14px}.fit-result img,.fit-result .playlist-art-placeholder{width:64px;height:64px}.fit-result .playlist-card-actions{flex-direction:column;align-items:stretch}.fit-result .playlist-card-actions .button{text-align:center}}
 .fit-result-note{margin:0;font-size:13px;line-height:1.5;color:#f3d39a}
+
+/* Navigation is a disclosure on narrow screens, in document flow. */
+.header-navigation{display:contents}.nav-toggle{display:none}
+:where(a,button,input,select,textarea,summary):focus-visible{outline:3px solid #e66bff;outline-offset:4px}
+@media(max-width:850px){
+  .site-header{position:static;grid-template-columns:1fr auto auto;gap:12px;padding:14px 20px}
+  .nav-toggle{display:block;grid-column:2;grid-row:1;border:1px solid var(--line-strong);border-radius:999px;background:var(--panel);color:var(--text);padding:12px 14px;font:inherit;min-height:44px;cursor:pointer}
+  .site-header>.button{grid-column:3;grid-row:1;min-height:44px}
+  .site-header nav{grid-column:1/-1;grid-row:2;width:100%}
+  .site-header nav.is-open{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+  .site-header nav a{display:block;padding:13px 4px;min-height:44px}
+}

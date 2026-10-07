@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
+import HeaderNavigation from './HeaderNavigation';
 import './globals.css';
 import { canIndexSite, siteUrl } from '../lib/site-url';
 
@@ -63,17 +64,6 @@ export const metadata: Metadata = {
       },
 };
 
-const nav = [
-  ['Music', '/music'],
-  ['Artist', '/artists/middle-child'],
-  ['Licensing', '/licensing'],
-  ['Playlists', '/playlists'],
-  ['Curators', '/curators'],
-  ['About', '/about'],
-  ['Learn', '/learn'],
-  ['Submit', '/submit'],
-] as const;
-
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const organizationSchema = {
     '@context': 'https://schema.org',
@@ -126,9 +116,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
         <header className="site-header">
           <Link className="wordmark" href="/" aria-label="BVSS FVM home">BVSS FVM</Link>
-          <nav aria-label="Primary navigation">
-            {nav.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
-          </nav>
+          <HeaderNavigation />
           <a className="button button-small" href="https://lnk.to/MiddlechildNeverAlone" target="_blank" rel="noreferrer">Listen</a>
         </header>
         {children}

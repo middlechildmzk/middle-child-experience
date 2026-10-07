@@ -30,7 +30,7 @@
     }
   });
 
-  import('/curatoros/app-v2.js?v=20261005-1730')
+  import('/curatoros/app-v2.js?v=20261007-astra-qa')
     .then(() => {
       window.setTimeout(() => {
         if ((app.textContent || '').includes('Loading CuratorOS interface')) {

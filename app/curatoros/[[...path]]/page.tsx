@@ -3,7 +3,7 @@ import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'CuratorOS — Submit once. Reach the right playlists.',
-  description: 'A neutral playlist submission marketplace connecting artists with verified independent curators.',
+  description: 'A neutral playlist submission marketplace connecting artists with verified playlist curators.',
   robots: { index: false, follow: false },
 };
 
@@ -27,7 +27,7 @@ export default function CuratorOSPage() {
           <p>The marketplace shell loaded. The interactive client is starting.</p>
         </div>
       </div>
-      <Script id="curatoros-loader" src="/curatoros/loader.js?v=20261005-1730" strategy="afterInteractive" />
+      <Script id="curatoros-loader" src="/curatoros/loader.js?v=20261007-astra-qa" strategy="afterInteractive" />
     </div>
   );
 }
