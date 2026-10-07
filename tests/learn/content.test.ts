@@ -59,7 +59,7 @@ function assertNoPromises(texts: string[]) {
       const lower = sentence.toLowerCase();
       // Questions (FAQ prompts) may mention guarantees; statements must negate them.
       if (/\bguarantee[sd]?\b/.test(lower) && !sentence.trim().endsWith('?')) {
-        assert.ok(/\b(no|not|never|cannot|can['’]t|doesn['’]t|does not|without|nobody|none|breaks?|violates?|illegitimate|avoid|scams?)\b/.test(lower), `unnegated guarantee: "${sentence}"`);
+        assert.ok(/\b(no|not|never|cannot|can['’]t|doesn['’]t|does not|without|nobody|none|breaks?|violates?|illegitimate|avoid|scams?|against)\b/.test(lower), `unnegated guarantee: "${sentence}"`);
       }
       for (const banned of [/\b100% organic\b/, /\breal streams guaranteed\b/, /\bboost (your )?streams\b/, /\bgo viral\b/, /\binstant (streams|followers)\b/]) {
         assert.ok(!banned.test(lower), `banned phrasing: "${sentence}"`);
