@@ -493,6 +493,7 @@ export const guides: LearnGuide[] = [
       { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'How the common schemes work and what to do if a suspicious playlist adds you.' },
       { href: '/learn/find-spotify-playlist-curators', label: 'Find Spotify playlist curators', detail: 'Find playlists that fit and reach curators through their own channels.' },
       { href: '/learn/how-to-pitch-playlist-curators', label: 'How to pitch playlist curators', detail: 'Templates, a worked example and why curators pass.' },
+      { href: '/learn/playlist-promotion', label: 'Playlist promotion: what you can measure', detail: 'What placements do, what Spotify for Artists shows and where attribution stops.' },
       { href: '/playlists/collections', label: 'Playlist collections', detail: 'Browse playlists by genre, mood and moment.' },
     ],
     sources: [
@@ -962,6 +963,7 @@ export const guides: LearnGuide[] = [
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Submit free to human-curated playlists.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for.' },
       { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'Red flags before you pay anyone.' },
+      { href: '/learn/playlist-promotion', label: 'Playlist promotion: what you can measure', detail: 'What placements do, what Spotify for Artists shows and where attribution stops.' },
     ],
     sources: [
       { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-07' },
@@ -1056,6 +1058,128 @@ export const guides: LearnGuide[] = [
       { label: 'Free, safe Spotify playlist promo with Pitchplaylists', publisher: 'PitchPlaylists', href: 'https://pitchplaylists.com/blog/guides/spotify-playlist-promo/', accessed: '2026-10-07' },
       { label: 'Submit music to Spotify playlists', publisher: 'Soundplate', href: 'https://soundplate.com/new-spotify-playlists1/', accessed: '2026-10-07' },
       { label: 'Do I have to pay to use Groover?', publisher: 'Groover Help Center', href: 'https://help.groover.co/en/articles/2966389-do-i-have-to-pay-to-use-groover', accessed: '2026-10-07' },
+    ],
+  },
+  {
+    slug: 'playlist-promotion',
+    topic: 'Playlist Promotion',
+    published: '2026-10-07',
+    updated: '2026-10-07',
+    seoTitle: 'Spotify Playlist Promotion: What Works and What You Can Measure',
+    title: 'Spotify Playlist Promotion: What Works and What You Can Measure',
+    description: 'How playlist promotion actually works, what Spotify for Artists lets you measure, where attribution stops, and what no playlist campaign can honestly promise.',
+    eyebrow: 'Playlist promotion · Mechanics and measurement',
+    lead: 'Playlist promotion is getting your song considered by the people and systems that program playlists, then finding out what the placements actually did. The first half gets most of the attention. This guide is about the second half: what a placement does, what Spotify for Artists lets you measure, and where the numbers stop being able to tell you anything.',
+    sections: [
+      {
+        heading: 'What a placement actually does',
+        paragraphs: [
+          'A placement puts your song in front of the people who listen to that playlist, when they listen to it. That is the whole mechanism. A playlist’s follower count tells you how many people saved it at some point, not how many are playing it this week or how far into it they get.',
+          'That is why Spotify for Artists ranks the playlists your music is on by how many of your listeners came from each one, not by follower count. Two playlists of similar size can send you very different numbers of listeners.',
+          'The routes onto playlists (Spotify’s editors, algorithmic playlists and independent curators) are covered in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists). This page assumes you have, or are about to have, some placements and want to know what they are worth.',
+        ],
+      },
+      {
+        heading: 'What Spotify for Artists lets you measure',
+        paragraphs: [
+          'Spotify groups where streams come from into active sources, where the listener went looking for your music, and programmed sources, where Spotify or another listener chose it for them. You can view these by streams, listeners or streams per listener, and filter by country and time period.',
+        ],
+        table: {
+          caption: 'Source of streams in Spotify for Artists',
+          columns: ['Source', 'What it includes', 'What it can tell you'],
+          rows: [
+            ['Artist profile and catalog (active)', 'Plays from your profile, album pages and your “This Is” playlist', 'People seeking you out directly'],
+            ['Listener’s own playlists and library (active)', 'Liked Songs, saved albums and listeners’ own playlists', 'People keeping your music for themselves'],
+            ['Listener’s queue (active)', 'Plays added with Add to queue', 'Deliberate, in-the-moment choices'],
+            ['Editorial and personalized editorial playlists (programmed)', 'Spotify editor-curated playlists and charts', 'Editorial support'],
+            ['Personalized playlists, autoplay and mixes (programmed)', 'Discover Weekly, Release Radar, Radio, Autoplay, Daily Mix, daylist and AI DJ', 'Spotify recommending you to listeners'],
+            ['Other listeners’ playlists (programmed)', 'Playlists created by other Spotify users, which includes independent curators', 'Where independent placements show up'],
+          ],
+        },
+      },
+      {
+        heading: 'Where attribution stops',
+        paragraphs: [
+          'This is the part most promotion pitches skip. Spotify for Artists reports where each stream happened. Its documentation does not describe a way to follow one listener from a playlist to your profile, a follow or a save. So you can see that a playlist sent you listeners, but not, for example, how many of them followed you afterwards.',
+          'Some other limits worth knowing, all from Spotify’s documentation:',
+        ],
+        bullets: [
+          'A stream only counts once a song has played for at least 30 seconds.',
+          'The Playlists view lists up to 100 of the playlists you are on, includes a playlist only once at least 3 of your listeners have played your music there, and covers only the last 12 months.',
+          'When you view sources by listeners, the subtotals can add up to more than your total, because one person can listen from several sources.',
+          'Stats are recorded in UTC, so a “day” may not line up with your local day.',
+        ],
+        callout: {
+          kind: 'note',
+          title: 'Correlation is not attribution',
+          body: 'If your listeners rise in the same week as a placement, the placement may be why. It may also be a social post, a release from a similar artist, or Release Radar. Change one thing at a time when you can, and treat any single week as a hint rather than proof.',
+        },
+      },
+      {
+        heading: 'How to run a playlist campaign you can actually read',
+        paragraphs: [],
+        steps: [
+          { title: 'Take a baseline', body: 'Before you submit anywhere, note your listeners, streams per listener and source-of-streams mix for the last few weeks.' },
+          { title: 'Log every placement', body: 'Playlist, date added and curator, in the same tracker you use for submissions (see [finding curators](/learn/find-spotify-playlist-curators)).' },
+          { title: 'Watch “Other listeners’ playlists”', body: 'That is where independent placements land. Compare it with your baseline rather than looking at totals.' },
+          { title: 'Check the Playlists view', body: 'Once a playlist has sent you at least 3 listeners it appears there, ranked by your listeners. That is the closest thing to a per-playlist result Spotify gives you.' },
+          { title: 'Look at what people do next', body: 'Rising “Artist profile and catalog” and “Listener’s own playlists and library” numbers suggest new listeners are coming back on their own. That is the outcome that lasts.' },
+        ],
+      },
+      {
+        heading: 'What playlist promotion cannot promise',
+        paragraphs: [
+          'Any honest playlist promotion, free or paid, comes with these limits. If an offer claims otherwise, read our [scams guide](/learn/spotify-promotion-scams).',
+        ],
+        bullets: [
+          'A placement. Curators and Spotify’s editors decide; selling placement breaks Spotify’s terms.',
+          'A number of streams. That depends on how many people play the playlist and how they react to your song.',
+          'Algorithmic pickup. Spotify does not publish thresholds for its personalized playlists, so nobody can promise them.',
+          'Followers or saves. Those are listener decisions, and Spotify for Artists’ documented stats do not attribute them to playlists.',
+          'Royalties on every stream. Spotify only pays recorded royalties on tracks with at least 1,000 streams in the previous 12 months, plus a minimum number of unique listeners it does not publish.',
+        ],
+      },
+      {
+        heading: 'Comparing the main routes',
+        paragraphs: [],
+        table: {
+          caption: 'Playlist promotion routes compared',
+          columns: ['Route', 'Cost', 'Who decides', 'How you will see it'],
+          rows: [
+            ['Spotify editorial pitch', 'Free', 'Spotify’s editors', 'Editorial playlists source; Release Radar under personalized playlists'],
+            ['Independent curators (free submission)', 'Free', 'Each curator', 'Other listeners’ playlists source; Playlists view'],
+            ['Paid review platforms', 'Per submission', 'Each curator', 'Same as above; you pay for review, not results'],
+            ['PR or marketing firms', 'Varies', 'The firm’s contacts', 'Depends on the channels they use. Ask before you hire.'],
+          ],
+        },
+        callout: {
+          kind: 'submit',
+          title: 'Free submission, measurable results',
+          body: 'Placements on BVSS FVM and CuratorOS playlists show up in your Spotify for Artists data like any other independent playlist. Find the right lane on our [free submission page](/free-spotify-playlist-submission).',
+        },
+      },
+    ],
+    faq: [
+      { question: 'Is playlist promotion worth it?', answer: 'It can be when the playlists fit your song and have real listeners. Judge it by the listeners each playlist sends you in Spotify for Artists, not by follower counts or promises.' },
+      { question: 'Why are my streams much lower than the playlist’s follower count?', answer: 'Followers are people who saved the playlist at some point. Your streams depend on how many of them play it now, how far they get, and whether your song holds them for 30 seconds.' },
+      { question: 'Can I see which playlist got me new followers?', answer: 'Not directly. Spotify for Artists shows where streams happened, but its documentation does not describe attributing follows or saves to a specific playlist.' },
+      { question: 'Does a playlist placement trigger Spotify’s algorithm?', answer: 'Spotify says personalized playlists are based on listening activity, but it does not publish thresholds. Nobody can honestly promise algorithmic pickup from a placement.' },
+      { question: 'How long until a placement shows up in my stats?', answer: 'Streams appear in your source-of-streams data, and the playlist appears in the Playlists view once at least 3 of your listeners have played your music there.' },
+    ],
+    related: [
+      { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'The routes onto editorial, algorithmic and independent playlists.' },
+      { href: '/learn/how-to-pitch-playlist-curators', label: 'How to pitch playlist curators', detail: 'Templates and why curators pass.' },
+      { href: '/learn/best-free-music-promotion-sites', label: 'Free music promotion sites', detail: 'What is actually free on each service.' },
+      { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Submit free to human-curated playlists.' },
+    ],
+    sources: [
+      { label: 'Source of streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/source-of-streams/', accessed: '2026-10-07' },
+      { label: 'Seeing playlists you’re added to', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/seeing-playlists-your-music-is-on/', accessed: '2026-10-07' },
+      { label: 'How your streams are counted', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/how-your-streams-are-counted/', accessed: '2026-10-07' },
+      { label: 'Listener and follower data', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/listener-and-follower-data/', accessed: '2026-10-07' },
+      { label: 'Types of Spotify playlists', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/types-of-spotify-playlists/', accessed: '2026-10-07' },
+      { label: 'Track monetization eligibility', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/track-monetization-eligibility/', accessed: '2026-10-07' },
+      { label: 'Artificial streaming and paid 3rd-party services that guarantee streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/', accessed: '2026-10-07' },
     ],
   }
 ];
