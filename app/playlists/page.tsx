@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getPlaylists } from '../../lib/playlist-os';
+import { playlistCollections, playlistsInCollection } from '../../lib/playlist-collections';
 import { networkFollowerTotals } from '../../lib/source-health';
 import { siteUrl } from '../../lib/site-url';
 import PlaylistBrowser from './PlaylistBrowser';
@@ -66,6 +67,7 @@ export default async function PlaylistsPage() {
         <div className="actions">
           <Link className="button" href="/submit">Submit music</Link>
           <a className="button button-secondary" href="#network">Explore the network</a>
+          <Link className="button button-secondary" href="/playlists/collections">Browse collections</Link>
           <Link className="button button-secondary" href="/curators/curatoros">Meet CuratorOS</Link>
         </div>
       </section>
@@ -78,6 +80,39 @@ export default async function PlaylistsPage() {
             <strong>{followerTotals.counted ? formatNumber(followerTotals.total) + ' followers' : 'Measuring'}</strong>
           </div>
           <div><span>Submissions</span><strong>{openCount || 'Multiple'} lanes open for review</strong></div>
+        </div>
+      </section>
+
+      <section className="section playlist-collection-preview">
+        <div className="shell">
+          <div className="section-split collection-preview-heading">
+            <div>
+              <p className="eyebrow">Start with a collection</p>
+              <h2>Genres, moods and listening moments.</h2>
+            </div>
+            <div>
+              <p className="lead compact-lead">
+                Jump into a curated hub for electronic music, house, indie, workouts, focus, moods,
+                late-night listening or global pop — then choose the specific playlist that fits.
+              </p>
+              <div className="actions">
+                <Link className="button button-secondary" href="/playlists/collections">View all collections</Link>
+              </div>
+            </div>
+          </div>
+          <div className="collection-preview-grid">
+            {playlistCollections.map((collection) => (
+              <Link className="collection-preview-card" href={'/playlists/collections/' + collection.slug} key={collection.slug}>
+                <p className="eyebrow">{collection.eyebrow}</p>
+                <h3>{collection.title}</h3>
+                <p>{collection.description}</p>
+                <div className="collection-preview-meta">
+                  <strong>{playlistsInCollection(collection, network).length} playlists</strong>
+                  <span>Explore →</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
