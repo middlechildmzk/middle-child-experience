@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { editorialSocial } from '../../lib/editorial-social';
 import Link from 'next/link';
 import { freeSubmissionPage as page } from '../../lib/free-submission';
 import { getPlaylists, networkSummary } from '../../lib/playlist-os';
@@ -14,12 +15,7 @@ export const metadata: Metadata = {
   title: { absolute: page.seoTitle },
   description: page.description,
   alternates: { canonical: page.path },
-  openGraph: {
-    title: page.seoTitle,
-    description: page.description,
-    url: page.path,
-    type: 'website',
-  },
+  ...editorialSocial(page.seoTitle, page.description, page.path),
 };
 
 export default async function FreeSpotifyPlaylistSubmissionPage() {
@@ -89,7 +85,7 @@ export default async function FreeSpotifyPlaylistSubmissionPage() {
           <div>
             <span>Open for submissions</span>
             <strong>{summary ? summary.openForSubmissions + ' playlists' : 'Live playlist list below'}</strong>
-            {summary && summary.curatorOS > 0 && <small>{summary.bvss} BVSS FVM · {summary.curatorOS} CuratorOS</small>}
+            {summary && summary.curatorOS > 0 && <small>{summary.bvss} BVSS FVM · {summary.curatorOS} CuratorOS{summary.otherCurators > 0 ? ' · ' + summary.otherCurators + ' other curator playlists' : ''}</small>}
           </div>
           <div>
             <span>Measured audience{followers.counted ? ' · ' + followers.counted + ' of ' + followers.monitored + ' playlists' : ''}</span>

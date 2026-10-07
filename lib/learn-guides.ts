@@ -375,8 +375,8 @@ export const guides: LearnGuide[] = [
           caption: 'Who decides, and how you get considered',
           columns: ['Playlist type', 'Who decides', 'How you get considered', 'What you control'],
           rows: [
-            ['Editorial (Spotify logo in the byline)', 'Spotify’s editors', 'Pitch one unreleased song in Spotify for Artists at least 7 days before release', 'The pitch, the timing and the song'],
-            ['Personalized (Release Radar, Discover Weekly, Daily Mix)', 'Spotify’s algorithms, per listener', 'No pitch exists. They respond to what listeners do', 'Your followers and real listening'],
+            ['Editorial (Spotify logo in the byline)', 'Spotify’s editors', 'Pitch one eligible, unreleased song in Spotify for Artists; aim for at least 7 days ahead', 'The pitch, the timing and the song'],
+            ['Personalized (Release Radar, Discover Weekly, Daily Mix)', 'Spotify’s algorithms, per listener', 'No direct pitch to Discover Weekly or Daily Mix. A timely editorial pitch selects the song for followers’ Release Radar', 'Your followers and real listening'],
             ['Independent (curators, brands, labels, fans)', 'Whoever runs the playlist', 'Their submission form, platform or contact', 'Fit, quality and how you approach them'],
           ],
         },
@@ -395,7 +395,7 @@ export const guides: LearnGuide[] = [
         callout: {
           kind: 'note',
           title: 'Missed the window?',
-          body: 'A song that is already out cannot be pitched to editors. Put the effort into independent playlists and into pitching your next release on time. Independent curators (including [ours](/free-spotify-playlist-submission)) accept released songs.',
+          body: 'A song that is already out cannot be pitched to editors. Put the effort into independent playlists and into pitching your next release on time. Playlist curators, including the [in-house BVSS FVM and CuratorOS teams](/free-spotify-playlist-submission), accept released songs.',
         },
       },
       {
@@ -457,14 +457,14 @@ export const guides: LearnGuide[] = [
       {
         heading: 'A release timeline that covers all three routes',
         paragraphs: [
-          'Timelines vary by distributor and genre. This is a practical order of operations built around Spotify’s 7-day rule.',
+          'Timelines vary by distributor and genre. This is a practical order of operations built around Spotify’s recommended lead time and Release Radar timing.',
         ],
         table: {
           caption: 'Order of operations around release day',
           columns: ['When', 'Do this'],
           rows: [
             ['Weeks before release', 'Finish the master and metadata. Deliver to your distributor with time to spare.'],
-            ['Once it shows in Spotify for Artists', 'Pitch your chosen song to editors. It must be at least 7 days before release.'],
+            ['Once it shows in Spotify for Artists', 'Pitch your chosen song to editors. Spotify recommends at least 7 days ahead for listening time and the documented Release Radar benefit. If you are closer to release, check the still-unreleased song’s eligibility in Spotify for Artists rather than assume pitching is closed.'],
             ['Before release', 'Build a short list of independent playlists that genuinely fit, and note how each accepts submissions. Curators that take unreleased music can hear it now.'],
             ['Release week', 'Point fans to your Spotify profile and ask them to follow. Submit to the independent playlists on your list.'],
             ['Following weeks', 'Check Spotify for Artists to see where listeners are finding the song, follow up once where appropriate, and start planning the next pitch.'],
@@ -540,7 +540,7 @@ export const guides: LearnGuide[] = [
           'Most of the free leverage on Spotify happens before release day, because editorial pitching closes once a song is live.',
         ],
         steps: [
-          { title: 'Deliver early and pitch one song', body: 'Get the release to your distributor early, then pitch one unreleased song in Spotify for Artists at least 7 days before release. Even if editors pass, Spotify adds the pitched song to your followers’ Release Radar. The full rules are in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).' },
+          { title: 'Deliver early and pitch one song', body: 'Get the release to your distributor early, then pitch an eligible, unreleased song in Spotify for Artists. Spotify recommends at least 7 days ahead for editor listening time; pitching at least 7 days ahead also adds the pitched song to your followers’ Release Radar, even if editors pass. If you have less time, check the still-unreleased song’s eligibility rather than assume editorial pitching is unavailable. The full rules are in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).' },
           { title: 'Add a Canvas', body: 'Canvas is a 3 to 8 second vertical loop that replaces your artwork in the Now Playing view on mobile. Spotify lets you add it to unreleased tracks too, so it is ready on release day.' },
           { title: 'Set up a Countdown Page if you qualify', body: 'For a new album or EP (not a single), artists with at least 3,000 monthly active listeners can create a Countdown Page. Fans can pre-save from your profile, and on release day Spotify notifies everyone who pre-saved and adds it to their library.' },
           { title: 'Line up your independent playlist list', body: 'Find playlists whose current songs sit naturally next to yours and note how each accepts submissions. Curators that take unreleased music can hear it now, including the playlists on our [free submission page](/free-spotify-playlist-submission).' },
@@ -596,7 +596,7 @@ export const guides: LearnGuide[] = [
       { question: 'Should I pay for Spotify promotion?', answer: 'Spotify’s own paid tools, such as Marquee, Showcase and Ads Manager, are legitimate. Third-party services that sell guaranteed streams or playlist placements are not, according to Spotify.' },
       { question: 'Is Canvas free?', answer: 'Canvas is added in Spotify for Artists by the first main artist (Admin or Editor). Spotify’s help article does not list a fee.' },
       { question: 'Can I use Countdown Pages for a single?', answer: 'No. Countdown Pages are for new, original albums and EPs, and the artist needs at least 3,000 monthly active listeners.' },
-      { question: 'Is submitting to playlists free?', answer: 'Many independent curators accept free submissions, including every playlist in the BVSS FVM and CuratorOS network. Free submission means a free review, not guaranteed placement.' },
+      { question: 'Is submitting to playlists free?', answer: 'Many playlist curators accept free submissions. Every playlist in the BVSS FVM and in-house CuratorOS network does. Free submission means a free review, not guaranteed placement.' },
     ],
     related: [
       { href: '/learn/free-music-promotion', label: 'Free music promotion, every channel', detail: 'A zero-budget plan beyond Spotify.' },
@@ -644,7 +644,7 @@ export const guides: LearnGuide[] = [
         ],
       },
       {
-        heading: 'The scams we see most often',
+        heading: 'Common scam patterns',
         paragraphs: [
           'These patterns line up with Spotify’s published guidance. A single offer often mixes several.',
         ],
@@ -800,7 +800,7 @@ export const guides: LearnGuide[] = [
         callout: {
           kind: 'note',
           title: 'No published channel?',
-          body: 'Then the curator is not asking for submissions right now. Move on to a playlist that is.',
+          body: 'If you cannot find a published submission channel, move on rather than guess or scrape private contact information.',
         },
       },
       {
@@ -820,7 +820,7 @@ export const guides: LearnGuide[] = [
       },
     ],
     faq: [
-      { question: 'How do I find a playlist curator’s email?', answer: 'Only use contact details the curator published for submissions, such as a link in the playlist description or on their website. If there is no published channel, they are not taking submissions right now.' },
+      { question: 'How do I find a playlist curator’s email?', answer: 'Only use contact details the curator published for submissions, such as a link in the playlist description or on their website. If no published submission channel is available, move on rather than guess or scrape private contact information.' },
       { question: 'Is it OK to message curators on social media?', answer: 'Only where they invite submissions there. Sending unsolicited messages to someone’s personal accounts usually works against you.' },
       { question: 'Are curator directories worth using?', answer: 'They can save time. Check who runs the playlists, whether you are paying for review or being sold a result, and whether the playlists actually fit your song.' },
       { question: 'How many curators should I contact per release?', answer: 'As many as genuinely fit, and no more. A short list of strong matches gets better results and better relationships than a mass send.' },
@@ -934,7 +934,7 @@ export const guides: LearnGuide[] = [
       {
         heading: 'Timing and follow-up',
         paragraphs: [
-          'Independent curators can often hear unreleased music, and many accept released songs. Spotify’s editors only take unreleased songs pitched at least 7 days before release, and that is a separate pitch you make yourself in Spotify for Artists. The full routes are in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).',
+          'Independent curators can often hear unreleased music, and many accept released songs. Spotify editorial song pitches are for eligible, unreleased music. Spotify recommends at least 7 days ahead so editors have time to listen; pitching that early also provides its documented followers’ Release Radar benefit. Fewer than 7 days does not categorically close editorial pitching: check whether your unreleased song is still eligible in Spotify for Artists. The full routes are in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).',
           'If there is no reply, one polite follow-up after a reasonable wait is fine. After a decline, thank the curator and pitch them your next release instead of the same song.',
         ],
         callout: {
@@ -971,7 +971,7 @@ export const guides: LearnGuide[] = [
     topic: 'Free Music Promotion',
     published: '2026-10-07',
     updated: '2026-10-07',
-    seoTitle: 'Best Free Music Promotion Sites in 2026: What Is Actually Free?',
+    seoTitle: 'Free Music Promotion Sites in 2026: What Is Actually Free?',
     title: 'Free Music Promotion Sites in 2026: What Is Actually Free?',
     description: 'What is actually free on Spotify for Artists, SubmitHub, DailyPlaylists, PitchPlaylists, Soundplate and BVSS FVM, checked against each service’s own pages.',
     eyebrow: 'Free music promotion · Checked against official pages',
@@ -985,26 +985,26 @@ export const guides: LearnGuide[] = [
         ],
       },
       {
-        heading: 'What is free, service by service',
-        paragraphs: [],
+        heading: 'Free options, limits and use cases',
+        paragraphs: ['Use this table to choose a no-cost route. For paid-review prices and platform models, use the separate [submission-sites comparison](/learn/best-spotify-playlist-submission-sites).'],
         table: {
-          caption: 'What each service says is free and what costs money (checked October 7, 2026)',
-          columns: ['Service', 'What is free', 'What costs money', 'Who decides'],
+          caption: 'Free options and their limits (checked October 7, 2026)',
+          columns: ['Service', 'Free option', 'Limits / effort', 'Useful when'],
           rows: [
-            ['Spotify for Artists', 'Pitching one unreleased song to Spotify’s editors (at least 7 days before release); Release Radar for your followers; Canvas, Artist Pick and Promo Cards', 'Display campaigns (Marquee, Showcase) and Spotify Ads Manager', 'Spotify’s editors. Spotify says pitching does not guarantee placement.'],
-            ['BVSS FVM + CuratorOS (our network)', 'Submission and human review for every playlist in the network', 'Nothing: there is no paid tier and placement is never sold', 'BVSS FVM and the in-house CuratorOS team, separately for each playlist'],
-            ['SubmitHub', 'Two standard credits every four hours. Curators may respond to standard submissions but are not required to. Premium credits can be earned through its Hot or Not feature (one per 20 ratings).', 'Premium credits, from $1 each and as low as $0.78 in bulk, according to its help center. For premium submissions, curators must respond within 72 hours, listen for at least 60 seconds, and either approve or explain in at least 20 words.', 'Individual playlisters, bloggers and influencers'],
-            ['DailyPlaylists', 'A Standard tier for submitting to playlist owners who want submissions', 'Premium Credits for selected curators, and a Professional tier with more weekly submissions and tools (prices on its pricing page)', 'Individual playlist owners'],
-            ['PitchPlaylists', 'Its own guide (last updated July 2025) describes the service as completely free and says playlist spots are not for sale', 'None described in that guide. Check the site for current terms.', 'Curators; an approved track is added to their playlist'],
-            ['Soundplate', 'Submission to the playlists listed on its submission page, which it describes as free', 'The site also sells other marketing services, such as ad campaigns', 'Listed curators. The page does not say who runs its “Official Soundplate Playlists.”'],
+            ['Spotify for Artists', 'Editorial song pitching; Artist Pick, Canvas and Promo Cards', 'Song pitches must be unreleased and eligible. Spotify recommends at least 7 days ahead; that timing provides its documented Release Radar benefit. Placement is not guaranteed.', 'You have an upcoming release and want Spotify’s own editorial consideration and profile tools'],
+            ['BVSS FVM + CuratorOS (our network)', 'Submission and human review', 'No paid tier. Each playlist decides on fit; placement is never sold or guaranteed. CuratorOS is the in-house curation team.', 'Your song fits a listed genre, mood or listening moment'],
+            ['SubmitHub', 'Two standard credits every four hours; earn a premium credit per 20 Hot or Not ratings', 'Standard submissions have no response requirement; only participating curators accept them. Earned credits require time giving other artists feedback.', 'You can shortlist matching curators and trade time for credits'],
+            ['DailyPlaylists', 'Standard tier playlist submissions', 'Check current submission allowances and each curator’s terms. Premium Credits and Professional features cost money.', 'You want to browse playlists accepting Standard submissions'],
+            ['PitchPlaylists', 'Its July 2025 guide describes free submissions', 'Check current site terms before relying on an older guide. Approval is a curator decision; playlist spots are not for sale.', 'You find a suitable curator whose current submission route remains free'],
+            ['Soundplate', 'Free submissions to playlists on its submission page', 'Follow each listed curator’s process. Other marketing services cost money; the page does not identify who runs its Official Soundplate Playlists.', 'You want to discover and submit to an individually listed playlist'],
           ],
         },
       },
       {
-        heading: 'Paid, for comparison: Groover',
+        heading: 'Keep paid routes separate',
         paragraphs: [
-          'Groover is often listed alongside these services, but it is not free. Its help center says sending a track to one curator or industry professional costs 2 Grooviz (each priced at €1, taxes included), and top curators cost 4. If a contact does not respond within 7 days, Groover returns the Grooviz for that contact to use again.',
-          'Paying for review time is not the same as buying placement, but Spotify says to treat services that charge to be considered with high skepticism. Know which one you are paying for. Our [scams guide](/learn/spotify-promotion-scams) explains the difference.',
+          'Groover is a paid consideration service, not a free submission option. Compare it and other paid routes in the [submission-sites guide](/learn/best-spotify-playlist-submission-sites).',
+          'Spotify advises high skepticism toward services that charge to be considered. Review time is different from buying placement; our [scams guide](/learn/spotify-promotion-scams) explains what to check.',
         ],
       },
       {
@@ -1031,7 +1031,7 @@ export const guides: LearnGuide[] = [
       },
     ],
     faq: [
-      { question: 'Which free music promotion site is the best?', answer: 'We do not rank them. They do different things: Spotify’s editorial pitch is the only route to editorial playlists, while the others connect you with independent curators. Use the table to match a service to your goal.' },
+      { question: 'Which free music promotion site is the best?', answer: 'We do not rank them. They do different things: Spotify’s editorial pitch is the only route to editorial playlists, while the others connect you with playlist curators, including in-house networks. Use the table to match a service to your goal.' },
       { question: 'Are free submission sites worth it if curators do not have to reply?', answer: 'They can be, as long as you expect some silence. Accurate genre and mood details, and choosing playlists that really fit, improve your chances more than volume does.' },
       { question: 'Is SubmitHub free?', answer: 'Partly. According to its help center you get two standard credits every four hours, and curators are not required to respond to those. Premium credits cost money (or can be earned) and come with response requirements.' },
       { question: 'Is BVSS FVM really free?', answer: 'Yes. Submission and review are free for every playlist in the BVSS FVM and CuratorOS network, there is no paid tier, and placement is never sold.' },
@@ -1219,7 +1219,7 @@ export const guides: LearnGuide[] = [
         heading: 'Reach more real listeners',
         paragraphs: [],
         steps: [
-          { title: 'Pitch every release to Spotify’s editors', body: 'Pitch one unreleased song in Spotify for Artists at least 7 days before release. Even if editors pass, Spotify adds it to your followers’ Release Radar. Details in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).' },
+          { title: 'Pitch every release to Spotify’s editors', body: 'Pitch one eligible, unreleased song in Spotify for Artists; aim for at least 7 days ahead. Even if editors pass, Spotify adds it to your followers’ Release Radar. Details in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).' },
           { title: 'Get on independent playlists that fit', body: 'Playlists with listeners who like your sound are the most direct way to reach new people. Find them with [this guide](/learn/find-spotify-playlist-curators), pitch them with [these templates](/learn/how-to-pitch-playlist-curators), or submit free to [our network](/free-spotify-playlist-submission).' },
           { title: 'Bring people in from outside Spotify', body: 'Share your Spotify link wherever your audience already is, with a Promo Card or your own artwork, and Spotify Codes on anything physical. Spotify’s own advice is that sharing helps turn listeners into followers.' },
           { title: 'Collaborate', body: 'A release with another artist puts your music in front of their listeners as well as yours. Make sure you are credited correctly (main or featured artist) when it is delivered.' },
@@ -1249,7 +1249,7 @@ export const guides: LearnGuide[] = [
       {
         heading: 'A realistic expectation',
         paragraphs: [
-          'Legitimate growth is usually gradual and uneven: a placement here, a good release there, a few hundred people who decide they like what you do. That is slower than buying a number, and it is the only version that pays out in fans. Spotify only pays recorded royalties on tracks with at least 1,000 streams in the previous 12 months, so real, repeat listening matters even before you think about recommendations.',
+          'Legitimate growth is usually gradual and uneven: a placement here, a good release there, a few hundred people who decide they like what you do. That is slower than buying a number, and it is the only version that pays out in fans. Eligibility for Spotify’s recorded-music royalty pool requires at least 1,000 streams in the previous 12 months and an additional minimum number of unique listeners that Spotify does not publish. These rules do not apply to publishing royalties; real, repeat listening matters before you think about recommendations.',
         ],
       },
     ],
@@ -1286,7 +1286,7 @@ export const guides: LearnGuide[] = [
     topic: 'Playlist Promotion',
     published: '2026-10-07',
     updated: '2026-10-07',
-    seoTitle: 'Best Spotify Playlist Submission Sites (2026): Free vs Paid',
+    seoTitle: 'Spotify Playlist Submission Sites: Free vs Paid (2026)',
     title: 'Spotify Playlist Submission Sites: Free vs Paid',
     description: 'How Spotify playlist submission sites work: free submission, paid consideration, curator marketplaces and managed campaigns, checked against each site’s own pages.',
     eyebrow: 'Playlist promotion · Transparent comparison',
@@ -1411,7 +1411,7 @@ export const guides: LearnGuide[] = [
           caption: 'Free promotion channels compared',
           columns: ['Channel', 'Good for', 'What it takes'],
           rows: [
-            ['Spotify for Artists', 'Editorial pitching, Release Radar for followers, profile tools', 'One pitch per release, at least 7 days ahead; keeping the profile current'],
+            ['Spotify for Artists', 'Editorial pitching, Release Radar for followers, profile tools', 'One eligible unreleased song per pitch; Spotify recommends at least 7 days ahead for listening time and the Release Radar benefit; keeping the profile current'],
             ['Playlist submission', 'Reaching listeners who already like your sound', 'Finding playlists that fit and pitching each one accurately'],
             ['Short-form video', 'Being discovered by people who have never heard of you', 'Regular posting, and ideas built around the song rather than ads for it'],
             ['Direct fans and communities', 'Turning a few listeners into people who show up every release', 'Replying, sharing in places you already take part in, not spamming'],
@@ -1446,7 +1446,7 @@ export const guides: LearnGuide[] = [
         heading: 'Release week, channel by channel',
         paragraphs: [],
         steps: [
-          { title: 'Spotify', body: 'Pitch the song to Spotify’s editors at least 7 days before release; even if editors pass, Spotify adds it to your followers’ Release Radar. Set the release as your Artist Pick. The [Spotify plan](/learn/free-spotify-promotion) has every step.' },
+          { title: 'Spotify', body: 'Pitch an eligible, unreleased song to Spotify’s editors. Aim for at least 7 days ahead: that gives editors listening time and provides the documented followers’ Release Radar benefit. A shorter lead time does not itself make an unreleased song ineligible. Set the release as your Artist Pick. The [Spotify plan](/learn/free-spotify-promotion) has every step.' },
           { title: 'Playlists', body: 'Pitch a short list of independent playlists that really fit, using [this checklist](/learn/find-spotify-playlist-curators) and [these templates](/learn/how-to-pitch-playlist-curators). Submission to [our network](/free-spotify-playlist-submission) is free.' },
           { title: 'Short-form video', body: 'Post the clips you prepared, then keep going after release week. A clip that tells a small story about the song, or shows how part of it was made, gives people a reason to look the song up.' },
           { title: 'Your own audience', body: 'Tell the people who already listen, directly: your email list, close friends of the music, the communities you are part of. Ask for one specific thing, like following you on Spotify so they hear the next release.' },

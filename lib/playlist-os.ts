@@ -1,4 +1,5 @@
 
+import { isCuratorOS } from './playlist-identity';
 import type { FollowerHealth } from './source-health';
 
 export const playlistApiBase =
@@ -103,8 +104,7 @@ export function relatedPlaylists(current: PlaylistRecord, all: PlaylistRecord[])
 
 /**
  * Public network counts, always derived from the live registry.
- * BVSS FVM = network_owner_type 'bvss'; CuratorOS = 'partner' (one house
- * curator profile today, so never describe these as independent curators).
+ * Ownership labels use the known curator profile, never the partner category.
  * Returns null when the registry could not be read: callers must then omit
  * numbers rather than print a fallback.
  */
@@ -112,13 +112,17 @@ export function networkSummary(playlists: PlaylistRecord[]) {
   const active = playlists.filter((playlist) => playlist.lifecycle_state === 'active');
   if (!active.length) return null;
   const bvss = active.filter((playlist) => playlist.network_owner_type === 'bvss').length;
-  const curatorOS = active.filter((playlist) => playlist.network_owner_type === 'partner').length;
+  const curatorOS = active.filter(isCuratorOS).length;
+  const otherCurators = active.filter((playlist) => playlist.network_owner_type === 'partner' && !isCuratorOS(playlist)).length;
   const openForSubmissions = active.filter((playlist) => playlist.submission_status === 'open').length;
-  return { total: active.length, bvss, curatorOS, openForSubmissions };
+  return { total: active.length, bvss, curatorOS, otherCurators, openForSubmissions };
 }
 
 export function describeNetwork(summary: NonNullable<ReturnType<typeof networkSummary>>) {
-  if (!summary.curatorOS) return summary.total + ' BVSS FVM playlists';
-  if (!summary.bvss) return summary.total + ' CuratorOS playlists';
-  return summary.total + ' playlists across BVSS FVM (' + summary.bvss + ') and CuratorOS (' + summary.curatorOS + ')';
+  const parts = [
+    summary.bvss ? 'BVSS FVM (' + summary.bvss + ')' : '',
+    summary.curatorOS ? 'CuratorOS (' + summary.curatorOS + ')' : '',
+    summary.otherCurators ? 'other curator playlists (' + summary.otherCurators + ')' : '',
+  ].filter(Boolean);
+  return summary.total + ' playlists across ' + parts.join(' and ');
 }

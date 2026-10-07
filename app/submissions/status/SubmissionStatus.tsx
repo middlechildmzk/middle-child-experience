@@ -70,7 +70,7 @@ export default function SubmissionStatus({ token }: { token?: string }) {
               <article className="card" key={route.playlist_name + ':' + index}>
                 <span className="status-pill">{route.status}</span>
                 <h3>{route.playlist_name}</h3>
-                <p>{route.network_owner_type === 'partner' ? 'Approved independent curator' : 'BVSS FVM curator'}</p>
+                <p>{route.network_owner_type === 'partner' ? 'Verified playlist curator' : 'BVSS FVM curator'}</p>
                 <small>
                   {route.decision
                     ? 'Decision recorded: ' + route.decision

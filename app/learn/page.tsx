@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { editorialSocial } from '../../lib/editorial-social';
 import Link from 'next/link';
 import { guides, guidesByTopic } from '../../lib/learn-guides';
 import { siteUrl } from '../../lib/site-url';
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
   title: 'Spotify Promotion & Playlist Guides',
   description: 'First-party guides from BVSS FVM curators: getting on Spotify playlists, free promotion that works, how submissions are reviewed, and genre curation.',
   alternates: { canonical: '/learn' },
+  ...editorialSocial('Spotify Promotion & Playlist Guides', 'Practical BVSS FVM guides to playlist submissions, music promotion and release strategy.', '/learn'),
 };
 
 export default function LearnPage() {

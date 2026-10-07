@@ -13,7 +13,8 @@
     "test:source-health": "node --import tsx --test tests/source-health/*.test.ts",
     "test": "npm run bridge:smoke && npm run test:db && npm run test:source-health && npm run test:learn && npm run test:tools",
     "test:learn": "node --import tsx --test tests/learn/*.test.ts",
-    "test:tools": "node --import tsx --test tests/tools/*.test.ts"
+    "test:tools": "node --import tsx --test tests/tools/*.test.ts",
+    "test:qa": "node --test tests/qa/*.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
@@ -27,6 +28,7 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "playwright": "1.64.0",
     "tsx": "^4.23.15",
     "typescript": "^5"
   }

@@ -3,11 +3,10 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { PlaylistRecord } from '../../lib/playlist-os';
+import { taxonomyKey, uniqueTaxonomy } from '../../lib/playlist-fit';
+import { playlistCuratorName } from '../../lib/playlist-identity';
 import { describeFollowersPublic } from '../../lib/source-health';
 
-function unique(values: string[]) {
-  return Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
-}
 
 // mode 'submit' (used by /free-spotify-playlist-submission) keeps the same
 // registry and filters but gives every card a direct, free submit action that
@@ -26,29 +25,23 @@ export default function PlaylistBrowser({
   const [curator, setCurator] = useState('all');
 
   const genres = useMemo(
-    () => unique(playlists.flatMap((p) => [p.primary_genre, ...p.secondary_genres])),
+    () => uniqueTaxonomy(playlists.flatMap((p) => [p.primary_genre, ...p.secondary_genres])),
     [playlists],
   );
-  const moods = useMemo(() => unique(playlists.flatMap((p) => p.moods)), [playlists]);
-  const activities = useMemo(() => unique(playlists.flatMap((p) => p.activities)), [playlists]);
+  const moods = useMemo(() => uniqueTaxonomy(playlists.flatMap((p) => p.moods)), [playlists]);
+  const activities = useMemo(() => uniqueTaxonomy(playlists.flatMap((p) => p.activities)), [playlists]);
   const curators = useMemo(
-    () => unique(playlists.map((p) =>
-      p.network_owner_type === 'partner' && p.bvss_curator_profiles?.display_name
-        ? p.bvss_curator_profiles.display_name
-        : 'BVSS FVM',
-    )),
+    () => Array.from(new Set(playlists.map(playlistCuratorName))).sort((a, b) => a.localeCompare(b)),
     [playlists],
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return playlists.filter((p) => {
-      const genreValues = [p.primary_genre, ...p.secondary_genres].map((v) => v.toLowerCase());
-      const moodValues = p.moods.map((v) => v.toLowerCase());
-      const activityValues = p.activities.map((v) => v.toLowerCase());
-      const curatorName = p.network_owner_type === 'partner' && p.bvss_curator_profiles?.display_name
-        ? p.bvss_curator_profiles.display_name
-        : 'BVSS FVM';
+      const genreValues = [p.primary_genre, ...p.secondary_genres].map(taxonomyKey);
+      const moodValues = p.moods.map(taxonomyKey);
+      const activityValues = p.activities.map(taxonomyKey);
+      const curatorName = playlistCuratorName(p);
       const haystack = [
         p.canonical_name,
         p.subtitle,
@@ -62,9 +55,9 @@ export default function PlaylistBrowser({
       ].join(' ').toLowerCase();
 
       return (!q || haystack.includes(q))
-        && (genre === 'all' || genreValues.includes(genre.toLowerCase()))
-        && (mood === 'all' || moodValues.includes(mood.toLowerCase()))
-        && (activity === 'all' || activityValues.includes(activity.toLowerCase()))
+        && (genre === 'all' || genreValues.includes(taxonomyKey(genre)))
+        && (mood === 'all' || moodValues.includes(taxonomyKey(mood)))
+        && (activity === 'all' || activityValues.includes(taxonomyKey(activity)))
         && (curator === 'all' || curatorName === curator);
     });
   }, [playlists, query, genre, mood, activity, curator]);

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { playlistCuratorLabel } from '../../../lib/playlist-identity';
 import { useId, useMemo, useRef, useState } from 'react';
 import {
   describeReasons,
@@ -18,13 +19,6 @@ import {
 export const FIT_DISCLOSURE =
   'Playlist fit is based on the genre, mood and listening context you selected. It is not a quality rating and does not predict whether a curator will place the track.';
 
-function curatorName(playlist: FitPlaylist) {
-  if (playlist.network_owner_type === 'partner') {
-    return 'CuratorOS' + (playlist.bvss_curator_profiles?.display_name ? ' · ' + playlist.bvss_curator_profiles.display_name : '');
-  }
-  return 'BVSS FVM';
-}
-
 function ResultCard({ result }: { result: FitResult }) {
   const { playlist } = result;
   const headingId = 'fit-' + playlist.slug;
@@ -37,7 +31,7 @@ function ResultCard({ result }: { result: FitResult }) {
         <p className={'fit-label fit-label-' + result.label.split(' ')[0].toLowerCase()}>{result.label}</p>
         <h3 id={headingId}>{playlist.canonical_name}</h3>
         <p className="fit-result-meta">
-          Curated by {curatorName(playlist)} · Open for submissions
+          Curated by {playlistCuratorLabel(playlist)} · Open for submissions
         </p>
         <p className="fit-result-why"><strong>Why it fits:</strong> {describeReasons(result.reasons)}</p>
         {!result.reasons.some((reason) => reason.kind === 'primaryGenre' || reason.kind === 'secondaryGenre') && (
