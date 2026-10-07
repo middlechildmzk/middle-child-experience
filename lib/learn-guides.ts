@@ -349,6 +349,7 @@ export const guides: LearnGuide[] = [
       }
     ],
     related: [
+      { href: '/learn/why-playlist-curators-reject-songs', label: 'Why curators reject songs', detail: 'Each decline reason and what to do next.' },
       { href: '/submit', label: 'Submit music', detail: 'Send one Spotify track to the BVSS FVM review queue.' },
       { href: '/playlists', label: 'Explore all playlists', detail: 'Understand the active lanes before or after submitting.' },
       { href: '/learn/what-is-emotional-bass', label: 'What is emotional bass?', detail: 'See how one BVSS FVM lane is defined editorially.' }
@@ -909,24 +910,11 @@ export const guides: LearnGuide[] = [
         ],
       },
       {
-        heading: 'Why curators pass (the reasons we use)',
+        heading: 'Why curators pass',
         paragraphs: [
-          'These are the decline reasons our curators choose from when they pass on a submission. Most are about fit, not quality, which is why the same song can be declined by one playlist and accepted by another.',
+          'In our review workflow a curator who passes must choose at least one reason: energy mismatch, not my genre lane, wrong mood, too similar to recent adds, vocal style, production not ready, mix / master, or other. Several describe fit with one playlist rather than the quality of the song, which is why the same song can be declined by one playlist and accepted by another.',
+          'What each reason means and what to do next is on its own page: [why playlist curators reject songs](/learn/why-playlist-curators-reject-songs).',
         ],
-        table: {
-          caption: 'Decline reasons in the BVSS FVM and CuratorOS review tool',
-          columns: ['Reason', 'What it usually means', 'What you can do'],
-          rows: [
-            ['Energy mismatch', 'The song is noticeably calmer or more intense than the playlist', 'Target playlists whose energy matches the track'],
-            ['Not my genre lane', 'It is outside what the playlist covers', 'Re-check the genre a listener would hear'],
-            ['Wrong mood', 'Right genre, different feeling', 'Choose moods more carefully when pitching'],
-            ['Too similar to recent adds', 'The playlist already has that sound right now', 'Try another playlist, or this one later with a new release'],
-            ['Vocal style', 'The vocal approach does not suit the sequence', 'Look for playlists built around a similar vocal style'],
-            ['Production not ready', 'The idea is there; the recording is not yet', 'Revisit the production before the next pitch'],
-            ['Mix / master', 'Balance or loudness stands out against the playlist', 'Compare against tracks on the playlist; consider a mix revision'],
-            ['Other', 'Anything not covered above', 'Treat it as a fit decision for that playlist'],
-          ],
-        },
       },
       {
         heading: 'Mistakes that get pitches skipped',
@@ -957,10 +945,11 @@ export const guides: LearnGuide[] = [
       { question: 'How long should a playlist pitch be?', answer: 'A few lines. Link, genre, a couple of moods, comparable artists, release date and one sentence on why that playlist. Curators decide by listening.' },
       { question: 'Should I mention my streams or followers?', answer: 'Only if it adds context, and never as the main argument. Curators are judging whether the song fits their playlist.' },
       { question: 'Should I follow up if a curator does not reply?', answer: 'Once, politely, after a reasonable wait. Then move on and pitch them your next release.' },
-      { question: 'Can I pitch the same song to the same curator again?', answer: 'Generally no. A decline is usually about fit with that playlist at that moment. A new release is a better reason to get back in touch.' },
+      { question: 'Can I pitch the same song to the same curator again?', answer: 'Generally no. Several of our decline reasons describe fit with that playlist at that moment. A new release is a better reason to get back in touch.' },
       { question: 'Should I pay to pitch curators?', answer: 'Spotify says to be highly skeptical of services that charge to be considered, and that selling placement breaks its terms. Submission to our playlists is free.' },
     ],
     related: [
+      { href: '/learn/why-playlist-curators-reject-songs', label: 'Why curators reject songs', detail: 'Each decline reason and what to do next.' },
       { href: '/learn/find-spotify-playlist-curators', label: 'Find Spotify playlist curators', detail: 'Find playlists that fit before you pitch.' },
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Submit free to human-curated playlists.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for.' },
@@ -1515,6 +1504,104 @@ export const guides: LearnGuide[] = [
       { label: 'How do I get started on Bandcamp?', publisher: 'Bandcamp Help Center', href: 'https://get.bandcamp.help/hc/en-us/articles/23020667057943-How-do-I-get-started-on-Bandcamp-', accessed: '2026-10-07' },
       { label: 'Artificial streaming', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/artificial-streaming', accessed: '2026-10-07' },
       { label: 'Source of streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/source-of-streams/', accessed: '2026-10-07' },
+    ],
+  },
+  {
+    slug: 'why-playlist-curators-reject-songs',
+    topic: 'Playlist Promotion',
+    published: '2026-10-07',
+    updated: '2026-10-07',
+    seoTitle: 'Why Playlist Curators Reject Songs (and What to Do Next)',
+    title: 'Why Playlist Curators Reject Songs',
+    description: 'The decline reasons curators choose from in the BVSS FVM review workflow, what each one means, and what to change before your next pitch.',
+    eyebrow: 'Playlist promotion · Decline reasons explained',
+    lead: 'A curator passing on your song is a decision about one song on one playlist at one moment. It is not a verdict on you as an artist. This page explains the decline reasons available in the BVSS FVM and CuratorOS review workflow, what each one means, and what you can do with it.',
+    sections: [
+      {
+        heading: 'How a decline works here',
+        paragraphs: [
+          'Every submission is reviewed by a person, separately for each playlist it is routed to. For each playlist the curator can accept the song, put it on hold with a date to revisit it, or decline it. A decline on one playlist says nothing about the others.',
+          'A curator cannot decline without choosing at least one reason; the review tool will not save the decision otherwise. The reason is shown to you on your submission status page. Our [review process](/learn/how-we-review-playlist-submissions) explains the full workflow.',
+          'What we publish here are the reason definitions and our guidance. We do not publish how often each reason is used, and no reason below should be read as more or less common than another.',
+        ],
+      },
+      {
+        heading: 'The decline reasons, defined',
+        paragraphs: [
+          'These are the reasons a curator can choose from in our review workflow. Several can apply at once.',
+        ],
+        table: {
+          caption: 'Decline reasons available in the BVSS FVM and CuratorOS review workflow',
+          columns: ['Reason', 'What it means', 'What to do next'],
+          rows: [
+            ['Energy mismatch', 'The song is noticeably calmer or more intense than the playlist around it', 'Pitch playlists whose energy matches the track, and describe its energy honestly'],
+            ['Not my genre lane', 'The song sits outside what this playlist covers', 'Re-check the genre a listener would hear, not the one you hope to reach'],
+            ['Wrong mood', 'Right genre, different feeling', 'Choose moods that describe the song as it sounds, and pitch playlists built on that mood'],
+            ['Too similar to recent adds', 'The playlist already has that sound in rotation right now', 'Try a different playlist, or come back to this one with a later release'],
+            ['Vocal style', 'The vocal approach does not suit the playlist’s sequence', 'Look for playlists built around a similar vocal approach, or an instrumental lane if you have one'],
+            ['Production not ready', 'The idea is there; the recording is not yet at the level of the playlist', 'Revisit the production before pitching this song again'],
+            ['Mix / master', 'Balance or loudness stands out against the songs around it', 'A/B the track against songs on the playlist and consider a mix or master revision'],
+            ['Other', 'A reason not covered above', 'Treat it as a fit decision for that playlist and move on to the next one'],
+          ],
+        },
+      },
+      {
+        heading: 'Fit reasons and readiness reasons',
+        paragraphs: [
+          'The reasons fall into two groups, and they call for different responses.',
+        ],
+        bullets: [
+          'Fit: energy mismatch, not my genre lane, wrong mood, too similar to recent adds, vocal style. The song may be finished and good, and still not belong on that playlist. The fix is choosing playlists better, not changing the song.',
+          'Readiness: production not ready, mix / master. These point at the recording itself. If you hear the same note from more than one curator, it is worth taking seriously before your next release.',
+          'Other can be either. If it is not clear, treat it as fit and pitch elsewhere.',
+        ],
+        callout: {
+          kind: 'note',
+          title: 'A worked example (fictional)',
+          body: 'Lowtide Avenue is a fictional artist used for illustration. They pitch a slow, hushed indie song to an upbeat indie playlist and it is declined for energy mismatch. The song is not the problem; the target was. They pitch the same song to a quieter late-night playlist instead.',
+        },
+      },
+      {
+        heading: 'Reasons a curator may decline anywhere',
+        paragraphs: [
+          'Outside our network, a curator may decline without saying why. They may pass for the reasons above, or for reasons that come from the pitch rather than the music:',
+        ],
+        bullets: [
+          'The pitch names a genre or mood the song does not have.',
+          'The pitch is clearly copied and pasted to many playlists.',
+          'The link is broken, private or points to the wrong version.',
+          'The playlist is not taking submissions in that lane right now.',
+        ],
+      },
+      {
+        heading: 'What to do after a decline',
+        paragraphs: [],
+        steps: [
+          { title: 'Read the reason as information', body: 'It tells you about one playlist’s needs at one moment. Write it down next to the playlist in your tracker.' },
+          { title: 'Decide: fit or readiness?', body: 'Fit reasons mean pitch elsewhere. Readiness reasons mean look at the recording before the next pitch.' },
+          { title: 'Find a better match', body: 'Use [this checklist](/learn/find-spotify-playlist-curators) to find playlists that fit the energy, genre and mood of the song.' },
+          { title: 'Tighten the pitch', body: 'Accurate genre, moods and comparable artists help every curator. [These templates](/learn/how-to-pitch-playlist-curators) keep it short.' },
+          { title: 'Do not argue or resubmit straight away', body: 'A short thank-you is fine; a debate is not. Come back with your next release rather than the same song.' },
+        ],
+        callout: {
+          kind: 'submit',
+          title: 'Submit where the reason is shown',
+          body: 'Every decline in our network comes with at least one reason on your status page. Find playlists that fit on our [free submission page](/free-spotify-playlist-submission).',
+        },
+      },
+    ],
+    faq: [
+      { question: 'Why was my song rejected by a playlist?', answer: 'A curator may have felt it did not fit that playlist at that moment (energy, genre, mood, vocal style or what was recently added), or that the recording was not ready yet. In our network the curator always gives at least one reason.' },
+      { question: 'Does a rejection mean my song is bad?', answer: 'No. Five of the eight reasons in our review workflow describe fit with a specific playlist, not the quality of the song, so the same song can be declined by one playlist and accepted by another.' },
+      { question: 'Can I resubmit a declined song?', answer: 'Pitching a different playlist that fits better is generally a better use of the song. For the same playlist, come back with your next release.' },
+      { question: 'Do you publish how often each reason is used?', answer: 'No. Every reason here is a real option in our review tool, and each one deserves the same attention when you receive it.' },
+      { question: 'What does a hold mean?', answer: 'A hold is not a decline. The curator is keeping the song in their queue and will revisit it by a date shown on your status page.' },
+    ],
+    related: [
+      { href: '/learn/how-to-pitch-playlist-curators', label: 'How to pitch playlist curators', detail: 'Templates that avoid the easy declines.' },
+      { href: '/learn/find-spotify-playlist-curators', label: 'Find Spotify playlist curators', detail: 'Check fit before you submit.' },
+      { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'Accept, hold or decline, step by step.' },
+      { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Submit free; every decline comes with a reason.' },
     ],
   }
 ];
