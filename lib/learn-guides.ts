@@ -598,6 +598,7 @@ export const guides: LearnGuide[] = [
       { question: 'Is submitting to playlists free?', answer: 'Many independent curators accept free submissions, including every playlist in the BVSS FVM and CuratorOS network. Free submission means a free review, not guaranteed placement.' },
     ],
     related: [
+      { href: '/learn/free-music-promotion', label: 'Free music promotion, every channel', detail: 'A zero-budget plan beyond Spotify.' },
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
       { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial pitching, algorithmic playlists and independent curators.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for.' },
@@ -1044,6 +1045,7 @@ export const guides: LearnGuide[] = [
       { question: 'Why is Groover not on the free list?', answer: 'Its own help center says it is a paid service: each curator contact costs Grooviz. It is included for comparison only.' },
     ],
     related: [
+      { href: '/learn/free-music-promotion', label: 'Free music promotion, every channel', detail: 'A zero-budget plan beyond Spotify.' },
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, free to submit.' },
       { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools, release by release.' },
       { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'What not to pay for.' },
@@ -1389,6 +1391,130 @@ export const guides: LearnGuide[] = [
       { label: 'How do Spotify campaigns work for artists?', publisher: 'Playlist Push Help', href: 'https://help.playlistpush.com/en/articles/2456849-how-do-spotify-campaigns-work-for-artists', accessed: '2026-10-07' },
       { label: 'Artificial streaming', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/artificial-streaming', accessed: '2026-10-07' },
       { label: 'Artificial streaming and paid 3rd-party services that guarantee streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/', accessed: '2026-10-07' },
+    ],
+  },
+  {
+    slug: 'free-music-promotion',
+    topic: 'Free Music Promotion',
+    published: '2026-10-07',
+    updated: '2026-10-07',
+    seoTitle: 'Free Music Promotion: A Zero-Budget Plan for Independent Artists',
+    title: 'Free Music Promotion: A Zero-Budget Plan',
+    description: 'How to promote music without a budget across Spotify, playlists, short video, your own audience, collaborations and artist profiles. Free costs time, not money.',
+    eyebrow: 'Free music promotion · Across every channel',
+    lead: 'Free music promotion is real, but it is not effortless. What you save in money you spend in time, consistency and a lot of small, specific asks. This plan covers every channel an independent artist can use without a budget, what each one is good for, and how to fit them around a release so the work adds up instead of scattering.',
+    sections: [
+      {
+        heading: 'What “free” costs',
+        paragraphs: [
+          'Nothing on this page needs money. All of it needs time: preparing assets, writing pitches, posting, replying, following up. Results are uneven and slow, and no free channel guarantees listeners, playlist adds or followers. The plan below is built to make that time count.',
+          'If you only want Spotify’s own tools, the [free Spotify promotion plan](/learn/free-spotify-promotion) covers them release by release. This page is the wider picture.',
+        ],
+      },
+      {
+        heading: 'The channels, and what each one is for',
+        paragraphs: [],
+        table: {
+          caption: 'Free promotion channels compared',
+          columns: ['Channel', 'Good for', 'What it takes'],
+          rows: [
+            ['Spotify for Artists', 'Editorial pitching, Release Radar for followers, profile tools', 'One pitch per release, at least 7 days ahead; keeping the profile current'],
+            ['Playlist submission', 'Reaching listeners who already like your sound', 'Finding playlists that fit and pitching each one accurately'],
+            ['Short-form video', 'Being discovered by people who have never heard of you', 'Regular posting, and ideas built around the song rather than ads for it'],
+            ['Direct fans and communities', 'Turning a few listeners into people who show up every release', 'Replying, sharing in places you already take part in, not spamming'],
+            ['Collaborations', 'Sharing audiences with an artist at a similar stage', 'A real creative fit and correct credits'],
+            ['Email and owned audience', 'Reaching fans without depending on any platform', 'A sign-up link and a reason to use it'],
+            ['Artist profiles everywhere', 'Looking credible when someone checks you out', 'Claiming each profile once and keeping it consistent'],
+          ],
+        },
+      },
+      {
+        heading: 'Before release: get the assets ready once',
+        paragraphs: [
+          'Most free promotion fails at the asset stage: no clean link, no short clip, no one-line description of the song. Prepare these once and every channel gets easier.',
+        ],
+        bullets: [
+          'A one-sentence description of the song: genre, mood, and what it sounds like.',
+          'Artwork in square and vertical formats.',
+          'Several short vertical clips (the hook, a behind-the-scenes moment, a lyric).',
+          'A Spotify Canvas, a 3 to 8 second looping visual for the track.',
+          'A single link that points to the song on every service, plus your Spotify link on its own.',
+          'Two or three comparable artists whose music genuinely overlaps with yours.',
+        ],
+      },
+      {
+        heading: 'Claim and tidy your artist profiles',
+        paragraphs: [
+          'People check you out before they press play, and so do curators. Claim the free artist profiles where your music lives: Spotify for Artists, Apple Music for Artists (which shows how your music performs across Apple Music, iTunes and Shazam), and YouTube. On YouTube, an Official Artist Channel brings your subscribers and content into one place; you request it through your distributor or label, and it requires at least one official release delivered to YouTube.',
+          'Use the same photo, bio and links everywhere. A consistent, current profile does not promote anything on its own, but an empty one can undo the rest of your work.',
+        ],
+      },
+      {
+        heading: 'Release week, channel by channel',
+        paragraphs: [],
+        steps: [
+          { title: 'Spotify', body: 'Pitch the song to Spotify’s editors at least 7 days before release; even if editors pass, Spotify adds it to your followers’ Release Radar. Set the release as your Artist Pick. The [Spotify plan](/learn/free-spotify-promotion) has every step.' },
+          { title: 'Playlists', body: 'Pitch a short list of independent playlists that really fit, using [this checklist](/learn/find-spotify-playlist-curators) and [these templates](/learn/how-to-pitch-playlist-curators). Submission to [our network](/free-spotify-playlist-submission) is free.' },
+          { title: 'Short-form video', body: 'Post the clips you prepared, then keep going after release week. A clip that tells a small story about the song, or shows how part of it was made, gives people a reason to look the song up.' },
+          { title: 'Your own audience', body: 'Tell the people who already listen, directly: your email list, close friends of the music, the communities you are part of. Ask for one specific thing, like following you on Spotify so they hear the next release.' },
+          { title: 'Collaborators', body: 'If the release has a feature or remix, plan together who posts what and when, and check the credits are correct on every service.' },
+        ],
+        callout: { kind: 'submit' },
+      },
+      {
+        heading: 'Build an audience you own',
+        paragraphs: [
+          'Every platform can change how much of your audience sees you. An email list cannot be taken away by an algorithm change, and it is free to start. Put a sign-up link wherever your music lives, and give people a reason to join: early listens, lyrics, the story behind a song.',
+          'Some music platforms help directly. Bandcamp, for example, gives fans who buy from you or follow you the choice to join your mailing list, and lets you require an email address for free downloads.',
+        ],
+      },
+      {
+        heading: 'Collaborations that actually help',
+        paragraphs: [
+          'A collaboration puts your music in front of another artist’s listeners, and theirs in front of yours. It works best between artists at a similar stage whose music genuinely fits together. Make sure each artist is credited correctly (main or featured) when the release is delivered, so it shows up on both profiles.',
+          'Smaller collaborations count too: a remix swap, a shared playlist, a joint live stream, or simply sharing each other’s releases.',
+        ],
+      },
+      {
+        heading: 'What to skip, even when it is free',
+        paragraphs: [],
+        bullets: [
+          'Mass messaging strangers with the same link. It burns goodwill faster than it finds fans.',
+          '“Free” stream or follower exchanges. Spotify treats streams that do not reflect genuine listening as artificial and can remove the music. See [promotion scams](/learn/spotify-promotion-scams).',
+          'Pitching playlists or blogs that do not cover your genre. A wrong-fit pitch costs you and the curator time.',
+          'Spreading thin. Two channels done every week beat seven done once.',
+        ],
+      },
+      {
+        heading: 'Measure what worked',
+        paragraphs: [
+          'After each release, check Spotify for Artists: source of streams shows whether new listeners came from playlists, recommendations or people seeking you out, and the Playlists view shows which playlists sent listeners. Keep doing what moved those numbers and drop what did not. [Here is how to read them](/learn/playlist-promotion).',
+        ],
+      },
+    ],
+    faq: [
+      { question: 'Can you really promote music for free?', answer: 'Yes, but free means no money, not no effort. Every channel here costs time, and none of them guarantees listeners or placements.' },
+      { question: 'What is the best free way to promote music?', answer: 'There is no single best channel. Spotify’s editorial pitch and Release Radar cover your followers; fitting playlists and short-form video reach new people; email keeps the fans you find.' },
+      { question: 'How is this different from free Spotify promotion?', answer: 'Our [free Spotify promotion guide](/learn/free-spotify-promotion) covers Spotify’s own tools only. This page covers every channel, on and off Spotify.' },
+      { question: 'Is free playlist submission worth it?', answer: 'It can be when the playlist fits your song. BVSS FVM and CuratorOS submission is free and human reviewed, with no guaranteed placement.' },
+      { question: 'How often should I post short-form video?', answer: 'Often enough that you can keep it up. Consistency over months matters more than a burst during release week.' },
+    ],
+    related: [
+      { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools, release by release.' },
+      { href: '/learn/best-free-music-promotion-sites', label: 'What is actually free', detail: 'Free and paid parts of each promotion site.' },
+      { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Submit free to human-curated playlists.' },
+      { href: '/learn/how-to-get-more-spotify-streams', label: 'Get more Spotify streams', detail: 'Grow real listening, without bots.' },
+    ],
+    sources: [
+      { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-07' },
+      { label: 'Getting music on Release Radar', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/getting-music-on-release-radar/', accessed: '2026-10-07' },
+      { label: 'Managing your Artist Pick', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/managing-your-artist-pick/', accessed: '2026-10-07' },
+      { label: 'Adding a Canvas to Spotify', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/adding-a-canvas/', accessed: '2026-10-07' },
+      { label: 'Apple Music for Artists', publisher: 'Apple', href: 'https://artists.apple.com/', accessed: '2026-10-07' },
+      { label: 'Official Artist Channels', publisher: 'YouTube Help', href: 'https://support.google.com/youtube/answer/7336634', accessed: '2026-10-07' },
+      { label: 'How do I get started on Bandcamp?', publisher: 'Bandcamp Help Center', href: 'https://get.bandcamp.help/hc/en-us/articles/23020667057943-How-do-I-get-started-on-Bandcamp-', accessed: '2026-10-07' },
+      { label: 'Artificial streaming', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/artificial-streaming', accessed: '2026-10-07' },
+      { label: 'Source of streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/source-of-streams/', accessed: '2026-10-07' },
     ],
   }
 ];
