@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { guides } from '../../lib/learn-guides';
+import { guides, guidesByTopic } from '../../lib/learn-guides';
 import { siteUrl } from '../../lib/site-url';
 
 export const metadata: Metadata = {
@@ -65,16 +65,20 @@ export default function LearnPage() {
         <div className="shell">
           <p className="eyebrow">Guides</p>
           <h2>Useful context, not keyword filler.</h2>
-          <div className="grid guide-grid">
-            {guides.map((guide, index) => (
-              <Link className="card card-feature" href={'/learn/' + guide.slug} key={guide.slug}>
-                <span className="card-index">{String(index + 1).padStart(2, '0')}</span>
-                <h3>{guide.title}</h3>
-                <p>{guide.description}</p>
-                <span className="card-link">Read the guide →</span>
-              </Link>
-            ))}
-          </div>
+          {guidesByTopic().map((group) => (
+            <div className="learn-topic" key={group.topic}>
+              <h3 className="learn-topic-heading">{group.topic}</h3>
+              <div className="grid guide-grid">
+                {group.guides.map((guide) => (
+                  <Link className="card card-feature" href={'/learn/' + guide.slug} key={guide.slug}>
+                    <h3>{guide.title}</h3>
+                    <p>{guide.description}</p>
+                    <span className="card-link">Read the guide →</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </main>

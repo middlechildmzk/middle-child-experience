@@ -55,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: siteUrl + '/learn', changeFrequency: 'monthly', priority: 0.82 },
     ...guides.map((guide) => ({
       url: siteUrl + '/learn/' + guide.slug,
-      lastModified: new Date('2026-09-26T00:00:00-05:00'),
+      lastModified: new Date(guide.updated + 'T00:00:00-05:00'),
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     })),

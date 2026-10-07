@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { guideBySlug, guides } from '../../../lib/learn-guides';
+import { formatGuideDate, guideBySlug, guides, plainText } from '../../../lib/learn-guides';
+import { GuideSectionBlock, GuideSources, RichText } from '../GuideBlocks';
 import { siteUrl } from '../../../lib/site-url';
 
 export function generateStaticParams() {
@@ -22,8 +23,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: guide.description,
       url: '/learn/' + guide.slug,
       type: 'article',
-      publishedTime: '2026-09-26T00:00:00-05:00',
-      modifiedTime: '2026-09-26T00:00:00-05:00',
+      publishedTime: guide.published + 'T00:00:00-05:00',
+      modifiedTime: guide.updated + 'T00:00:00-05:00',
       images: [{ url: imageUrl, width: 1200, height: 630, alt: guide.title }],
     },
     twitter: {
@@ -48,8 +49,9 @@ export default async function LearnGuidePage({ params }: { params: Promise<{ slu
     headline: guide.title,
     description: guide.description,
     url: pageUrl,
-    datePublished: '2026-09-26',
-    dateModified: '2026-09-26',
+    datePublished: guide.published,
+    dateModified: guide.updated,
+    articleSection: guide.topic,
     image: pageUrl + '/opengraph-image',
     author: { '@id': siteUrl + '/#organization' },
     publisher: { '@id': siteUrl + '/#organization' },
@@ -70,7 +72,7 @@ export default async function LearnGuidePage({ params }: { params: Promise<{ slu
     mainEntity: guide.faq.map((item) => ({
       '@type': 'Question',
       name: item.question,
-      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+      acceptedAnswer: { '@type': 'Answer', text: plainText(item.answer) },
     })),
   };
 
@@ -87,21 +89,17 @@ export default async function LearnGuidePage({ params }: { params: Promise<{ slu
           </nav>
           <p className="eyebrow">{guide.eyebrow}</p>
           <h1>{guide.title}</h1>
-          <p className="lead">{guide.lead}</p>
-          <p className="muted">Published and reviewed by BVSS FVM · September 26, 2026</p>
+          <p className="lead"><RichText text={guide.lead} /></p>
+          <p className="muted">
+            Published by BVSS FVM · {formatGuideDate(guide.published)}
+            {guide.updated !== guide.published && <> · Updated {formatGuideDate(guide.updated)}</>}
+          </p>
         </header>
 
         <div className="shell guide-layout">
           <div className="guide-body">
-            {guide.sections.map((section) => (
-              <section className="guide-section" key={section.heading}>
-                <h2>{section.heading}</h2>
-                {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-                {section.bullets && (
-                  <ul>{section.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>
-                )}
-              </section>
-            ))}
+            {guide.sections.map((section) => <GuideSectionBlock key={section.heading} section={section} />)}
+            {guide.sources && guide.sources.length > 0 && <GuideSources sources={guide.sources} />}
           </div>
 
           <aside className="guide-related">
@@ -124,7 +122,7 @@ export default async function LearnGuidePage({ params }: { params: Promise<{ slu
               {guide.faq.map((item) => (
                 <article className="card" key={item.question}>
                   <h3>{item.question}</h3>
-                  <p>{item.answer}</p>
+                  <p><RichText text={item.answer} /></p>
                 </article>
               ))}
             </div>

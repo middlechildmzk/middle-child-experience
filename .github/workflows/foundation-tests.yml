@@ -11,6 +11,9 @@ on:
       - 'tests/db/**'
       - 'tests/source-health/**'
       - 'tests/support/**'
+      - 'tests/learn/**'
+      - 'lib/learn-guides.ts'
+      - 'lib/playlist-collections.ts'
       - 'lib/source-health.ts'
       - 'app/**'
       - 'package.json'
@@ -48,5 +51,7 @@ jobs:
         run: npm run test:db
       - name: Source health and Soundcharts sync
         run: npm run test:source-health
+      - name: Learn guide publication checks
+        run: npm run test:learn
       - name: Typecheck
         run: npm run typecheck

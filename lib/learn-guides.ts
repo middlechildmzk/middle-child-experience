@@ -1,3 +1,50 @@
+// Body text supports inline links written as [label](/internal-path) or
+// [label](https://external). Nothing else is parsed: no HTML, no other markdown.
+export type LearnTopic =
+  | 'Spotify Promotion'
+  | 'Free Music Promotion'
+  | 'Playlist Promotion'
+  | 'Music Marketing'
+  | 'Releasing Music'
+  | 'Genres & Curation';
+
+export const learnTopics: LearnTopic[] = [
+  'Spotify Promotion',
+  'Free Music Promotion',
+  'Playlist Promotion',
+  'Music Marketing',
+  'Releasing Music',
+  'Genres & Curation',
+];
+
+export type GuideTable = {
+  caption: string;
+  columns: string[];
+  rows: string[][];
+};
+
+// 'submit' renders the free-submission callout. Its disclosure line is fixed
+// in the component and cannot be edited per article.
+export type GuideCallout =
+  | { kind: 'submit'; title?: string; body?: string }
+  | { kind: 'warning' | 'note'; title: string; body: string };
+
+export type GuideSection = {
+  heading: string;
+  paragraphs: string[];
+  bullets?: string[];
+  steps?: { title: string; body: string }[];
+  table?: GuideTable;
+  callout?: GuideCallout;
+};
+
+export type GuideSource = {
+  label: string;
+  publisher: string;
+  href: string;
+  accessed: string; // YYYY-MM-DD
+};
+
 export type LearnGuide = {
   slug: string;
   seoTitle: string;
@@ -5,18 +52,21 @@ export type LearnGuide = {
   description: string;
   eyebrow: string;
   lead: string;
-  sections: {
-    heading: string;
-    paragraphs: string[];
-    bullets?: string[];
-  }[];
+  topic: LearnTopic;
+  published: string; // YYYY-MM-DD
+  updated: string; // YYYY-MM-DD
+  sections: GuideSection[];
   faq: { question: string; answer: string }[];
   related: { href: string; label: string; detail: string }[];
+  sources?: GuideSource[];
 };
 
 export const guides: LearnGuide[] = [
   {
     slug: 'what-is-emotional-bass',
+    topic: 'Genres & Curation',
+    published: '2026-09-26',
+    updated: '2026-09-26',
     seoTitle: 'What Is Emotional Bass? A Curator’s Guide',
     title: 'What Is Emotional Bass?',
     description: 'A BVSS FVM curator guide to emotional bass, melodic dubstep, future bass, and what makes a track fit an emotion-first electronic playlist.',
@@ -87,6 +137,9 @@ export const guides: LearnGuide[] = [
   },
   {
     slug: 'liquid-dnb-vs-dancefloor-dnb',
+    topic: 'Genres & Curation',
+    published: '2026-09-26',
+    updated: '2026-09-26',
     seoTitle: 'Liquid DnB vs Dancefloor DnB: Curator Guide',
     title: 'Liquid DnB vs Dancefloor DnB',
     description: 'How BVSS FVM separates liquid drum & bass from dancefloor DnB, including mood, vocals, production, energy, and playlist fit.',
@@ -158,6 +211,9 @@ export const guides: LearnGuide[] = [
   },
   {
     slug: 'late-night-drive-electronic-music',
+    topic: 'Genres & Curation',
+    published: '2026-09-26',
+    updated: '2026-09-26',
     seoTitle: 'How We Curate Late-Night Drive Electronic Music',
     title: 'How We Curate Late-Night Drive Electronic Music',
     description: 'A first-party BVSS FVM guide to building a late-night electronic playlist using mood, pacing, low end, vocals, and sequencing instead of one genre label.',
@@ -222,6 +278,9 @@ export const guides: LearnGuide[] = [
   },
   {
     slug: 'how-we-review-playlist-submissions',
+    topic: 'Playlist Promotion',
+    published: '2026-09-26',
+    updated: '2026-09-26',
     seoTitle: 'How BVSS FVM Reviews Playlist Submissions',
     title: 'How BVSS FVM Reviews Playlist Submissions',
     description: 'A transparent look at the BVSS FVM playlist submission process, matching system, human review criteria, placement rules, and what artists can expect.',
@@ -298,3 +357,23 @@ export const guides: LearnGuide[] = [
 ];
 
 export const guideBySlug = new Map(guides.map((guide) => [guide.slug, guide]));
+
+export function guidesByTopic() {
+  return learnTopics
+    .map((topic) => ({ topic, guides: guides.filter((guide) => guide.topic === topic) }))
+    .filter((group) => group.guides.length > 0);
+}
+
+// Strip [label](href) markup for metadata and structured data.
+export function plainText(text: string) {
+  return text.replace(/\[([^\]\n]+)\]\(((?:\/|https:\/\/)[^)\s]+)\)/g, '$1');
+}
+
+export function formatGuideDate(isoDate: string) {
+  return new Date(isoDate + 'T12:00:00Z').toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+}
