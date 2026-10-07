@@ -7,6 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { guides, learnTopics, type LearnGuide } from '../../lib/learn-guides.ts';
 import { playlistCollections } from '../../lib/playlist-collections.ts';
+import { freeSubmissionPage } from '../../lib/free-submission.ts';
 
 const APP = path.resolve(import.meta.dirname, '../../app');
 const LINK = /\[([^\]\n]+)\]\(([^)\s]+)\)/g;
@@ -51,6 +52,36 @@ function internalHrefs(guide: LearnGuide): string[] {
   return hrefs.filter((href) => href.startsWith('/'));
 }
 
+
+function assertNoPromises(texts: string[]) {
+  for (const text of texts) {
+    for (const sentence of text.split(/(?<=[.!?])\s+/)) {
+      const lower = sentence.toLowerCase();
+      // Questions (FAQ prompts) may mention guarantees; statements must negate them.
+      if (/\bguarantee[sd]?\b/.test(lower) && !sentence.trim().endsWith('?')) {
+        assert.ok(/\b(no|not|never|cannot|can't|doesn't|does not|without|nobody|none)\b/.test(lower), `unnegated guarantee: "${sentence}"`);
+      }
+      for (const banned of [/\b100% organic\b/, /\breal streams guaranteed\b/, /\bboost (your )?streams\b/, /\bgo viral\b/, /\binstant (streams|followers)\b/]) {
+        assert.ok(!banned.test(lower), `banned phrasing: "${sentence}"`);
+      }
+      // Network size must come from the live registry, never from copy.
+      assert.ok(!/\b\d{2,}\s+(active\s+|curated\s+|independent\s+)?(playlists|curators)\b/.test(lower), `hardcoded count: "${sentence}"`);
+    }
+  }
+}
+
+function assertLinksResolve(hrefs: string[]) {
+  for (const href of hrefs.filter((value) => value.startsWith('/'))) {
+    const route = href.split(/[?#]/)[0].replace(/\/$/, '') || '/';
+    const ok = known.has(route) || dynamicPrefixes.some((prefix) => route.startsWith(prefix) && route.length > prefix.length);
+    assert.ok(ok, `unknown internal link ${href}`);
+  }
+}
+
+function linksIn(texts: string[]) {
+  return texts.flatMap((text) => [...text.matchAll(LINK)].map((match) => match[2]));
+}
+
 test('guide slugs are unique and URL-safe', () => {
   const slugs = guides.map((guide) => guide.slug);
   assert.equal(new Set(slugs).size, slugs.length);
@@ -72,11 +103,7 @@ for (const guide of guides) {
   });
 
   test(`${guide.slug}: every internal link resolves`, () => {
-    for (const href of internalHrefs(guide)) {
-      const route = href.split(/[?#]/)[0].replace(/\/$/, '') || '/';
-      const ok = known.has(route) || dynamicPrefixes.some((prefix) => route.startsWith(prefix) && route.length > prefix.length);
-      assert.ok(ok, `unknown internal link ${href}`);
-    }
+    assertLinksResolve(internalHrefs(guide));
   });
 
   test(`${guide.slug}: link markup is well formed`, () => {
@@ -89,19 +116,8 @@ for (const guide of guides) {
     }
   });
 
-  test(`${guide.slug}: no promise language`, () => {
-    for (const text of allText(guide)) {
-      for (const sentence of text.split(/(?<=[.!?])\s+/)) {
-        const lower = sentence.toLowerCase();
-        // Questions (FAQ prompts) may mention guarantees; statements must negate them.
-        if (/\bguarantee[sd]?\b/.test(lower) && !sentence.trim().endsWith('?')) {
-          assert.ok(/\b(no|not|never|cannot|can't|doesn't|does not|without|nobody|none)\b/.test(lower), `unnegated guarantee: "${sentence}"`);
-        }
-        for (const banned of [/\b100% organic\b/, /\breal streams guaranteed\b/, /\bboost (your )?streams\b/, /\bgo viral\b/, /\binstant (streams|followers)\b/]) {
-          assert.ok(!banned.test(lower), `banned phrasing: "${sentence}"`);
-        }
-      }
-    }
+  test(`${guide.slug}: no promise language or hardcoded counts`, () => {
+    assertNoPromises(allText(guide));
   });
 
   test(`${guide.slug}: sources are complete`, () => {
@@ -117,3 +133,36 @@ for (const guide of guides) {
     assert.ok(guide.related.length >= 2, 'at least 2 related links');
   });
 }
+
+// /free-spotify-playlist-submission: same gate, applied to its copy module.
+const p1 = freeSubmissionPage;
+const p1Text = [
+  p1.title, p1.lead, p1.description,
+  ...p1.steps.flatMap((step) => [step.title, step.body]),
+  p1.freeTable.caption, ...p1.freeTable.rows.flat(),
+  ...p1.disclosure, ...p1.checklist,
+  ...p1.faq.flatMap((item) => [item.question, item.answer]),
+];
+
+test('free submission page: metadata fits search snippets', () => {
+  assert.ok(p1.seoTitle.length <= 65, `seoTitle is ${p1.seoTitle.length} chars`);
+  assert.ok(p1.description.length >= 70 && p1.description.length <= 165, `description is ${p1.description.length} chars`);
+  assert.match(p1.updated, ISO);
+  assert.ok(existsSync(path.join(APP, p1.path.slice(1), 'page.tsx')), 'route file exists');
+});
+
+test('free submission page: no promise language or hardcoded counts', () => {
+  assertNoPromises(p1Text);
+});
+
+test('free submission page: links resolve and sources are https', () => {
+  assertLinksResolve(linksIn(p1Text));
+  for (const source of p1.sources) assert.ok(source.href.startsWith('https://'));
+});
+
+test('free submission page: discloses who curates and that placement is not sold', () => {
+  const all = p1Text.join(' ').toLowerCase();
+  assert.ok(all.includes('not independent third-party curators'), 'CuratorOS house-curation disclosure');
+  assert.ok(all.includes('not spotify editorial') || all.includes('none of these playlists are spotify editorial'), 'not Spotify editorial');
+  assert.ok(/never sold/.test(all), 'placement is never sold');
+});
