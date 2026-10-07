@@ -353,6 +353,153 @@ export const guides: LearnGuide[] = [
       { href: '/playlists', label: 'Explore all playlists', detail: 'Understand the active lanes before or after submitting.' },
       { href: '/learn/what-is-emotional-bass', label: 'What is emotional bass?', detail: 'See how one BVSS FVM lane is defined editorially.' }
     ]
+  },
+  {
+    slug: 'how-to-get-on-spotify-playlists',
+    topic: 'Spotify Promotion',
+    published: '2026-10-07',
+    updated: '2026-10-07',
+    seoTitle: 'How to Get on Spotify Playlists in 2026: A Curator’s Guide',
+    title: 'How to Get on Spotify Playlists in 2026',
+    description: 'The three ways onto Spotify playlists: editorial pitching, algorithmic playlists and independent curators. Spotify’s actual rules, a timeline and red flags.',
+    eyebrow: 'Spotify promotion · Curator’s guide',
+    lead: 'There are three ways onto Spotify playlists, and each works differently: Spotify’s editors, Spotify’s algorithms and independent curators. This guide covers all three using Spotify’s published rules, plus what we see from the curator side of the inbox at BVSS FVM.',
+    sections: [
+      {
+        heading: 'The three kinds of Spotify playlists',
+        paragraphs: [
+          'Spotify itself sorts playlists into editorial, personalized (algorithmic) and listener-created. They are reached in completely different ways, so it helps to know which one you are aiming at before you spend time or money.',
+        ],
+        table: {
+          caption: 'Who decides, and how you get considered',
+          columns: ['Playlist type', 'Who decides', 'How you get considered', 'What you control'],
+          rows: [
+            ['Editorial (Spotify logo in the byline)', 'Spotify’s editors', 'Pitch one unreleased song in Spotify for Artists at least 7 days before release', 'The pitch, the timing and the song'],
+            ['Personalized (Release Radar, Discover Weekly, Daily Mix)', 'Spotify’s algorithms, per listener', 'No pitch exists. They respond to what listeners do', 'Your followers and real listening'],
+            ['Independent (curators, brands, labels, fans)', 'Whoever runs the playlist', 'Their submission form, platform or contact', 'Fit, quality and how you approach them'],
+          ],
+        },
+      },
+      {
+        heading: 'Route 1: pitch Spotify’s editors yourself',
+        paragraphs: [
+          'Editorial pitching is free and happens inside Spotify for Artists. Nobody else can do it for you unless they have access to your artist profile, and no legitimate service can sell you a guaranteed spot. Spotify’s own wording is that pitching “doesn’t guarantee playlist placement.”',
+        ],
+        steps: [
+          { title: 'Deliver the release early', body: 'Get your music to your distributor well ahead of release day. Spotify asks for delivery at least 7 days before release so editors have time to listen. Leave extra time for your distributor to process it.' },
+          { title: 'Choose the one song to pitch', body: 'You can pitch one song at a time, and it has to be unreleased. Once a song is live it is no longer eligible, so decide before release day.' },
+          { title: 'Fill in the pitch properly', body: 'Genre, mood, instruments and a short description of the song. Spotify says more detail gives a song a better chance. Describe the song, not your career goals.' },
+          { title: 'Know what you get either way', body: 'If you pitch an unreleased song at least 7 days before release, Spotify adds it to your followers’ Release Radar, even if editors pass on it.' },
+        ],
+        callout: {
+          kind: 'note',
+          title: 'Missed the window?',
+          body: 'A song that is already out cannot be pitched to editors. Put the effort into independent playlists and into pitching your next release on time. Independent curators (including [ours](/free-spotify-playlist-submission)) accept released songs.',
+        },
+      },
+      {
+        heading: 'Route 2: algorithmic playlists (what you can and can’t control)',
+        paragraphs: [
+          'Personalized playlists are built for each listener from what that person plays and when. There is no form to fill in. What you can influence is the audience those algorithms are working with.',
+          'Release Radar is the most concrete one. Your followers get songs from your new release there. If you pitched a song, that is the one they get; if not, Spotify picks. Each listener gets one song per artist per week, a song can stay for up to 4 weeks if the listener has not heard it, and it is only included where you are the main or featured artist.',
+          'That makes followers the lever you actually hold: Spotify’s own advice is to encourage fans to follow you, because followers get your releases. Spotify also says that when fans add music to their own playlists, it tells Spotify what they like and what to recommend. Bought streams do not help; they are a risk (see the red flags below).',
+        ],
+      },
+      {
+        heading: 'Route 3: independent playlists, done properly',
+        paragraphs: [
+          'Independent playlists are run by people, labels and brands. Some accept submissions through a form or a platform, some only through direct contact, and many accept nothing at all. The work is finding the ones that fit and approaching them the way they ask to be approached.',
+        ],
+        steps: [
+          { title: 'Find playlists that fit the song, not just the genre tag', body: 'Search Spotify for the sound and mood of your song, then open each playlist and listen to what is actually on it. Fit is about the sequence: would your track sit naturally between the songs already there?' },
+          { title: 'Check it is real and alive', body: 'Look at when it was last updated, whether the tracks belong together, and who runs it. Use the red flags below before sending anything, and never pay for a guaranteed add.' },
+          { title: 'Use the curator’s own channel', body: 'Submit through their form, platform or listed contact. Ignoring their instructions is the fastest way to be skipped.' },
+          { title: 'Pitch the song in a few lines', body: 'The Spotify link (or a private link for unreleased music), the genre and mood a listener would hear, two or three comparable artists, and one sentence on why it fits that specific playlist.' },
+          { title: 'Follow up once, then move on', body: 'A no or no answer is about fit with that playlist at that moment. Keep a simple list of who you contacted and when, and approach them again with your next release rather than the same song.' },
+        ],
+        callout: {
+          kind: 'submit',
+          title: 'Want one place to start?',
+          body: 'Our [free submission page](/free-spotify-playlist-submission) lists every playlist in the BVSS FVM and CuratorOS network that is open to submissions, with filters for genre, mood and moment. Submit once and each playlist that fits gets a human decision.',
+        },
+      },
+      {
+        heading: 'Red flags before you submit or pay anyone',
+        paragraphs: [
+          'Spotify’s position is direct: paid third-party services that guarantee streams are not legitimate, services promising guaranteed playlist placement for money break its terms, and using them can get your music removed. Spotify can also withhold royalties tied to artificial streams. These are the warning signs we tell artists to check.',
+        ],
+        table: {
+          caption: 'Warning signs and what they usually mean',
+          columns: ['You see', 'Why it matters'],
+          rows: [
+            ['A promise of placement, streams or followers in exchange for payment', 'Spotify says selling guaranteed placement breaks its terms. Legitimate curators decide after listening.'],
+            ['Price based on the number of streams you will get', 'Nobody can promise listener behavior honestly. This is how bot services sell.'],
+            ['Tracks with no common sound or mood', 'Often a playlist built for numbers, not listeners. Your song will not find its audience there.'],
+            ['No way to tell who runs it', 'You cannot judge a curator you cannot identify.'],
+            ['Requests for your Spotify for Artists or distributor login', 'No legitimate curator needs access to your accounts. Never share them.'],
+          ],
+        },
+      },
+      {
+        heading: 'What curators actually listen for',
+        paragraphs: [
+          'From our side of the inbox at BVSS FVM, the question is never “is this artist big enough?” It is “does this song make this playlist better for the person listening?” In practice that comes down to a few things, which we explain in full in [how we review submissions](/learn/how-we-review-playlist-submissions).',
+        ],
+        bullets: [
+          'Fit with the lane: the genre and mood a listener hears, not the label on the file.',
+          'Sequence: whether the track sits naturally next to what is already playing.',
+          'Production translation: the important parts stay clear and balanced on ordinary speakers and earbuds.',
+          'Something to come back to: a hook, an idea or a feeling that holds up after the first listen.',
+          'Honest metadata: a realistic primary genre and comparable artists whose music actually overlaps.',
+        ],
+      },
+      {
+        heading: 'A release timeline that covers all three routes',
+        paragraphs: [
+          'Timelines vary by distributor and genre. This is a practical order of operations built around Spotify’s 7-day rule.',
+        ],
+        table: {
+          caption: 'Order of operations around release day',
+          columns: ['When', 'Do this'],
+          rows: [
+            ['Weeks before release', 'Finish the master and metadata. Deliver to your distributor with time to spare.'],
+            ['Once it shows in Spotify for Artists', 'Pitch your chosen song to editors. It must be at least 7 days before release.'],
+            ['Before release', 'Build a short list of independent playlists that genuinely fit, and note how each accepts submissions. Curators that take unreleased music can hear it now.'],
+            ['Release week', 'Point fans to your Spotify profile and ask them to follow. Submit to the independent playlists on your list.'],
+            ['Following weeks', 'Check Spotify for Artists to see where listeners are finding the song, follow up once where appropriate, and start planning the next pitch.'],
+          ],
+        },
+      },
+      {
+        heading: 'How to tell whether a placement is working',
+        paragraphs: [
+          'In Spotify for Artists, go to Music then Playlists. Spotify shows the playlists your music is on (up to 100 of them), ordered by how many of your listeners came from each, for the last 12 months. A playlist only appears once at least 3 of your listeners have played your music there.',
+          'A playlist’s follower count tells you its potential, not what it will do for your song. The listeners it actually sends you are the number to watch.',
+        ],
+      },
+    ],
+    faq: [
+      { question: 'Can I pay to get on Spotify editorial playlists?', answer: 'No. Editorial pitching is free in Spotify for Artists, and Spotify says services that sell guaranteed playlist placement break its terms.' },
+      { question: 'Can I pitch a song that is already released?', answer: 'Not to Spotify’s editors: once a song is live it is no longer eligible. Independent curators often do accept released songs.' },
+      { question: 'How many songs can I pitch to Spotify editors?', answer: 'One song at a time, and it must be unreleased.' },
+      { question: 'Do I need a label or distributor relationship to pitch?', answer: 'You need access to your artist profile in Spotify for Artists. Anyone on the team with Admin or Editor access can pitch.' },
+      { question: 'Will a small playlist placement earn royalties?', answer: 'Spotify only pays recorded royalties on tracks that reached at least 1,000 streams in the previous 12 months (a policy in effect since April 2024), along with a minimum number of unique listeners it does not publish.' },
+      { question: 'Is submitting to independent curators the same as pitching Spotify?', answer: 'No. Independent curators run their own playlists. Their decision has nothing to do with Spotify’s editors, and you should still pitch editors yourself for unreleased songs.' },
+    ],
+    related: [
+      { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
+      { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for and what accept, hold and decline mean.' },
+      { href: '/playlists/collections', label: 'Playlist collections', detail: 'Browse playlists by genre, mood and moment.' },
+    ],
+    sources: [
+      { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-07' },
+      { label: 'Getting music on Release Radar', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/getting-music-on-release-radar/', accessed: '2026-10-07' },
+      { label: 'Types of Spotify playlists', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/types-of-spotify-playlists/', accessed: '2026-10-07' },
+      { label: 'Promoting music on Spotify', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/by-en/artists/article/promoting-music-on-spotify/', accessed: '2026-10-07' },
+      { label: 'Artificial streaming and paid 3rd-party services that guarantee streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/', accessed: '2026-10-07' },
+      { label: 'Seeing playlists you’re added to', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/seeing-playlists-your-music-is-on/', accessed: '2026-10-07' },
+      { label: 'Track monetization eligibility', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/track-monetization-eligibility/', accessed: '2026-10-07' },
+    ],
   }
 ];
 

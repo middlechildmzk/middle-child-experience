@@ -15,7 +15,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!guide) return { title: 'Guide not found' };
   const imageUrl = '/learn/' + guide.slug + '/opengraph-image';
   return {
-    title: guide.seoTitle,
+    // Long titles already carry their keyword; skip the ' | BVSS FVM' suffix so
+    // the result stays within what search results display.
+    title: guide.seoTitle.length > 48 ? { absolute: guide.seoTitle } : guide.seoTitle,
     description: guide.description,
     alternates: { canonical: '/learn/' + guide.slug },
     openGraph: {
