@@ -4,6 +4,7 @@ import { getPlaylists } from '../../../lib/playlist-os';
 import { siteUrl } from '../../../lib/site-url';
 import { SUBMIT_DISCLOSURE } from '../../learn/GuideBlocks';
 import FitChecker from './FitChecker';
+import { socialMeta } from '../../../lib/social-meta';
 
 // Open/closed status and vocabulary come from the live registry on every request.
 export const dynamic = 'force-dynamic';
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
   title: { absolute: SEO_TITLE },
   description: DESCRIPTION,
   alternates: { canonical: PATH },
-  openGraph: { title: SEO_TITLE, description: DESCRIPTION, url: PATH, type: 'website' },
+  ...socialMeta(SEO_TITLE, DESCRIPTION, PATH),
 };
 
 export default async function PlaylistFitCheckerPage() {

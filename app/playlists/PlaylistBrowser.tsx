@@ -4,10 +4,11 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { PlaylistRecord } from '../../lib/playlist-os';
 import { describeFollowersPublic } from '../../lib/source-health';
+import { taxonomyKey, uniqueTaxonomy } from '../../lib/playlist-fit';
 
-function unique(values: string[]) {
-  return Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
-}
+// Same case/punctuation-insensitive taxonomy as /submit and the Fit Checker,
+// so "Late Night Drive" and "late night drive" are one filter option.
+const unique = uniqueTaxonomy;
 
 // mode 'submit' (used by /free-spotify-playlist-submission) keeps the same
 // registry and filters but gives every card a direct, free submit action that
@@ -43,9 +44,9 @@ export default function PlaylistBrowser({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return playlists.filter((p) => {
-      const genreValues = [p.primary_genre, ...p.secondary_genres].map((v) => v.toLowerCase());
-      const moodValues = p.moods.map((v) => v.toLowerCase());
-      const activityValues = p.activities.map((v) => v.toLowerCase());
+      const genreValues = [p.primary_genre, ...p.secondary_genres].map(taxonomyKey);
+      const moodValues = p.moods.map(taxonomyKey);
+      const activityValues = p.activities.map(taxonomyKey);
       const curatorName = p.network_owner_type === 'partner' && p.bvss_curator_profiles?.display_name
         ? p.bvss_curator_profiles.display_name
         : 'BVSS FVM';
@@ -62,9 +63,9 @@ export default function PlaylistBrowser({
       ].join(' ').toLowerCase();
 
       return (!q || haystack.includes(q))
-        && (genre === 'all' || genreValues.includes(genre.toLowerCase()))
-        && (mood === 'all' || moodValues.includes(mood.toLowerCase()))
-        && (activity === 'all' || activityValues.includes(activity.toLowerCase()))
+        && (genre === 'all' || genreValues.includes(taxonomyKey(genre)))
+        && (mood === 'all' || moodValues.includes(taxonomyKey(mood)))
+        && (activity === 'all' || activityValues.includes(taxonomyKey(activity)))
         && (curator === 'all' || curatorName === curator);
     });
   }, [playlists, query, genre, mood, activity, curator]);

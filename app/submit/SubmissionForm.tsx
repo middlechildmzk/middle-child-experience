@@ -9,6 +9,7 @@ import {
   supabaseUrl,
 } from '../../lib/playlist-os';
 import { taxonomyKey, uniqueTaxonomy } from '../../lib/playlist-fit';
+import { CURATOROS_DESCRIPTION, ownershipLabel, playlistOwnership } from '../../lib/network-ownership';
 
 const supabase = createClient(supabaseUrl, supabasePublishableKey);
 const audioBucket = 'bvss-submission-audio';
@@ -80,6 +81,12 @@ export default function SubmissionForm({
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState('');
   const [result, setResult] = useState<Result | null>(null);
+
+  // Ownership-aware opt-in wording: only mention independent curators if one exists.
+  const hasExternalCurators = useMemo(
+    () => playlists.some((playlist) => playlist.submission_status === 'open' && playlistOwnership(playlist) === 'external'),
+    [playlists],
+  );
 
   const genreOptions = useMemo(
     () => uniqueTaxonomy(
@@ -377,11 +384,11 @@ export default function SubmissionForm({
         </div>
       )}
       <section className="song-source-card">
-        <div className="source-tabs" role="tablist" aria-label="Release status">
-          <button type="button" className={mode === 'released' ? 'source-tab active' : 'source-tab'} onClick={() => changeMode('released')}>
+        <div className="source-tabs" role="group" aria-label="Is the song released?">
+          <button type="button" aria-pressed={mode === 'released'} className={mode === 'released' ? 'source-tab active' : 'source-tab'} onClick={() => changeMode('released')}>
             Released
           </button>
-          <button type="button" className={mode === 'unreleased' ? 'source-tab active' : 'source-tab'} onClick={() => changeMode('unreleased')}>
+          <button type="button" aria-pressed={mode === 'unreleased'} className={mode === 'unreleased' ? 'source-tab active' : 'source-tab'} onClick={() => changeMode('unreleased')}>
             Unreleased
           </button>
         </div>
@@ -578,16 +585,21 @@ export default function SubmissionForm({
 
           {initialTarget?.network_owner_type === 'partner' ? (
             <div className="submission-policy">
-              <strong>Direct curator submission</strong>
+              <strong>Direct playlist submission</strong>
               <p>
-                You are submitting directly to {initialTarget.bvss_curator_profiles?.display_name || 'this verified curator'}.
-                Your selected playlist is routed to that curator for independent review; placement is never guaranteed.
+                {playlistOwnership(initialTarget) === 'in_house'
+                  ? 'This playlist is programmed by ' + CURATOROS_DESCRIPTION + '. Your track goes to that team for review; placement is never guaranteed.'
+                  : 'This playlist is programmed by ' + ownershipLabel('external', initialTarget.bvss_curator_profiles?.display_name) + '. Your track goes to that curator for review; placement is never guaranteed.'}
               </p>
             </div>
           ) : (
             <label className="network-opt-in-control compact-network-opt-in">
               <input type="checkbox" checked={networkOptIn} onChange={(event) => setNetworkOptIn(event.target.checked)} />
-              <span><strong>Also send to matched independent curators</strong><small>Only approved, verified curator playlists. Optional. No guaranteed placement.</small></span>
+              {hasExternalCurators ? (
+                <span><strong>Also send to matching CuratorOS and independent curator playlists</strong><small>CuratorOS is {CURATOROS_DESCRIPTION}; independent curators run their own playlists. Optional. No guaranteed placement.</small></span>
+              ) : (
+                <span><strong>Also send to matching CuratorOS playlists</strong><small>Reviewed by {CURATOROS_DESCRIPTION}. Optional. No guaranteed placement.</small></span>
+              )}
             </label>
           )}
 

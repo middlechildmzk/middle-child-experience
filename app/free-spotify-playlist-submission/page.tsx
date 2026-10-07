@@ -6,6 +6,7 @@ import { siteUrl } from '../../lib/site-url';
 import { networkFollowerTotals } from '../../lib/source-health';
 import { GuideSectionBlock, GuideSources, RichText, SUBMIT_DISCLOSURE } from '../learn/GuideBlocks';
 import PlaylistBrowser from '../playlists/PlaylistBrowser';
+import { socialMeta } from '../../lib/social-meta';
 
 // Counts and submission status come from the live registry on every request.
 export const dynamic = 'force-dynamic';
@@ -14,12 +15,7 @@ export const metadata: Metadata = {
   title: { absolute: page.seoTitle },
   description: page.description,
   alternates: { canonical: page.path },
-  openGraph: {
-    title: page.seoTitle,
-    description: page.description,
-    url: page.path,
-    type: 'website',
-  },
+  ...socialMeta(page.seoTitle, page.description, page.path),
 };
 
 export default async function FreeSpotifyPlaylistSubmissionPage() {

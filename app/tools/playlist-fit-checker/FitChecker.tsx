@@ -14,15 +14,13 @@ import {
   type FitPlaylist,
   type FitResult,
 } from '../../../lib/playlist-fit';
+import { ownershipLabel, playlistOwnership } from '../../../lib/network-ownership';
 
 export const FIT_DISCLOSURE =
   'Playlist fit is based on the genre, mood and listening context you selected. It is not a quality rating and does not predict whether a curator will place the track.';
 
 function curatorName(playlist: FitPlaylist) {
-  if (playlist.network_owner_type === 'partner') {
-    return 'CuratorOS' + (playlist.bvss_curator_profiles?.display_name ? ' · ' + playlist.bvss_curator_profiles.display_name : '');
-  }
-  return 'BVSS FVM';
+  return ownershipLabel(playlistOwnership(playlist), playlist.bvss_curator_profiles?.display_name);
 }
 
 function ResultCard({ result }: { result: FitResult }) {

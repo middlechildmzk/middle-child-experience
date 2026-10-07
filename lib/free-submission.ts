@@ -51,7 +51,7 @@ export const freeSubmissionPage = {
   disclosure: [
     'BVSS FVM playlists are programmed by BVSS FVM, the independent music label and playlist network that runs this site.',
     'CuratorOS playlists are programmed by the in-house CuratorOS curation team, which operates alongside BVSS FVM. They are not independent third-party curators.',
-    'None of these playlists are Spotify editorial playlists. To be considered by Spotify’s own editors, pitch an unreleased song in [Spotify for Artists](https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/) at least 7 days before release. Spotify says that pitch also puts the song in your followers’ Release Radar.',
+    'None of these playlists are Spotify editorial playlists. To be considered by Spotify’s own editors, pitch an unreleased song in [Spotify for Artists](https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/) before it is released. Spotify asks for at least 7 days so editors have time to listen, and a pitch made at least 7 days ahead also puts the song in your followers’ Release Radar.',
     'Follower counts appear only where they have been measured. Newer playlists show “Measuring” until a count is confirmed.',
   ],
 

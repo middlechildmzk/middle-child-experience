@@ -2,11 +2,17 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { guides, guidesByTopic } from '../../lib/learn-guides';
 import { siteUrl } from '../../lib/site-url';
+import { socialMeta } from '../../lib/social-meta';
 
 export const metadata: Metadata = {
   title: 'Spotify Promotion & Playlist Guides',
   description: 'First-party guides from BVSS FVM curators: getting on Spotify playlists, free promotion that works, how submissions are reviewed, and genre curation.',
   alternates: { canonical: '/learn' },
+  ...socialMeta(
+    'Spotify Promotion & Playlist Guides | BVSS FVM',
+    'First-party guides from BVSS FVM curators: getting on Spotify playlists, free promotion that works, how submissions are reviewed, and genre curation.',
+    '/learn',
+  ),
 };
 
 export default function LearnPage() {

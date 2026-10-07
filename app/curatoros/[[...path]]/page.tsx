@@ -3,7 +3,7 @@ import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'CuratorOS — Submit once. Reach the right playlists.',
-  description: 'A neutral playlist submission marketplace connecting artists with verified independent curators.',
+  description: 'CuratorOS playlist submissions: programmed by the in-house CuratorOS team, which operates alongside BVSS FVM.',
   robots: { index: false, follow: false },
 };
 

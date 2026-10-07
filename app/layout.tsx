@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import './globals.css';
 import { canIndexSite, siteUrl } from '../lib/site-url';
+import MobileMenu from './MobileMenu';
 
 export const viewport: Viewport = {
   themeColor: '#08090d',
@@ -130,6 +131,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             {nav.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
           </nav>
           <a className="button button-small" href="https://lnk.to/MiddlechildNeverAlone" target="_blank" rel="noreferrer">Listen</a>
+          <MobileMenu items={nav.map(([label, href]) => [label, href] as [string, string])} />
         </header>
         {children}
         <footer className="site-footer">
