@@ -144,12 +144,12 @@ export default async function AboutPage() {
       <section className="section">
         <div className="shell section-split">
           <div>
-            <p className="eyebrow">Founder & flagship artist</p>
-            <h2>Built by Dan Larson.</h2>
+            <p className="eyebrow">Flagship artist</p>
+            <h2>Home of Middle Child.</h2>
           </div>
           <div>
             <p className="lead compact-lead">
-              Dan Larson founded BVSS FVM and releases electronic music as Middle Child. The label and
+              Middle Child is the flagship artist on BVSS FVM. The label and
               playlist network are being built around the same principle: emotional records deserve
               thoughtful context, credible discovery, and systems that help good music travel farther.
             </p>

@@ -83,7 +83,6 @@ export default function NeverAlonePage() {
       '@id': `${siteUrl}/artists/middle-child#artist`,
       name: 'Middle Child',
       alternateName: 'Middle Child Music',
-      member: { '@type': 'Person', name: 'Dan Larson' },
       foundingLocation: { '@type': 'Place', name: 'Minneapolis, Minnesota, United States' },
       sameAs: artistSameAs,
     },
@@ -124,7 +123,7 @@ export default function NeverAlonePage() {
         name: 'Who is Middle Child?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Middle Child is the emotional electronic music project of Minneapolis artist and producer Dan Larson.',
+          text: 'Middle Child is an emotional electronic music project from Minneapolis.',
         },
       },
       {
@@ -211,8 +210,8 @@ export default function NeverAlonePage() {
         <div className={styles.grid}>
           <article className={styles.card}><h3>Meaning</h3><p>A song for anyone who has felt invisible, anxious, broken, or alone and needed a reminder that they were still seen.</p></article>
           <article className={styles.card}><h3>Sound</h3><p>Dark synth pulses, cinematic space, warm low end, guitar texture, intimate vocals, and emotional melodic bass.</p></article>
-          <article className={styles.card}><h3>Middle Child</h3><p>Middle Child is the emotional electronic project of Minneapolis artist and producer Dan Larson, active since 2014.</p></article>
-          <article className={styles.card}><h3>lowly sunday</h3><p>lowly sunday is Dan Larson’s vocal alias on this release, presented in lowercase across the official metadata.</p></article>
+          <article className={styles.card}><h3>Middle Child</h3><p>Middle Child is an emotional electronic project from Minneapolis, active since 2014.</p></article>
+          <article className={styles.card}><h3>lowly sunday</h3><p>lowly sunday is Middle Child’s vocal alias on this release, presented in lowercase across the official metadata.</p></article>
         </div>
       </section>
 
@@ -248,7 +247,7 @@ export default function NeverAlonePage() {
         <p className={styles.eyebrow}>Quick facts</p>
         <h2 id="faq-heading">About Never Alone</h2>
         <div className={styles.grid}>
-          <article className={styles.card}><h3>Who made Never Alone?</h3><p>Middle Child, the emotional electronic project of Minneapolis producer Dan Larson, featuring his vocal alias lowly sunday.</p></article>
+          <article className={styles.card}><h3>Who made Never Alone?</h3><p>Middle Child, an emotional electronic project from Minneapolis, featuring its vocal alias lowly sunday.</p></article>
           <article className={styles.card}><h3>What is the song about?</h3><p>Feeling abandoned in a difficult season and later realizing that you were still being held, even when you could not feel it.</p></article>
           <article className={styles.card}><h3>What genre is it?</h3><p>Melodic bass and future bass with cinematic electronic production, guitar warmth, and a wounded but hopeful emotional arc.</p></article>
           <article className={styles.card}><h3>Where can I listen?</h3><p>Spotify, Apple Music, TIDAL, Qobuz, iHeartRadio, YouTube, and other services through the official smart link.</p></article>
