@@ -4,6 +4,11 @@ type CuratedPlaylist = {
   bvss_curator_profiles?: { handle?: string; display_name?: string } | null;
 };
 
+/** Curator profiles (no playlist context): is this the in-house CuratorOS team? */
+export function isHouseCurator(handle: string | null | undefined) {
+  return handle === 'curatoros';
+}
+
 export function isCuratorOS(playlist: CuratedPlaylist) {
   return playlist.network_owner_type === 'partner'
     && playlist.bvss_curator_profiles?.handle === 'curatoros';

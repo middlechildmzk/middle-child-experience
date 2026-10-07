@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getPublicCurators } from '../../lib/curator-network';
+import { isHouseCurator } from '../../lib/playlist-identity';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Independent Playlist Curators',
-  description: 'Meet verified independent playlist curators participating in the BVSS FVM Curator Network across genres, moods and listening moments.',
+  title: 'Playlist Curators',
+  description: 'The curators behind the BVSS FVM network: the in-house CuratorOS team today, with applications open to independent playlist owners.',
   alternates: { canonical: '/curators' },
 };
 
@@ -17,9 +18,9 @@ export default async function CuratorsPage() {
     <main>
       <section className="shell page-hero">
         <p className="eyebrow">Curator Network Beta</p>
-        <h1>Independent curators. One accountable network.</h1>
+        <h1>Curators. One accountable network.</h1>
         <p className="lead">
-          Verified playlist owners can receive relevant artist submissions through BVSS FVM while keeping every placement decision independent.
+          Today the curator directory is the in-house CuratorOS team, which operates alongside BVSS FVM. Independent playlist owners can apply, and every application is reviewed before a playlist receives routed submissions.
         </p>
         <div className="actions">
           <Link className="button" href="/curators/apply">Apply as a curator</Link>
@@ -43,9 +44,9 @@ export default async function CuratorsPage() {
             <div className="integration-grid">
               {curators.map((curator) => (
                 <Link className="card curator-card" href={'/curators/' + curator.handle} key={curator.curator_id}>
-                  <span className="status-pill">verified curator</span>
+                  <span className="status-pill">{isHouseCurator(curator.handle) ? 'in-house curation team' : 'verified curator'}</span>
                   <h3>{curator.display_name}</h3>
-                  <p>{curator.bio || 'Independent curator participating in the BVSS FVM Curator Network Beta.'}</p>
+                  <p>{curator.bio || 'Curator in the BVSS FVM network.'}</p>
                   <div className="chip-row">
                     {curator.genres.slice(0, 4).map((genre) => <span className="chip" key={genre}>{genre}</span>)}
                   </div>

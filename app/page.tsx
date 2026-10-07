@@ -191,7 +191,7 @@ export default async function HomePage() {
             <Link className="card card-feature" href="/submit">
               <span className="card-index">03</span>
               <h3>Submit music</h3>
-              <p>Send one Spotify track for independent editorial consideration across the BVSS FVM playlist network. No guaranteed placements.</p>
+              <p>Send one Spotify track for human editorial review across the BVSS FVM and CuratorOS playlists. No guaranteed placements.</p>
               <span className="card-link">Submit a track →</span>
             </Link>
             <Link className="card card-feature" href="/about">

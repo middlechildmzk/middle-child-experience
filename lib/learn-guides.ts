@@ -1031,7 +1031,7 @@ export const guides: LearnGuide[] = [
       },
     ],
     faq: [
-      { question: 'Which free music promotion site is the best?', answer: 'We do not rank them. They do different things: Spotify’s editorial pitch is the only route to editorial playlists, while the others connect you with playlist curators, including in-house networks. Use the table to match a service to your goal.' },
+      { question: 'Which free music promotion site should I use?', answer: 'We do not rank them. They do different things: Spotify’s editorial pitch is the only route to editorial playlists, while the others connect you with playlist curators, including in-house networks. Use the table to match a service to your goal.' },
       { question: 'Are free submission sites worth it if curators do not have to reply?', answer: 'They can be, as long as you expect some silence. Accurate genre and mood details, and choosing playlists that really fit, improve your chances more than volume does.' },
       { question: 'Is SubmitHub free?', answer: 'Partly. According to its help center you get two standard credits every four hours, and curators are not required to respond to those. Premium credits cost money (or can be earned) and come with response requirements.' },
       { question: 'Is BVSS FVM really free?', answer: 'Yes. Submission and review are free for every playlist in the BVSS FVM and CuratorOS network, there is no paid tier, and placement is never sold.' },
@@ -1362,7 +1362,7 @@ export const guides: LearnGuide[] = [
       },
     ],
     faq: [
-      { question: 'Which playlist submission site is the best?', answer: 'We do not rank them. They sell different things, so the right choice depends on whether you want free submission, a response on a deadline, a marketplace or a managed campaign.' },
+      { question: 'Which playlist submission site should I use?', answer: 'We do not rank them. They sell different things, so the right choice depends on whether you want free submission, a response on a deadline, a marketplace or a managed campaign.' },
       { question: 'Is paying for playlist submission legal on Spotify?', answer: 'Paying for a curator’s time to review is different from buying a placement. Spotify says paying for placement breaks its terms, and it advises high skepticism toward services that charge to be considered.' },
       { question: 'Do paid submissions get accepted more often?', answer: 'We have no data to say so, and platforms that charge for consideration say you are paying for review, not results.' },
       { question: 'Is BVSS FVM a submission site?', answer: 'It is a playlist network that accepts free submissions to its own playlists: BVSS FVM and the in-house CuratorOS team. It does not sell placement or charge for review.' },
