@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { formatGuideDate, guideBySlug, guides, plainText } from '../../../lib/learn-guides';
+import { formatGuideDate, guideBySlug, guides } from '../../../lib/learn-guides';
 import { GuideSectionBlock, GuideSources, RichText } from '../GuideBlocks';
 import { siteUrl } from '../../../lib/site-url';
 
@@ -66,21 +66,11 @@ export default async function LearnGuidePage({ params }: { params: Promise<{ slu
       { '@type': 'ListItem', position: 3, name: guide.title, item: pageUrl },
     ],
   };
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: guide.faq.map((item) => ({
-      '@type': 'Question',
-      name: item.question,
-      acceptedAnswer: { '@type': 'Answer', text: plainText(item.answer) },
-    })),
-  };
 
   return (
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       <article>
         <header className="shell guide-hero">

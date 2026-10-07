@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getPlaylists } from '../lib/playlist-os';
+import { getPlaylists, networkSummary } from '../lib/playlist-os';
 import { assessPlaylistFollowers, describeFollowersPublic, networkFollowerTotals } from '../lib/source-health';
 import { siteUrl } from '../lib/site-url';
 
@@ -40,7 +40,7 @@ export default async function HomePage() {
         || a.display_order - b.display_order,
     )
     .slice(0, 4);
-  const networkCount = network.length || 18;
+  const summary = networkSummary(playlists);
 
   return (
     <main>
@@ -53,7 +53,7 @@ export default async function HomePage() {
             artists, and records with a real point of view.
           </p>
           <p className="hero-note">
-            Listen to new music, explore {networkCount} curated playlists, submit a track, or discover the
+            Listen to new music, explore {summary ? summary.total + ' curated playlists' : 'our curated playlists'}, submit a track, or discover the
             story behind Middle Child.
           </p>
           <div className="actions">
@@ -81,7 +81,11 @@ export default async function HomePage() {
 
       <section className="proof-strip" aria-label="BVSS FVM overview">
         <div className="shell proof-grid">
-          <div><span>Playlist network</span><strong>{networkCount} active playlists</strong></div>
+          <div>
+            <span>BVSS FVM + CuratorOS network</span>
+            <strong>{summary ? summary.total + ' active playlists' : 'Active playlists'}</strong>
+            {summary && summary.curatorOS > 0 && <small>{summary.bvss} BVSS FVM · {summary.curatorOS} CuratorOS</small>}
+          </div>
           <div>
             <span>Measured audience{followerTotals.counted ? ' · ' + followerTotals.counted + ' of ' + followerTotals.monitored + ' playlists' : ''}</span>
             <strong>{followerTotals.counted ? formatNumber(followerTotals.total) + ' followers' : 'Measuring'}</strong>
@@ -178,7 +182,7 @@ export default async function HomePage() {
               <span className="card-index">02</span>
               <h3>Discover playlists</h3>
               <p>
-                Browse {networkCount} human-curated playlists by genre, mood, activity, and curator —
+                Browse {summary ? summary.total + ' ' : ''}human-curated playlists by genre, mood, activity, and curator —
                 from the BVSS FVM electronic catalog to CuratorOS discovery, focus, workout, pop, indie,
                 R&B, rock, country, and more.
               </p>

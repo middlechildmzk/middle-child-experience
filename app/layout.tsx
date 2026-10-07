@@ -148,6 +148,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Link href="/about">About</Link>
             <Link href="/learn">Learn</Link>
             <Link href="/submit">Submit music</Link>
+            <Link href="/free-spotify-playlist-submission">Free playlist submission</Link>
             <a href="mailto:hello@bvssfvm.com">Contact</a>
           </div>
           <p>© 2026 BVSS FVM. All rights reserved.</p>

@@ -150,3 +150,11 @@
 .learn-topic{margin-top:36px}.learn-topic-heading{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
 @media (max-width:640px){.guide-steps li{padding-left:56px}.guide-callout{padding:18px}}
 .guide-layout>*{min-width:0}
+.proof-grid small{color:var(--muted);font-size:12px}
+/* Free submission landing */
+.free-submission-disclosure{font-weight:800;font-size:15px;color:var(--text);margin:18px 0 0}
+.playlist-card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:18px}
+.playlist-card-closed{font-size:13px;color:var(--muted)}
+.free-submission-checklist{margin:0;padding-left:18px;display:grid;gap:10px;color:var(--muted);line-height:1.55;font-size:15px}
+.free-submission-layout{padding-top:24px}
+.free-submission-disclosure-list p{margin-top:0}

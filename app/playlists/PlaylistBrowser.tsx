@@ -9,7 +9,16 @@ function unique(values: string[]) {
   return Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
 }
 
-export default function PlaylistBrowser({ playlists }: { playlists: PlaylistRecord[] }) {
+// mode 'submit' (used by /free-spotify-playlist-submission) keeps the same
+// registry and filters but gives every card a direct, free submit action that
+// pre-selects the playlist in the existing /submit flow.
+export default function PlaylistBrowser({
+  playlists,
+  mode = 'browse',
+}: {
+  playlists: PlaylistRecord[];
+  mode?: 'browse' | 'submit';
+}) {
   const [query, setQuery] = useState('');
   const [genre, setGenre] = useState('all');
   const [mood, setMood] = useState('all');
@@ -120,7 +129,58 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
 
       {filtered.length ? (
         <div className="playlist-grid">
-          {filtered.map((playlist) => (
+          {filtered.map((playlist) => mode === 'submit' ? (
+            <article className="playlist-card playlist-card-submit" key={playlist.id}>
+              {playlist.cover_asset_url ? (
+                <img
+                  src={playlist.cover_asset_url}
+                  alt={playlist.canonical_name + ' playlist cover'}
+                  loading="lazy"
+                />
+              ) : <div className="playlist-art-placeholder" aria-hidden="true" />}
+              <div className="playlist-card-body">
+                <p className="eyebrow">
+                  {playlist.primary_genre}
+                  {playlist.network_owner_type === 'partner' && playlist.bvss_curator_profiles?.display_name
+                    ? ' · ' + playlist.bvss_curator_profiles.display_name
+                    : ''}
+                </p>
+                <h3>{playlist.canonical_name}</h3>
+                <p>{playlist.description}</p>
+                <div className="chip-row">
+                  {playlist.moods.slice(0, 3).map((value) => <span className="chip" key={value}>{value}</span>)}
+                </div>
+                <div className="playlist-card-proof">
+                  <strong title={describeFollowersPublic(playlist).detail || undefined} data-follower-state={describeFollowersPublic(playlist).state}>
+                    {describeFollowersPublic(playlist).label}
+                  </strong>
+                  <span>
+                    {playlist.current_track_count != null
+                      ? playlist.current_track_count.toLocaleString() + ' tracks'
+                      : 'Track count syncing'}
+                  </span>
+                </div>
+                <p className="playlist-card-meta">
+                  Updated {playlist.update_cadence} · Submissions {playlist.submission_status}
+                </p>
+                {!!playlist.anchor_artists.length && (
+                  <small className="playlist-card-sounds">
+                    Sounds like: {playlist.anchor_artists.slice(0, 3).join(', ')}
+                  </small>
+                )}
+                <div className="playlist-card-actions">
+                  {playlist.submission_status === 'open' ? (
+                    <Link className="button button-small" href={'/submit?playlist=' + encodeURIComponent(playlist.slug)}>
+                      Submit free
+                    </Link>
+                  ) : (
+                    <span className="playlist-card-closed">Submissions {playlist.submission_status}</span>
+                  )}
+                  <Link className="button button-small button-secondary" href={'/playlists/' + playlist.slug}>View playlist</Link>
+                </div>
+              </div>
+            </article>
+          ) : (
             <Link className="playlist-card" href={'/playlists/' + playlist.slug} key={playlist.id}>
               {playlist.cover_asset_url ? (
                 <img
