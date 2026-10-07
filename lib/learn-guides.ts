@@ -489,6 +489,7 @@ export const guides: LearnGuide[] = [
     related: [
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for and what accept, hold and decline mean.' },
+      { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools and a release-by-release plan.' },
       { href: '/playlists/collections', label: 'Playlist collections', detail: 'Browse playlists by genre, mood and moment.' },
     ],
     sources: [
@@ -499,6 +500,113 @@ export const guides: LearnGuide[] = [
       { label: 'Artificial streaming and paid 3rd-party services that guarantee streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/', accessed: '2026-10-07' },
       { label: 'Seeing playlists you’re added to', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/seeing-playlists-your-music-is-on/', accessed: '2026-10-07' },
       { label: 'Track monetization eligibility', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/track-monetization-eligibility/', accessed: '2026-10-07' },
+    ],
+  },
+  {
+    slug: 'free-spotify-promotion',
+    topic: 'Free Music Promotion',
+    published: '2026-10-07',
+    updated: '2026-10-07',
+    seoTitle: 'Free Spotify Promotion: A Practical Plan Without Buying Streams',
+    title: 'Free Spotify Promotion for Artists: A Practical Plan',
+    description: 'Free Spotify promotion that is real: Spotify’s own free artist tools, free playlist submission and your audience, in a release-by-release plan. No bots.',
+    eyebrow: 'Free music promotion · Artist plan',
+    lead: 'Free Spotify promotion is real, but it is a set of tools and habits, not a service you buy. Spotify gives every artist free tools, independent curators accept free submissions, and your own listeners do the rest. This is the plan we would follow, release by release.',
+    sections: [
+      {
+        heading: 'What free promotion can and can’t do',
+        paragraphs: [
+          'Free promotion puts your music in front of people who might care about it. It cannot promise numbers. Anything that promises streams or placements in exchange for money is not promotion, and [Spotify says](https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/) using those services can get your music removed.',
+        ],
+        table: {
+          caption: 'Free, paid and the things to avoid',
+          columns: ['Category', 'Examples', 'Verdict'],
+          rows: [
+            ['Free tools from Spotify', 'Editorial pitching, Release Radar via your pitch, Artist Pick, Canvas, Promo Cards, Spotify Codes, Countdown Pages (if eligible)', 'Use all that apply'],
+            ['Free outside Spotify', 'Independent playlist submission, your own channels, fans sharing your link', 'Core of the plan'],
+            ['Paid tools from Spotify', 'Marquee and Showcase display campaigns, Spotify Ads Manager', 'Legitimate, optional, not needed to start'],
+            ['Services selling streams or placements', 'Bot plays, paid playlist adds', 'Avoid: against Spotify’s terms'],
+          ],
+        },
+      },
+      {
+        heading: 'Before release: set up the free tools',
+        paragraphs: [
+          'Most of the free leverage on Spotify happens before release day, because editorial pitching closes once a song is live.',
+        ],
+        steps: [
+          { title: 'Deliver early and pitch one song', body: 'Get the release to your distributor early, then pitch one unreleased song in Spotify for Artists at least 7 days before release. Even if editors pass, Spotify adds the pitched song to your followers’ Release Radar. The full rules are in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).' },
+          { title: 'Add a Canvas', body: 'Canvas is a 3 to 8 second vertical loop that replaces your artwork in the Now Playing view on mobile. Spotify lets you add it to unreleased tracks too, so it is ready on release day.' },
+          { title: 'Set up a Countdown Page if you qualify', body: 'For a new album or EP (not a single), artists with at least 3,000 monthly active listeners can create a Countdown Page. Fans can pre-save from your profile, and on release day Spotify notifies everyone who pre-saved and adds it to their library.' },
+          { title: 'Line up your independent playlist list', body: 'Find playlists whose current songs sit naturally next to yours and note how each accepts submissions. Curators that take unreleased music can hear it now, including the playlists on our [free submission page](/free-spotify-playlist-submission).' },
+        ],
+      },
+      {
+        heading: 'Release week: point everything at Spotify',
+        paragraphs: [
+          'Release week is about turning attention into followers, because followers are who Spotify delivers your next releases to through Release Radar.',
+        ],
+        steps: [
+          { title: 'Pin the release as your Artist Pick', body: 'Artist Pick sits at the top of your profile and stays live for 180 days unless you change it. Pin the new song or release so every profile visit lands on it.' },
+          { title: 'Share it in a format people stop for', body: 'Use a Promo Card or your own artwork with your Spotify link, and Spotify Codes on anything physical. Spotify’s own advice is that sharing helps turn listeners into followers.' },
+          { title: 'Ask for the follow, not just the stream', body: 'A follow means your next release reaches that person through Release Radar. Say so plainly when you share.' },
+          { title: 'Submit to independent playlists', body: 'Send the song to the playlists on your list through their own channels. Submitting to our network is free, and every playlist it fits gets a human decision.' },
+        ],
+        callout: { kind: 'submit' },
+      },
+      {
+        heading: 'After release: measure, then plan the next one',
+        paragraphs: [
+          'In Spotify for Artists, Music then Playlists shows which playlists sent you listeners over the last 12 months. Use it to see which independent playlists actually moved the song, and thank those curators.',
+          'Then start the cycle again. Pitching only works for unreleased songs, so the best free promotion for this release is often getting the next one pitched on time.',
+        ],
+      },
+      {
+        heading: '“Free” offers to be careful with',
+        paragraphs: [
+          'Some offers use the word free to get you in the door. These are the patterns we warn artists about. Our guide to [getting on Spotify playlists](/learn/how-to-get-on-spotify-playlists) has a fuller red-flag table.',
+        ],
+        bullets: [
+          'A free trial of streams or followers, with a paid package afterwards. Spotify’s terms prohibit artificial streams whether they were free or paid.',
+          'Free placement in exchange for a follow-for-follow or stream-for-stream swap. These do not build real listeners.',
+          'Requests for your Spotify for Artists or distributor login to “set up” promotion. Never share account access.',
+          'Free submission that turns into a fee to be considered. Read the terms before you send anything.',
+        ],
+      },
+      {
+        heading: 'A zero-budget routine you can repeat',
+        paragraphs: [
+          'Promotion compounds when it is a habit rather than a launch event. A simple routine that costs nothing:',
+        ],
+        bullets: [
+          'Every release: pitch one song on time, set a Canvas, update your Artist Pick.',
+          'Every release: submit to independent playlists that genuinely fit, through their own channels.',
+          'Every week: share something real about the music (a clip, the story, a live take) with your Spotify link, and ask for the follow.',
+          'Every month: check the Playlists view in Spotify for Artists and keep a short list of curators who have supported you.',
+        ],
+      },
+    ],
+    faq: [
+      { question: 'Does free Spotify promotion actually work?', answer: 'It can, but nothing honest comes with a number attached. The free tools help the fans and followers you already have hear the release, and free playlist submission gets your song in front of curators who actually listen.' },
+      { question: 'Should I pay for Spotify promotion?', answer: 'Spotify’s own paid tools, such as Marquee, Showcase and Ads Manager, are legitimate. Third-party services that sell guaranteed streams or playlist placements are not, according to Spotify.' },
+      { question: 'Is Canvas free?', answer: 'Canvas is added in Spotify for Artists by the first main artist (Admin or Editor). Spotify’s help article does not list a fee.' },
+      { question: 'Can I use Countdown Pages for a single?', answer: 'No. Countdown Pages are for new, original albums and EPs, and the artist needs at least 3,000 monthly active listeners.' },
+      { question: 'Is submitting to playlists free?', answer: 'Many independent curators accept free submissions, including every playlist in the BVSS FVM and CuratorOS network. Free submission means a free review, not guaranteed placement.' },
+    ],
+    related: [
+      { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
+      { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial pitching, algorithmic playlists and independent curators.' },
+      { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for.' },
+    ],
+    sources: [
+      { label: 'Promoting music on Spotify', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/by-en/artists/article/promoting-music-on-spotify/', accessed: '2026-10-07' },
+      { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-07' },
+      { label: 'Adding a Canvas to Spotify', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/adding-a-canvas/', accessed: '2026-10-07' },
+      { label: 'Getting started with Countdown Pages on Spotify', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/getting-started-with-countdown-pages-on-spotify/', accessed: '2026-10-07' },
+      { label: 'Managing your Artist Pick', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/managing-your-artist-pick/', accessed: '2026-10-07' },
+      { label: 'Sharing your music', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/cm-en/artists/article/sharing-your-music/', accessed: '2026-10-07' },
+      { label: 'Seeing playlists you’re added to', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/seeing-playlists-your-music-is-on/', accessed: '2026-10-07' },
+      { label: 'Artificial streaming and paid 3rd-party services that guarantee streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/', accessed: '2026-10-07' },
     ],
   }
 ];

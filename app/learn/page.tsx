@@ -4,7 +4,7 @@ import { guides, guidesByTopic } from '../../lib/learn-guides';
 import { siteUrl } from '../../lib/site-url';
 
 export const metadata: Metadata = {
-  title: 'Spotify Promotion & Playlist Guides for Independent Artists',
+  title: 'Spotify Promotion & Playlist Guides',
   description: 'First-party guides from BVSS FVM curators: getting on Spotify playlists, free promotion that works, how submissions are reviewed, and genre curation.',
   alternates: { canonical: '/learn' },
 };
