@@ -143,6 +143,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Link href="/music">Music</Link>
             <Link href="/licensing">Licensing</Link>
             <Link href="/playlists">Playlists</Link>
+            <Link href="/playlists/collections">Collections</Link>
             <Link href="/curators">Curators</Link>
             <Link href="/about">About</Link>
             <Link href="/learn">Learn</Link>
