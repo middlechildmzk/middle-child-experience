@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import { getPlaylists } from '../../../../lib/playlist-os';
 import {
   getPlaylistCollection,
-  playlistCollections,
   playlistsInCollection,
   relatedCollections,
 } from '../../../../lib/playlist-collections';
