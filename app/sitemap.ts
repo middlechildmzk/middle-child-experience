@@ -4,6 +4,7 @@ import { canIndexSite, siteUrl } from '../lib/site-url';
 import { getPlaylists } from '../lib/playlist-os';
 import { guides } from '../lib/learn-guides';
 import { getPublicCurators } from '../lib/curator-network';
+import { playlistCollections } from '../lib/playlist-collections';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!canIndexSite) return [];
@@ -40,6 +41,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: siteUrl + '/mercy', lastModified: new Date('2026-08-23T00:00:00-05:00'), changeFrequency: 'monthly', priority: 0.92 },
     { url: siteUrl + '/licensing', changeFrequency: 'monthly', priority: 0.88 },
     { url: siteUrl + '/playlists', changeFrequency: 'weekly', priority: 0.85 },
+    { url: siteUrl + '/playlists/collections', changeFrequency: 'weekly', priority: 0.84 },
+    ...playlistCollections.map((collection) => ({
+      url: siteUrl + '/playlists/collections/' + collection.slug,
+      changeFrequency: 'weekly' as const,
+      priority: 0.81,
+    })),
     ...playlistEntries,
     { url: siteUrl + '/curators', changeFrequency: 'weekly', priority: 0.76 },
     { url: siteUrl + '/about', changeFrequency: 'monthly', priority: 0.82 },
