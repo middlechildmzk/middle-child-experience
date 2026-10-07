@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { playlistApiBase } from '../../../lib/playlist-os';
 import PlacementShareButton from './PlacementShareButton';
+import { playlistCuratorLabel } from '../../../lib/playlist-identity';
 
 export default function SubmissionStatus({ token }: { token?: string }) {
   const [data, setData] = useState<any>(null);
@@ -70,7 +71,7 @@ export default function SubmissionStatus({ token }: { token?: string }) {
               <article className="card" key={route.playlist_name + ':' + index}>
                 <span className="status-pill">{route.status}</span>
                 <h3>{route.playlist_name}</h3>
-                <p>{route.network_owner_type === 'partner' ? 'Verified playlist curator' : 'BVSS FVM curator'}</p>
+                <p>{playlistCuratorLabel(route)}</p>
                 <small>
                   {route.decision
                     ? 'Decision recorded: ' + route.decision

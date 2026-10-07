@@ -122,3 +122,19 @@ test('200% text zoom and half-width reflow keep navigation usable',async()=>{
   await page.screenshot({path:'test-results/astra-qa/200-percent-text-reflow.png',fullPage:true});
   await page.close();
 });
+
+test('directory and profile identify the in-house team in visible copy, metadata and schema',async()=>{
+  const page=await browser.newPage({viewport:{width:390,height:844}});
+  await page.goto(base+'/curators',{waitUntil:'domcontentloaded'});
+  assert.doesNotMatch(await page.getByRole('heading',{level:1}).innerText(),/Independent curators/);
+  assert.match(await page.locator('.curator-card').filter({hasText:'CuratorOS'}).innerText(),/in-house curation team/);
+  await page.locator('a[href="/curators/curatoros"]').click();
+  await page.waitForURL(base+'/curators/curatoros');
+  assert.match(await page.locator('.curator-profile-hero').innerText(),/in-house curation team/i);
+  assert.doesNotMatch(await page.locator('meta[name="description"]').getAttribute('content'),/independent curator/i);
+  const schema=JSON.parse(await page.locator('script[type="application/ld+json"]').last().textContent());
+  assert.equal(schema.mainEntity['@type'],'Organization');
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+  await page.screenshot({path:'test-results/astra-qa/390-curatoros-profile.png',fullPage:true});
+  await page.close();
+});

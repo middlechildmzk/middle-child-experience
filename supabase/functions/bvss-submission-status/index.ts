@@ -1,3 +1,4 @@
+import { publicStatusDetail } from '../_shared/public-status.ts';
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 function headers(){
@@ -26,7 +27,7 @@ Deno.serve(async(req)=>{
     const [{data:events},{data:routes},{data:placements}]=await Promise.all([
       supabase.from("bvss_submission_status_events").select("event_type,public_label,public_detail,created_at").eq("submission_id",s.id).order("created_at"),
       supabase.from("bvss_submission_routes")
-        .select("id,status,decision,routed_at,decided_at,placement_id,bvss_playlists(slug,canonical_name,network_owner_type)")
+        .select("id,status,decision,routed_at,decided_at,placement_id,bvss_playlists(slug,canonical_name,network_owner_type,bvss_curator_profiles(handle,display_name))")
         .eq("submission_id",s.id).order("routed_at"),
       supabase.from("bvss_playlist_placements")
         .select("id,route_id,status,scheduled_for,accepted_at,added_reported_at,verified_live_at,placed_at,actual_position,verification_source,verification_evidence,ended_at,end_reason")
@@ -40,6 +41,7 @@ Deno.serve(async(req)=>{
         playlist_name:r.bvss_playlists?.canonical_name||"Playlist",
         playlist_slug:r.bvss_playlists?.slug||null,
         network_owner_type:r.bvss_playlists?.network_owner_type||"bvss",
+        bvss_curator_profiles:r.bvss_playlists?.bvss_curator_profiles||null,
         status:r.status,
         decision:r.decision,
         routed_at:r.routed_at,
@@ -84,7 +86,7 @@ Deno.serve(async(req)=>{
         source_url:s.source_url,source_platform:s.source_platform,release_date:s.release_date,
         genre:s.genre,status:s.status,display_status:displayStatus,submitted_at:s.submitted_at,updated_at:s.updated_at,network_opt_in:s.network_opt_in
       },
-      events:events||[],
+      events:(events||[]).map((event:any)=>({...event,public_detail:publicStatusDetail(event.public_detail)})),
       routes:sanitizedRoutes
     }),{headers:h});
   }catch(e){
