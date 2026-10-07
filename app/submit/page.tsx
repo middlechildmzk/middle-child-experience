@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Submit Music to BVSS FVM Playlists',
-  description: 'Submit released or unreleased electronic music to BVSS FVM. Search or paste a Spotify track, or privately upload an unreleased song for human curator review.',
+  description: 'Submit released or unreleased music to verified BVSS FVM and CuratorOS playlists. Search or paste a Spotify track, or privately upload an unreleased song for human curator review.',
   alternates: { canonical: '/submit' },
 };
 
