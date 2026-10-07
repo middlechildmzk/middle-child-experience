@@ -18,13 +18,13 @@ export default function PressPage() {
 
       <section className="press-section press-columns">
         <div><p className="eyebrow">Short bio</p><h2>Music for people carrying more than they show.</h2></div>
-        <div className="press-copy"><p>Middle Child is the emotional electronic project of Minneapolis artist and producer Dan Larson. The sound blends melodic bass, atmospheric future bass, cinematic low-end warmth, guitar textures, and wounded-but-hopeful songwriting.</p></div>
+        <div className="press-copy"><p>Middle Child is an emotional electronic project from Minneapolis. The sound blends melodic bass, atmospheric future bass, cinematic low-end warmth, guitar textures, and wounded-but-hopeful songwriting.</p></div>
       </section>
 
       <section className="press-section press-columns">
         <div><p className="eyebrow">Full bio</p><h2>A project built from feeling, survival, and hope.</h2></div>
         <div className="press-copy">
-          <p>Middle Child began in 2014 after more than a decade of guitar, bands, rap, beat-making, electronic production, and DJing. It became Dan Larson’s outlet for self-expression, therapy, and connecting with listeners navigating mental health, substance-use struggles, grief, and faith.</p>
+          <p>Middle Child began in 2014 after more than a decade of guitar, bands, rap, beat-making, electronic production, and DJing. It became an outlet for self-expression, therapy, and connecting with listeners navigating mental health, substance-use struggles, grief, and faith.</p>
           <p>The project’s 2017 chapter included “Awaken,” “Miracle,” “Bliss,” “Mercy,” and “YOU,” earning support across electronic-music media and reaching listeners around the world. “Mercy” has grown toward one million Spotify streams.</p>
           <p>“Never Alone,” featuring Dan’s own lowly sunday vocal alias, marks Middle Child’s return after years away. Shaped by depression, grief, healing, faith, and a cancer diagnosis, the song moves from isolation toward the realization that even in the darkest moments, we may be more held than we realize.</p>
         </div>

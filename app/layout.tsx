@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     'emotional electronic music',
     'Minneapolis electronic artist',
   ],
-  creator: 'Dan Larson',
+  creator: 'BVSS FVM',
   publisher: 'BVSS FVM',
   icons: {
     icon: '/icon.svg',
@@ -83,7 +83,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         '@id': `${siteUrl}/#organization`,
         name: 'BVSS FVM',
         url: siteUrl,
-        description: 'An independent electronic music label, curator network, and creative home founded by artist and producer Dan Larson.',
+        description: 'Independent music discovery, playlist curation, artist submissions and promotion resources.',
         logo: {
           '@type': 'ImageObject',
           url: `${siteUrl}/icon.svg`,
@@ -91,7 +91,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           caption: 'BVSS FVM',
         },
         image: `${siteUrl}/icon.svg`,
-        founder: { '@type': 'Person', name: 'Dan Larson' },
         sameAs: [
           'https://open.spotify.com/user/larsunmusic',
           'https://www.instagram.com/bvssfvm/',
@@ -105,7 +104,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         name: 'Middle Child',
         url: `${siteUrl}/artists/middle-child`,
         genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
-        member: { '@type': 'Person', name: 'Dan Larson' },
         sameAs: [
           'https://open.spotify.com/artist/2hp8yAzOnYRUFMCdot9tzN',
           'https://www.instagram.com/middlechildmzk/',

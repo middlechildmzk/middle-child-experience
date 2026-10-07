@@ -24,7 +24,6 @@ export default function MiddleChildPage() {
     '@id': `${pageUrl}#artist`,
     name: 'Middle Child',
     url: pageUrl,
-    member: { '@type': 'Person', name: 'Dan Larson' },
     foundingDate: '2014',
     foundingLocation: { '@type': 'Place', name: 'Minneapolis, Minnesota, United States' },
     genre: ['Melodic Bass', 'Future Bass', 'Emotional Electronic Music'],
@@ -60,7 +59,7 @@ export default function MiddleChildPage() {
         <div className="shell">
           <p className="eyebrow">About</p>
           <h2>Wounded, cinematic, and hopeful.</h2>
-          <p className="lead">Middle Child is the electronic music project of Minneapolis artist and producer Dan Larson. The sound blends melodic bass, future bass, cinematic atmosphere, guitar warmth, intimate songwriting, and drops that bloom instead of attack.</p>
+          <p className="lead">Middle Child is an electronic music project from Minneapolis. The sound blends melodic bass, future bass, cinematic atmosphere, guitar warmth, intimate songwriting, and drops that bloom instead of attack.</p>
           <div className="grid">
             <article className="card"><h3>Sound</h3><p>Melodic bass, emotional future bass, cinematic electronics, organic guitar texture, and warm low end.</p></article>
             <article className="card"><h3>Story</h3><p>Music shaped by grief, depression, faith, healing, and the determination to make something useful from difficult seasons.</p></article>
