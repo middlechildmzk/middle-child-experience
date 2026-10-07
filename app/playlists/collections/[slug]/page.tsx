@@ -13,10 +13,6 @@ import { describeFollowersPublic } from '../../../../lib/source-health';
 
 export const dynamic = 'force-dynamic';
 
-export function generateStaticParams() {
-  return playlistCollections.map((collection) => ({ slug: collection.slug }));
-}
-
 export async function generateMetadata({
   params,
 }: {
