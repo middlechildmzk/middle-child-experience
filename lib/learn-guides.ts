@@ -491,6 +491,7 @@ export const guides: LearnGuide[] = [
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for and what accept, hold and decline mean.' },
       { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools and a release-by-release plan.' },
       { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'How the common schemes work and what to do if a suspicious playlist adds you.' },
+      { href: '/learn/find-spotify-playlist-curators', label: 'Find Spotify playlist curators', detail: 'Find playlists that fit and reach curators through their own channels.' },
       { href: '/playlists/collections', label: 'Playlist collections', detail: 'Browse playlists by genre, mood and moment.' },
     ],
     sources: [
@@ -729,6 +730,106 @@ export const guides: LearnGuide[] = [
       { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-07' },
       { label: 'Seeing playlists you’re added to', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/seeing-playlists-your-music-is-on/', accessed: '2026-10-07' },
       { label: 'Promoting music on Spotify', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/by-en/artists/article/promoting-music-on-spotify/', accessed: '2026-10-07' },
+    ],
+  },
+  {
+    slug: 'find-spotify-playlist-curators',
+    topic: 'Playlist Promotion',
+    published: '2026-10-07',
+    updated: '2026-10-07',
+    seoTitle: 'How to Find Spotify Playlist Curators (and Check the Fit)',
+    title: 'How to Find Spotify Playlist Curators and Check Fit',
+    description: 'Find Spotify playlists that genuinely fit your song, check they are real and active, and reach curators through the channels they publish. No scraping.',
+    eyebrow: 'Playlist promotion · Curator discovery',
+    lead: 'Finding playlist curators is easy. Finding the right ones, and reaching them the way they have asked to be reached, is the actual work. This guide covers both, with one rule throughout: use the submission routes and contacts curators publish for that purpose, and nothing else.',
+    sections: [
+      {
+        heading: 'Start from the song, not from a list',
+        paragraphs: [
+          'Before you search, write down three things about the track: the genre a listener would hear (not the one you hope to be filed under), two or three moods that really describe it, and a few artists whose music genuinely overlaps with yours. These become your search terms and your fit test. A long list of big playlists in the wrong lane is worth less than a handful that fit.',
+        ],
+      },
+      {
+        heading: 'Where to find playlists that fit',
+        paragraphs: [],
+        steps: [
+          { title: 'Search Spotify the way a listener would', body: 'Spotify’s own guidance is that listener-made playlists are found by searching keywords. Search for your sound and mood (“melancholic indie pop”, “late night drive electronic”), not just the genre name, and open the playlists that come up.' },
+          { title: 'Use the artists you sound like', body: 'Spotify notes you can view playlists on artist profiles. Look at the profiles of artists your music overlaps with, and at their Fans Also Like section, which Spotify builds from fans’ listening habits, to widen the circle of comparable artists.' },
+          { title: 'Use networks and directories that list open submissions', body: 'Some curator networks publish which playlists are open and how to submit. Our [free submission page](/free-spotify-playlist-submission) does this for every BVSS FVM and CuratorOS playlist, with genre, mood and moment filters and the artists each playlist sounds like.' },
+          { title: 'Watch where curators announce open submissions', body: 'Some curators post calls for submissions on their websites, newsletters or community forums. Follow the rules of each space and respond where you are invited to.' },
+        ],
+      },
+      {
+        heading: 'Check the fit before you contact anyone',
+        paragraphs: [
+          'Open each playlist and listen for a few minutes. The question is whether your song would sit naturally in that sequence for that listener.',
+        ],
+        table: {
+          caption: 'A quick fit check',
+          columns: ['Check', 'Good sign', 'Move on if'],
+          rows: [
+            ['Sound', 'Songs share a clear sound or mood that matches yours', 'Tracks have nothing in common'],
+            ['Activity', 'Recently updated, with newer releases mixed in', 'Nothing has changed in a long time'],
+            ['Curator', 'You can tell who runs it and what they care about', 'There is no way to tell who is behind it'],
+            ['Submissions', 'A published way to submit, and it fits your release stage', 'It says it does not accept submissions'],
+            ['Signals', 'Nothing about it promises results', 'It sells placement or streams: see [promotion scams](/learn/spotify-promotion-scams)'],
+          ],
+        },
+      },
+      {
+        heading: 'Reach curators ethically, through their own channels',
+        paragraphs: [
+          'Some guides suggest piecing together a curator’s personal accounts, guessing email addresses or buying contact lists. Do not. It treats someone’s private information as yours to use, it annoys the people you want to win over, and it rarely works. Curators who want submissions tell you how to send them.',
+        ],
+        table: {
+          caption: 'Ethical outreach',
+          columns: ['Do', 'Do not'],
+          rows: [
+            ['Use a submission link or form in the playlist description or on the curator’s website', 'Scrape, guess or buy email addresses'],
+            ['Use a business contact the curator published for submissions', 'Message someone’s personal profiles across several platforms'],
+            ['Submit through a platform where the curator lists their playlist', 'Send the same mass email to everyone'],
+            ['Follow each curator’s instructions on format and timing', 'Follow up repeatedly or push after a no'],
+          ],
+        },
+        callout: {
+          kind: 'note',
+          title: 'No published channel?',
+          body: 'Then the curator is not asking for submissions right now. Move on to a playlist that is.',
+        },
+      },
+      {
+        heading: 'Keep a simple tracker',
+        paragraphs: [
+          'A spreadsheet is enough: playlist name and link, how it accepts submissions, the date you submitted, the outcome, and a note on fit. It stops you sending the same song twice and shows you, release after release, which curators are a genuine match for your sound.',
+        ],
+      },
+      {
+        heading: 'Using a curator network',
+        paragraphs: [
+          'Networks save time because the fit information is in one place and one submission can reach several playlists. Check who curates them and whether anything about the decision is for sale.',
+          'In our case: BVSS FVM playlists are programmed by BVSS FVM, and CuratorOS playlists by the in-house CuratorOS team, which operates alongside us. They are not independent third-party curators and none of them are Spotify editorial playlists. Submission is free, and each playlist your song fits gets a human decision.',
+        ],
+        callout: { kind: 'submit' },
+      },
+    ],
+    faq: [
+      { question: 'How do I find a playlist curator’s email?', answer: 'Only use contact details the curator published for submissions, such as a link in the playlist description or on their website. If there is no published channel, they are not taking submissions right now.' },
+      { question: 'Is it OK to message curators on social media?', answer: 'Only where they invite submissions there. Sending unsolicited messages to someone’s personal accounts usually works against you.' },
+      { question: 'Are curator directories worth using?', answer: 'They can save time. Check who runs the playlists, whether you are paying for review or being sold a result, and whether the playlists actually fit your song.' },
+      { question: 'How many curators should I contact per release?', answer: 'As many as genuinely fit, and no more. A short list of strong matches gets better results and better relationships than a mass send.' },
+      { question: 'How can I tell if a playlist is real?', answer: 'Look for a coherent sound, recent updates and an identifiable curator, and avoid anything that sells streams or placement. Our [scams guide](/learn/spotify-promotion-scams) covers Spotify’s own warning signs.' },
+    ],
+    related: [
+      { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with fit filters and free submission.' },
+      { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial, algorithmic and independent routes.' },
+      { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'Red flags to check before you submit or pay.' },
+      { href: '/playlists/collections', label: 'Playlist collections', detail: 'Browse playlists by genre, mood and moment.' },
+    ],
+    sources: [
+      { label: 'Find playlists on Spotify', publisher: 'Spotify Support', href: 'https://support.spotify.com/us/article/find-playlists/', accessed: '2026-10-07' },
+      { label: 'Fans Also Like', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/fans-also-like/', accessed: '2026-10-07' },
+      { label: 'Types of Spotify playlists', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/types-of-spotify-playlists/', accessed: '2026-10-07' },
+      { label: 'Artificial streaming', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/artificial-streaming', accessed: '2026-10-07' },
     ],
   }
 ];
