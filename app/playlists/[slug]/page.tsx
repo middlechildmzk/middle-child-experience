@@ -60,6 +60,12 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
   const curator = playlist.network_owner_type === 'partner' ? playlist.bvss_curator_profiles : null;
   const curatorLabel = curator?.display_name || 'BVSS FVM';
   const curatorHref = curator?.handle ? '/curators/' + curator.handle : null;
+  const anchorNames = playlist.anchor_artists.slice(0, 6);
+  const anchorReference = anchorNames.length
+    ? ' and uses artists such as ' + anchorNames.slice(0, 5).join(', ') + ' as reference points'
+    : '';
+  const adjacentGenres = playlist.secondary_genres.slice(0, 4);
+  const adjacentPhrase = adjacentGenres.length ? ' with adjacent shades of ' + adjacentGenres.join(', ') : '';
 
   const schema = {
     '@context': 'https://schema.org',
@@ -87,7 +93,7 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
   const faq = [
     {
       question: 'What kind of music is on ' + playlist.canonical_name + '?',
-      answer: 'This BVSS FVM playlist centers on ' + [playlist.primary_genre, ...playlist.secondary_genres].join(', ') + '. The curation leans ' + playlist.moods.join(', ') + ' and uses artists such as ' + playlist.anchor_artists.slice(0, 5).join(', ') + ' as reference points while leaving room for emerging records.',
+      answer: 'This playlist centers on ' + [playlist.primary_genre, ...playlist.secondary_genres].join(', ') + '. The curation leans ' + playlist.moods.join(', ') + anchorReference + ' while leaving room for emerging records.',
     },
     {
       question: 'When is this playlist updated?',
@@ -182,7 +188,7 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
             <p className="eyebrow">Curation philosophy</p>
             <h3>What belongs here</h3>
             <p>{playlist.curation_philosophy}</p>
-            <p><strong>Anchor artists:</strong> {playlist.anchor_artists.join(', ')}</p>
+            {!!playlist.anchor_artists.length && <p><strong>Anchor artists:</strong> {playlist.anchor_artists.join(', ')}</p>}
           </article>
           <article className="card">
             <p className="eyebrow">Listener intent</p>
@@ -209,11 +215,13 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
           </div>
           <div>
             <p className="lead compact-lead">
-              {playlist.canonical_name} is built around {playlist.primary_genre.toLowerCase()} with adjacent shades of {playlist.secondary_genres.slice(0, 4).join(', ')}.
-              The goal is not to collect every release in the genre; it is to create a coherent listening experience that feels {playlist.moods.slice(0, 4).join(', ').toLowerCase()} from front to back.
+              {playlist.canonical_name} is built around {playlist.primary_genre.toLowerCase()}{adjacentPhrase}.
+              The goal is not to collect every release in the lane; it is to create a coherent listening experience that feels {playlist.moods.slice(0, 4).join(', ').toLowerCase()} from front to back.
             </p>
             <p className="playlist-editorial">
-              It is curated for moments like {playlist.activities.slice(0, 5).join(', ').toLowerCase()}. Artists such as {playlist.anchor_artists.slice(0, 6).join(', ')} help define the lane, while independent and emerging records are judged on the same core question: does the track strengthen the experience of this playlist?
+              It is curated for moments like {playlist.activities.slice(0, 5).join(', ').toLowerCase()}. {anchorNames.length
+                ? 'Artists such as ' + anchorNames.join(', ') + ' help define the lane, while independent and emerging records'
+                : 'Independent and emerging records'} are judged on the same core question: does the track strengthen the experience of this playlist?
             </p>
           </div>
         </div>
@@ -254,7 +262,7 @@ export default async function PlaylistPage({ params }: { params: Promise<{ slug:
 
       <section className="section">
         <div className="shell">
-          <p className="eyebrow">Related BVSS FVM playlists</p>
+          <p className="eyebrow">Related playlists</p>
           <div className="related-playlists">
             {related.map((item) => (
               <Link className="card" href={'/playlists/' + item.slug} key={item.id}>

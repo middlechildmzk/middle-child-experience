@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Independent Playlist Curators',
-  description: 'Meet verified independent electronic music curators participating in the BVSS FVM Curator Network Beta.',
+  description: 'Meet verified independent playlist curators participating in the BVSS FVM Curator Network across genres, moods and listening moments.',
   alternates: { canonical: '/curators' },
 };
 

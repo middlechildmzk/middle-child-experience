@@ -14,6 +14,7 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
   const [genre, setGenre] = useState('all');
   const [mood, setMood] = useState('all');
   const [activity, setActivity] = useState('all');
+  const [curator, setCurator] = useState('all');
 
   const genres = useMemo(
     () => unique(playlists.flatMap((p) => [p.primary_genre, ...p.secondary_genres])),
@@ -21,6 +22,14 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
   );
   const moods = useMemo(() => unique(playlists.flatMap((p) => p.moods)), [playlists]);
   const activities = useMemo(() => unique(playlists.flatMap((p) => p.activities)), [playlists]);
+  const curators = useMemo(
+    () => unique(playlists.map((p) =>
+      p.network_owner_type === 'partner' && p.bvss_curator_profiles?.display_name
+        ? p.bvss_curator_profiles.display_name
+        : 'BVSS FVM',
+    )),
+    [playlists],
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -28,6 +37,9 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
       const genreValues = [p.primary_genre, ...p.secondary_genres].map((v) => v.toLowerCase());
       const moodValues = p.moods.map((v) => v.toLowerCase());
       const activityValues = p.activities.map((v) => v.toLowerCase());
+      const curatorName = p.network_owner_type === 'partner' && p.bvss_curator_profiles?.display_name
+        ? p.bvss_curator_profiles.display_name
+        : 'BVSS FVM';
       const haystack = [
         p.canonical_name,
         p.subtitle,
@@ -37,20 +49,23 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
         ...p.moods,
         ...p.activities,
         ...p.anchor_artists,
+        curatorName,
       ].join(' ').toLowerCase();
 
       return (!q || haystack.includes(q))
         && (genre === 'all' || genreValues.includes(genre.toLowerCase()))
         && (mood === 'all' || moodValues.includes(mood.toLowerCase()))
-        && (activity === 'all' || activityValues.includes(activity.toLowerCase()));
+        && (activity === 'all' || activityValues.includes(activity.toLowerCase()))
+        && (curator === 'all' || curatorName === curator);
     });
-  }, [playlists, query, genre, mood, activity]);
+  }, [playlists, query, genre, mood, activity, curator]);
 
   function reset() {
     setQuery('');
     setGenre('all');
     setMood('all');
     setActivity('all');
+    setCurator('all');
   }
 
   return (
@@ -87,11 +102,18 @@ export default function PlaylistBrowser({ playlists }: { playlists: PlaylistReco
             {activities.map((value) => <option key={value} value={value}>{value}</option>)}
           </select>
         </div>
+        <div className="field">
+          <label htmlFor="playlist-curator">Curator</label>
+          <select id="playlist-curator" value={curator} onChange={(e) => setCurator(e.target.value)}>
+            <option value="all">All curators</option>
+            {curators.map((value) => <option key={value} value={value}>{value}</option>)}
+          </select>
+        </div>
       </div>
 
       <div className="playlist-browser-summary" aria-live="polite">
         <span><strong>{filtered.length}</strong> of {playlists.length} playlists</span>
-        {(query || genre !== 'all' || mood !== 'all' || activity !== 'all') && (
+        {(query || genre !== 'all' || mood !== 'all' || activity !== 'all' || curator !== 'all') && (
           <button className="text-button" type="button" onClick={reset}>Clear filters</button>
         )}
       </div>

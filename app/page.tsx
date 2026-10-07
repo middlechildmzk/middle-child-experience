@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'BVSS FVM | Independent Electronic Music',
     description:
-      'Independent electronic releases, a human-curated playlist network, artist submissions, licensing, and music discovery.',
+      'Independent electronic releases, a genre-spanning human-curated playlist network, artist submissions, licensing, and music discovery.',
     url: siteUrl,
     type: 'website',
     siteName: 'BVSS FVM',
@@ -177,8 +177,9 @@ export default async function HomePage() {
               <span className="card-index">02</span>
               <h3>Discover playlists</h3>
               <p>
-                Browse {networkCount} human-curated electronic playlists by genre, mood, and listening
-                moment — from emotional bass to trance, DnB, house, UK garage, and more.
+                Browse {networkCount} human-curated playlists by genre, mood, activity, and curator —
+                from the BVSS FVM electronic catalog to CuratorOS discovery, focus, workout, pop, indie,
+                R&B, rock, country, and more.
               </p>
               <span className="card-link">Find your playlist →</span>
             </Link>
@@ -202,16 +203,16 @@ export default async function HomePage() {
         <div className="shell section-split">
           <div>
             <p className="eyebrow">Curator Network Beta</p>
-            <h2>Playlist owners can plug into the same operating system.</h2>
+            <h2>CuratorOS is live inside the BVSS FVM network.</h2>
           </div>
           <div>
             <p className="lead compact-lead">
-              Verified independent curators can add playlists, define fit, receive matched submissions,
-              review tracks, and build transparent response history without giving up editorial control.
+              Explore CuratorOS alongside the BVSS FVM catalog: genre, mood and activity playlists with
+              verified ownership, direct Spotify listening, and one focused artist submission path.
             </p>
             <div className="actions">
-              <Link className="button" href="/curators">Explore curators</Link>
-              <Link className="button button-secondary" href="/curators/apply">Apply for the beta</Link>
+              <Link className="button" href="/curators/curatoros">Explore CuratorOS</Link>
+              <Link className="button button-secondary" href="/curators">Explore curators</Link>
             </div>
           </div>
         </div>
