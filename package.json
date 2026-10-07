@@ -11,7 +11,8 @@
     "bridge:smoke": "node --import tsx --test tests/bridge/*.test.ts tests/bridge/*.test.mjs",
     "test:db": "node --test tests/db/*.test.mjs",
     "test:source-health": "node --import tsx --test tests/source-health/*.test.ts",
-    "test": "npm run bridge:smoke && npm run test:db && npm run test:source-health"
+    "test": "npm run bridge:smoke && npm run test:db && npm run test:source-health && npm run test:learn",
+    "test:learn": "node --import tsx --test tests/learn/*.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
