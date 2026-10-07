@@ -79,6 +79,9 @@ export default async function FreeSpotifyPlaylistSubmissionPage() {
           <Link className="button" href="/submit">Submit your track</Link>
           <a className="button button-secondary" href="#playlists">Browse open playlists</a>
         </div>
+        <p className="fit-checker-prompt">
+          Not sure where your song fits? <Link className="inline-link" href="/tools/playlist-fit-checker">Use the Playlist Fit Checker</Link>.
+        </p>
       </section>
 
       <section className="proof-strip" aria-label="Network overview">

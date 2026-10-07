@@ -8,6 +8,7 @@ import {
   supabasePublishableKey,
   supabaseUrl,
 } from '../../lib/playlist-os';
+import { taxonomyKey, uniqueTaxonomy } from '../../lib/playlist-fit';
 
 const supabase = createClient(supabaseUrl, supabasePublishableKey);
 const audioBucket = 'bvss-submission-audio';
@@ -43,20 +44,6 @@ type Result = {
 
 function isSpotifyTrackUrl(value: string) {
   return /^https:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?track\/[A-Za-z0-9]{22}(?:\?.*)?$/i.test(value.trim());
-}
-
-function taxonomyKey(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-}
-
-function uniqueTaxonomy(values: string[]) {
-  const seen = new Map<string, string>();
-  for (const raw of values) {
-    const value = String(raw || '').trim();
-    const key = taxonomyKey(value);
-    if (key && !seen.has(key)) seen.set(key, value);
-  }
-  return Array.from(seen.values()).sort((a, b) => a.localeCompare(b));
 }
 
 export default function SubmissionForm({
@@ -376,6 +363,19 @@ export default function SubmissionForm({
 
   return (
     <form className="submission-form submission-form-v3" onSubmit={submit}>
+      {initialTarget && initialTarget.submission_status === 'open' && preferred.includes(initialTarget.slug) && (
+        <div className="selected-playlist-panel" role="note" aria-label="Selected playlist">
+          {initialTarget.cover_asset_url
+            ? <img src={initialTarget.cover_asset_url} alt="" width={56} height={56} />
+            : <div className="playlist-art-placeholder" aria-hidden="true" />}
+          <div>
+            <p className="eyebrow">Submitting to</p>
+            <strong>{initialTarget.canonical_name}</strong>
+            <small>{initialTarget.primary_genre}{initialTarget.moods.length ? ' · ' + initialTarget.moods.slice(0, 2).join(', ') : ''}</small>
+          </div>
+          <button type="button" className="text-button" onClick={() => toggle(initialTarget.slug)}>Remove</button>
+        </div>
+      )}
       <section className="song-source-card">
         <div className="source-tabs" role="tablist" aria-label="Release status">
           <button type="button" className={mode === 'released' ? 'source-tab active' : 'source-tab'} onClick={() => changeMode('released')}>
