@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPublicCurator } from '../../../lib/curator-network';
 import { siteUrl } from '../../../lib/site-url';
+import { isHouseCurator } from '../../../lib/playlist-identity';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
   if (!result) return { title: 'Curator not found' };
   return {
     title: result.curator.display_name + ' — Playlist Curator',
-    description: result.curator.bio || 'Verified independent playlist curator in the BVSS FVM Curator Network Beta.',
+    description: result.curator.bio || 'Curator in the BVSS FVM network.',
     alternates: { canonical: '/curators/' + result.curator.handle },
   };
 }
@@ -30,7 +31,8 @@ export default async function CuratorPage({ params }: { params: Promise<{ handle
     url: siteUrl + '/curators/' + curator.handle,
     name: curator.display_name + ' — BVSS FVM Curator',
     mainEntity: {
-      '@type': 'Person',
+      // The in-house team is an organisation, not a person.
+      '@type': isHouseCurator(curator.handle) ? 'Organization' : 'Person',
       name: curator.display_name,
       description: curator.bio || undefined,
       url: curator.website_url || siteUrl + '/curators/' + curator.handle,
@@ -45,9 +47,9 @@ export default async function CuratorPage({ params }: { params: Promise<{ handle
         <nav className="breadcrumbs" aria-label="Breadcrumb">
           <Link href="/">BVSS FVM</Link><span>›</span><Link href="/curators">Curators</Link><span>›</span><span>{curator.display_name}</span>
         </nav>
-        <p className="eyebrow">Verified curator · beta network</p>
+        <p className="eyebrow">{isHouseCurator(curator.handle) ? 'In-house curation team · operates alongside BVSS FVM' : 'Verified curator · beta network'}</p>
         <h1>{curator.display_name}</h1>
-        <p className="lead">{curator.bio || 'Independent playlist curator in the BVSS FVM Curator Network Beta.'}</p>
+        <p className="lead">{curator.bio || 'Curator in the BVSS FVM network.'}</p>
         <div className="chip-row">
           {[...curator.genres, ...curator.moods].slice(0, 10).map((value) => <span className="chip" key={value}>{value}</span>)}
         </div>
