@@ -600,6 +600,7 @@ export const guides: LearnGuide[] = [
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
       { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial pitching, algorithmic playlists and independent curators.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for.' },
+      { href: '/learn/best-free-music-promotion-sites', label: 'Free music promotion sites', detail: 'What is actually free on each service, checked against their own pages.' },
       { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'How the common schemes work and what to do if a suspicious playlist adds you.' },
     ],
     sources: [
@@ -966,6 +967,95 @@ export const guides: LearnGuide[] = [
       { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-07' },
       { label: 'Artificial streaming', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/artificial-streaming', accessed: '2026-10-07' },
       { label: 'Artificial streaming and paid 3rd-party services that guarantee streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/', accessed: '2026-10-07' },
+    ],
+  },
+  {
+    slug: 'best-free-music-promotion-sites',
+    topic: 'Free Music Promotion',
+    published: '2026-10-07',
+    updated: '2026-10-07',
+    seoTitle: 'Best Free Music Promotion Sites in 2026: What Is Actually Free?',
+    title: 'Free Music Promotion Sites in 2026: What Is Actually Free?',
+    description: 'What is actually free on Spotify for Artists, SubmitHub, DailyPlaylists, PitchPlaylists, Soundplate and BVSS FVM, checked against each service’s own pages.',
+    eyebrow: 'Free music promotion · Checked against official pages',
+    lead: '“Free” means very different things across music promotion sites: free to submit, free to be heard, or free for a few tries before you pay. We checked what each service says about itself on its own pages and laid it out side by side. We have not ranked them, and one of them is ours.',
+    sections: [
+      {
+        heading: 'How we put this together',
+        paragraphs: [
+          'Every claim below comes from the service’s own website or help center, checked on October 7, 2026, and linked in the sources. We have not run paid campaigns on these platforms to compare them, so there are no ratings, success rates or “best overall” picks. Terms change; check the linked page before you rely on any detail.',
+          'Disclosure: BVSS FVM and CuratorOS are our own playlist network. They are listed because they fit the topic, and they are labeled as ours.',
+        ],
+      },
+      {
+        heading: 'What is free, service by service',
+        paragraphs: [],
+        table: {
+          caption: 'What each service says is free and what costs money (checked October 7, 2026)',
+          columns: ['Service', 'What is free', 'What costs money', 'Who decides'],
+          rows: [
+            ['Spotify for Artists', 'Pitching one unreleased song to Spotify’s editors (at least 7 days before release); Release Radar for your followers; Canvas, Artist Pick and Promo Cards', 'Display campaigns (Marquee, Showcase) and Spotify Ads Manager', 'Spotify’s editors. Spotify says pitching does not guarantee placement.'],
+            ['BVSS FVM + CuratorOS (our network)', 'Submission and human review for every playlist in the network', 'Nothing: there is no paid tier and placement is never sold', 'BVSS FVM and the in-house CuratorOS team, separately for each playlist'],
+            ['SubmitHub', 'Two standard credits every four hours. Curators may respond to standard submissions but are not required to. Premium credits can be earned through its Hot or Not feature (one per 20 ratings).', 'Premium credits, from $1 each and as low as $0.78 in bulk, according to its help center. For premium submissions, curators must respond within 72 hours, listen for at least 60 seconds, and either approve or explain in at least 20 words.', 'Individual playlisters, bloggers and influencers'],
+            ['DailyPlaylists', 'A Standard tier for submitting to playlist owners who want submissions', 'Premium Credits for selected curators, and a Professional tier with more weekly submissions and tools (prices on its pricing page)', 'Individual playlist owners'],
+            ['PitchPlaylists', 'Its own guide (last updated July 2025) describes the service as completely free and says playlist spots are not for sale', 'None described in that guide. Check the site for current terms.', 'Curators; an approved track is added to their playlist'],
+            ['Soundplate', 'Submission to the playlists listed on its submission page, which it describes as free', 'The site also sells other marketing services, such as ad campaigns', 'Listed curators. The page does not say who runs its “Official Soundplate Playlists.”'],
+          ],
+        },
+      },
+      {
+        heading: 'Paid, for comparison: Groover',
+        paragraphs: [
+          'Groover is often listed alongside these services, but it is not free. Its help center says sending a track to one curator or industry professional costs 2 Grooviz (each priced at €1, taxes included), and top curators cost 4. If a contact does not respond within 7 days, Groover returns the Grooviz for that contact to use again.',
+          'Paying for review time is not the same as buying placement, but Spotify says to treat services that charge to be considered with high skepticism. Know which one you are paying for. Our [scams guide](/learn/spotify-promotion-scams) explains the difference.',
+        ],
+      },
+      {
+        heading: 'How to judge any “free” promotion offer',
+        paragraphs: [],
+        steps: [
+          { title: 'Free to submit, or free to be heard?', body: 'Some free routes put no obligation on the curator to listen or reply. That can still be worth it, but set your expectations accordingly.' },
+          { title: 'Who decides, and do they disclose it?', body: 'Look for who runs the playlists and whether the platform owns any of them. Own-network playlists are fine when they are labeled as such.' },
+          { title: 'What is for sale?', body: 'Review time, advertising and tools are legitimate things to sell. Streams and placements are not, according to Spotify.' },
+          { title: 'Does it fit your song?', body: 'A free submission to the wrong playlist costs you nothing but time, and costs the curator time too. Fit beats volume; see [how to find curators](/learn/find-spotify-playlist-curators).' },
+          { title: 'Can you measure it?', body: 'Check the Playlists view in Spotify for Artists to see which placements actually sent you listeners.' },
+        ],
+      },
+      {
+        heading: 'Getting the most from free routes',
+        paragraphs: [
+          'Free routes work best when the pitch is accurate and the song is in the right lane. Use [how to pitch playlist curators](/learn/how-to-pitch-playlist-curators) for templates, and the [free Spotify promotion plan](/learn/free-spotify-promotion) for the Spotify tools that cost nothing.',
+        ],
+        callout: {
+          kind: 'submit',
+          title: 'Our network, free to submit',
+          body: 'Every BVSS FVM and CuratorOS playlist open to submissions is listed on our [free submission page](/free-spotify-playlist-submission), with genre, mood and moment filters. Submit once; each playlist that fits gets a human decision.',
+        },
+      },
+    ],
+    faq: [
+      { question: 'Which free music promotion site is the best?', answer: 'We do not rank them. They do different things: Spotify’s editorial pitch is the only route to editorial playlists, while the others connect you with independent curators. Use the table to match a service to your goal.' },
+      { question: 'Are free submission sites worth it if curators do not have to reply?', answer: 'They can be, as long as you expect some silence. Accurate genre and mood details, and choosing playlists that really fit, improve your chances more than volume does.' },
+      { question: 'Is SubmitHub free?', answer: 'Partly. According to its help center you get two standard credits every four hours, and curators are not required to respond to those. Premium credits cost money (or can be earned) and come with response requirements.' },
+      { question: 'Is BVSS FVM really free?', answer: 'Yes. Submission and review are free for every playlist in the BVSS FVM and CuratorOS network, there is no paid tier, and placement is never sold.' },
+      { question: 'Why is Groover not on the free list?', answer: 'Its own help center says it is a paid service: each curator contact costs Grooviz. It is included for comparison only.' },
+    ],
+    related: [
+      { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, free to submit.' },
+      { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools, release by release.' },
+      { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'What not to pay for.' },
+      { href: '/learn/how-to-pitch-playlist-curators', label: 'How to pitch playlist curators', detail: 'Templates and why curators pass.' },
+    ],
+    sources: [
+      { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-07' },
+      { label: 'Promoting music on Spotify', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/by-en/artists/article/promoting-music-on-spotify/', accessed: '2026-10-07' },
+      { label: 'Artificial streaming', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/artificial-streaming', accessed: '2026-10-07' },
+      { label: 'What’s the difference between standard and premium credits?', publisher: 'SubmitHub Help', href: 'https://www.submithub.com/help/QPHgFWDSCm82W7vLJ', accessed: '2026-10-07' },
+      { label: 'How to get Spotify playlist placements and blog coverage for free', publisher: 'SubmitHub', href: 'https://www.submithub.com/story/free-music-promotion', accessed: '2026-10-07' },
+      { label: 'DailyPlaylists homepage', publisher: 'DailyPlaylists', href: 'https://dailyplaylists.com/en/', accessed: '2026-10-07' },
+      { label: 'Free, safe Spotify playlist promo with Pitchplaylists', publisher: 'PitchPlaylists', href: 'https://pitchplaylists.com/blog/guides/spotify-playlist-promo/', accessed: '2026-10-07' },
+      { label: 'Submit music to Spotify playlists', publisher: 'Soundplate', href: 'https://soundplate.com/new-spotify-playlists1/', accessed: '2026-10-07' },
+      { label: 'Do I have to pay to use Groover?', publisher: 'Groover Help Center', href: 'https://help.groover.co/en/articles/2966389-do-i-have-to-pay-to-use-groover', accessed: '2026-10-07' },
     ],
   }
 ];
