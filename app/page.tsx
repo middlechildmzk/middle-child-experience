@@ -105,6 +105,7 @@ export default async function HomePage() {
                 </p>
                 <div className="actions">
                   <Link className="button button-secondary" href="/playlists">Browse all playlists</Link>
+                  <Link className="button button-secondary" href="/playlists/collections">Browse collections</Link>
                 </div>
               </div>
             </div>
