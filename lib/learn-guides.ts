@@ -492,6 +492,7 @@ export const guides: LearnGuide[] = [
       { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools and a release-by-release plan.' },
       { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'How the common schemes work and what to do if a suspicious playlist adds you.' },
       { href: '/learn/find-spotify-playlist-curators', label: 'Find Spotify playlist curators', detail: 'Find playlists that fit and reach curators through their own channels.' },
+      { href: '/learn/how-to-pitch-playlist-curators', label: 'How to pitch playlist curators', detail: 'Templates, a worked example and why curators pass.' },
       { href: '/playlists/collections', label: 'Playlist collections', detail: 'Browse playlists by genre, mood and moment.' },
     ],
     sources: [
@@ -822,6 +823,7 @@ export const guides: LearnGuide[] = [
     related: [
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with fit filters and free submission.' },
       { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial, algorithmic and independent routes.' },
+      { href: '/learn/how-to-pitch-playlist-curators', label: 'How to pitch playlist curators', detail: 'Templates, a worked example and why curators pass.' },
       { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'Red flags to check before you submit or pay.' },
       { href: '/playlists/collections', label: 'Playlist collections', detail: 'Browse playlists by genre, mood and moment.' },
     ],
@@ -830,6 +832,140 @@ export const guides: LearnGuide[] = [
       { label: 'Fans Also Like', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/fans-also-like/', accessed: '2026-10-07' },
       { label: 'Types of Spotify playlists', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/types-of-spotify-playlists/', accessed: '2026-10-07' },
       { label: 'Artificial streaming', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/artificial-streaming', accessed: '2026-10-07' },
+    ],
+  },
+  {
+    slug: 'how-to-pitch-playlist-curators',
+    topic: 'Playlist Promotion',
+    published: '2026-10-07',
+    updated: '2026-10-07',
+    seoTitle: 'How to Pitch Playlist Curators: Examples & Templates',
+    title: 'How to Pitch Playlist Curators: Examples & Templates',
+    description: 'What curators need from a playlist pitch, ready-to-use templates, a worked example, and the real reasons curators pass, from the curator side of the inbox.',
+    eyebrow: 'Playlist promotion · Curator’s view',
+    lead: 'This guide is written from the curator side of the inbox at BVSS FVM. The pitches that work are short, accurate and easy to act on: they help the curator hear the song in the right context, then get out of the way. Here is what a curator actually needs from you, templates you can adapt, and the reasons we pass, so you can pitch like someone curators want to hear from.',
+    sections: [
+      {
+        heading: 'What a curator does with your pitch',
+        paragraphs: [
+          'The song decides. The pitch decides whether the song gets heard in the right lane, by the right curator, with the right expectations. On our side, a submission is routed to the playlists it might fit, and a curator listens and makes a separate decision for each one: accept, hold for later, or decline. When we decline, our system requires the curator to pick at least one reason from a fixed list (below).',
+          'So the job of a pitch is simple: describe the song accurately enough that it reaches the playlist where it has the best chance, and give the curator one reason to press play now.',
+        ],
+      },
+      {
+        heading: 'What to include, and why',
+        paragraphs: [],
+        table: {
+          caption: 'The parts of a good pitch',
+          columns: ['Include', 'Why it matters', 'Example (fictional artist)'],
+          rows: [
+            ['A working link', 'The song is the pitch. A released Spotify link, or a private listening link if it is unreleased.', 'Spotify link to “Paper Lanterns” by Lowtide Avenue'],
+            ['The genre a listener hears', 'Routes the song to the right lane. Honest beats ambitious.', 'Indie pop'],
+            ['Two or three moods', 'Tells us where it sits in a sequence.', 'Wistful, warm, late-summer'],
+            ['Artists it genuinely sounds like', 'Gives us a reference point in seconds. Pick overlap, not fame.', 'Sounds like: soft-focus guitar pop with close harmonies'],
+            ['Release status and date', 'We plan around it.', 'Out Friday, October 16'],
+            ['One line on why this playlist', 'Shows you listened to it.', '“Fits the slower end of your Sunday Morning lane.”'],
+          ],
+        },
+        callout: {
+          kind: 'note',
+          title: 'What to leave out',
+          body: 'Long biographies, press-release language, stream counts as a selling point, attachments the curator did not ask for, and any request for a guaranteed add. None of it helps the song.',
+        },
+      },
+      {
+        heading: 'Template: email to a curator’s published address',
+        paragraphs: [
+          'Use this only for a contact the curator published for submissions. Keep it to a few lines; the link does the rest.',
+        ],
+        bullets: [
+          'Subject: Submission for [Playlist name]: “[Song title]” by [Artist]',
+          'Hi [Curator name, if published],',
+          '“[Song title]” is a [genre] track with a [mood] feel, out [release date]. I think it fits the [specific part] of [Playlist name].',
+          'Sounds like: [two or three comparable artists]. Listen: [Spotify link or private link].',
+          'Thanks for listening either way. [Your name], [one link to your profile]',
+        ],
+      },
+      {
+        heading: 'Template: the note field on a submission form',
+        paragraphs: [
+          'Forms already ask for the link, genre and moods, so the note is for what the fields cannot say. Ours is labeled “Note for curators.” Two or three sentences is plenty.',
+        ],
+        bullets: [
+          '“[Song title]” is about [one-line story]. It sits between [comparable artist] and [comparable artist], and I think it suits [playlist or lane] because [one specific reason].',
+          'Unreleased: out [date]. Happy to share the final master if anything changes.',
+        ],
+      },
+      {
+        heading: 'A worked example',
+        paragraphs: [
+          'Lowtide Avenue is a fictional artist used for illustration. Here is a pitch that does its job:',
+          '“Paper Lanterns” is a wistful indie pop song with close harmonies and a slow-burn chorus, out Friday. I think it fits the gentler half of your Sunday Morning playlist, next to the acoustic-leaning tracks you added recently. Sounds like soft-focus guitar pop. Listen: [link]. Thanks for listening either way.',
+          'It works because it is accurate, specific to that playlist, and takes under ten seconds to read.',
+        ],
+      },
+      {
+        heading: 'Why curators pass (the reasons we use)',
+        paragraphs: [
+          'These are the decline reasons our curators choose from when they pass on a submission. Most are about fit, not quality, which is why the same song can be declined by one playlist and accepted by another.',
+        ],
+        table: {
+          caption: 'Decline reasons in the BVSS FVM and CuratorOS review tool',
+          columns: ['Reason', 'What it usually means', 'What you can do'],
+          rows: [
+            ['Energy mismatch', 'The song is noticeably calmer or more intense than the playlist', 'Target playlists whose energy matches the track'],
+            ['Not my genre lane', 'It is outside what the playlist covers', 'Re-check the genre a listener would hear'],
+            ['Wrong mood', 'Right genre, different feeling', 'Choose moods more carefully when pitching'],
+            ['Too similar to recent adds', 'The playlist already has that sound right now', 'Try another playlist, or this one later with a new release'],
+            ['Vocal style', 'The vocal approach does not suit the sequence', 'Look for playlists built around a similar vocal style'],
+            ['Production not ready', 'The idea is there; the recording is not yet', 'Revisit the production before the next pitch'],
+            ['Mix / master', 'Balance or loudness stands out against the playlist', 'Compare against tracks on the playlist; consider a mix revision'],
+            ['Other', 'Anything not covered above', 'Treat it as a fit decision for that playlist'],
+          ],
+        },
+      },
+      {
+        heading: 'Mistakes that get pitches skipped',
+        paragraphs: [],
+        bullets: [
+          'Pitching a playlist you have not listened to.',
+          'Calling the song a genre it is not, to reach a bigger playlist.',
+          'Sending the same message to every curator at once.',
+          'Following up more than once, or arguing with a decision.',
+          'Leading with numbers instead of the music.',
+          'Asking a curator to promise a placement, or offering to pay for one. Spotify says selling placement breaks its terms; see [promotion scams](/learn/spotify-promotion-scams).',
+        ],
+      },
+      {
+        heading: 'Timing and follow-up',
+        paragraphs: [
+          'Independent curators can often hear unreleased music, and many accept released songs. Spotify’s editors only take unreleased songs pitched at least 7 days before release, and that is a separate pitch you make yourself in Spotify for Artists. The full routes are in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).',
+          'If there is no reply, one polite follow-up after a reasonable wait is fine. After a decline, thank the curator and pitch them your next release instead of the same song.',
+        ],
+        callout: {
+          kind: 'submit',
+          title: 'Practice on a pitch that gets heard',
+          body: 'Our form asks for exactly the details above, and every playlist your song fits gets a human decision. Find the right lane first on our [free submission page](/free-spotify-playlist-submission).',
+        },
+      },
+    ],
+    faq: [
+      { question: 'How long should a playlist pitch be?', answer: 'A few lines. Link, genre, a couple of moods, comparable artists, release date and one sentence on why that playlist. Curators decide by listening.' },
+      { question: 'Should I mention my streams or followers?', answer: 'Only if it adds context, and never as the main argument. Curators are judging whether the song fits their playlist.' },
+      { question: 'Should I follow up if a curator does not reply?', answer: 'Once, politely, after a reasonable wait. Then move on and pitch them your next release.' },
+      { question: 'Can I pitch the same song to the same curator again?', answer: 'Generally no. A decline is usually about fit with that playlist at that moment. A new release is a better reason to get back in touch.' },
+      { question: 'Should I pay to pitch curators?', answer: 'Spotify says to be highly skeptical of services that charge to be considered, and that selling placement breaks its terms. Submission to our playlists is free.' },
+    ],
+    related: [
+      { href: '/learn/find-spotify-playlist-curators', label: 'Find Spotify playlist curators', detail: 'Find playlists that fit before you pitch.' },
+      { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Submit free to human-curated playlists.' },
+      { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for.' },
+      { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'Red flags before you pay anyone.' },
+    ],
+    sources: [
+      { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-07' },
+      { label: 'Artificial streaming', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/artificial-streaming', accessed: '2026-10-07' },
+      { label: 'Artificial streaming and paid 3rd-party services that guarantee streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/third-party-services-that-guarantee-streams/', accessed: '2026-10-07' },
     ],
   }
 ];
