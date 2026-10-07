@@ -69,6 +69,10 @@ export default function SubmissionForm({
   spotifyTextSearchConfigured?: boolean;
 }) {
   const initial = useMemo(() => initialPlaylist ? [initialPlaylist] : [], [initialPlaylist]);
+  const initialTarget = useMemo(
+    () => playlists.find((playlist) => playlist.slug === initialPlaylist) || null,
+    [initialPlaylist, playlists],
+  );
   const [mode, setMode] = useState<'released' | 'unreleased'>('released');
   const [query, setQuery] = useState('');
   const [selectedTrack, setSelectedTrack] = useState<TrackIdentity | null>(null);
@@ -294,6 +298,11 @@ export default function SubmissionForm({
       }
 
       const externalLink = privateLink.trim() || null;
+      const explicitlySelectedPartner = preferred.some((slug) =>
+        playlists.some((playlist) => playlist.slug === slug && playlist.network_owner_type === 'partner'),
+      );
+      const directTargetSelected = Boolean(initialPlaylist && preferred.includes(initialPlaylist));
+
       const payload = {
         release_state: mode,
         artist_name: artist,
@@ -312,7 +321,8 @@ export default function SubmissionForm({
         download_external_url: externalLink && downloadPermission ? externalLink : null,
         download_object_path: downloadObjectPath,
         download_permission: Boolean(audioFile) || (Boolean(externalLink) && downloadPermission),
-        network_opt_in: networkOptIn,
+        network_opt_in: networkOptIn || explicitlySelectedPartner,
+        route_mode: directTargetSelected ? 'selected_only' : 'matched',
         artwork_url: selectedTrack?.artwork_url || null,
         identified_track: selectedTrack || {},
         artist_socials: {},
@@ -566,10 +576,20 @@ export default function SubmissionForm({
             <div className="field span-2"><label htmlFor="comparable_artists">Sounds like <span className="muted">(optional)</span></label><input id="comparable_artists" name="comparable_artists" placeholder="Dabin, San Holo" /></div>
           </div>
 
-          <label className="network-opt-in-control compact-network-opt-in">
-            <input type="checkbox" checked={networkOptIn} onChange={(event) => setNetworkOptIn(event.target.checked)} />
-            <span><strong>Also send to matched independent curators</strong><small>Only approved, verified curator playlists. Optional. No guaranteed placement.</small></span>
-          </label>
+          {initialTarget?.network_owner_type === 'partner' ? (
+            <div className="submission-policy">
+              <strong>Direct curator submission</strong>
+              <p>
+                You are submitting directly to {initialTarget.bvss_curator_profiles?.display_name || 'this verified curator'}.
+                Your selected playlist is routed to that curator for independent review; placement is never guaranteed.
+              </p>
+            </div>
+          ) : (
+            <label className="network-opt-in-control compact-network-opt-in">
+              <input type="checkbox" checked={networkOptIn} onChange={(event) => setNetworkOptIn(event.target.checked)} />
+              <span><strong>Also send to matched independent curators</strong><small>Only approved, verified curator playlists. Optional. No guaranteed placement.</small></span>
+            </label>
+          )}
 
           <details className="submission-more">
             <summary>Optional details</summary>
