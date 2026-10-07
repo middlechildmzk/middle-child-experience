@@ -4,8 +4,8 @@ import { guides, guidesByTopic } from '../../lib/learn-guides';
 import { siteUrl } from '../../lib/site-url';
 
 export const metadata: Metadata = {
-  title: 'Electronic Music Guides',
-  description: 'First-party BVSS FVM guides to electronic genres, playlist curation, listening moods, and how independent artist submissions are reviewed.',
+  title: 'Spotify Promotion & Playlist Guides for Independent Artists',
+  description: 'First-party guides from BVSS FVM curators: getting on Spotify playlists, free promotion that works, how submissions are reviewed, and genre curation.',
   alternates: { canonical: '/learn' },
 };
 
@@ -14,7 +14,7 @@ export default function LearnPage() {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     '@id': siteUrl + '/learn#collection',
-    name: 'BVSS FVM Electronic Music Guides',
+    name: 'BVSS FVM Guides for Independent Artists',
     description: 'First-party editorial guides from the BVSS FVM playlist network.',
     url: siteUrl + '/learn',
     mainEntity: {
@@ -34,9 +34,9 @@ export default function LearnPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <section className="shell page-hero">
         <p className="eyebrow">BVSS FVM editorial</p>
-        <h1>Electronic music, explained by the people curating it.</h1>
+        <h1>Music promotion, explained by the people curating it.</h1>
         <p className="lead">
-          First-party guides to the sounds, moods, sequencing decisions, and submission standards behind the BVSS FVM playlist network.
+          Practical guides to Spotify playlists, promotion and release strategy, written from the curator side of the inbox, plus the sounds and standards behind the BVSS FVM playlist network.
         </p>
         <div className="actions">
           <Link className="button" href="/playlists">Explore playlists</Link>

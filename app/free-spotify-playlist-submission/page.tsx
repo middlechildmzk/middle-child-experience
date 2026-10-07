@@ -119,6 +119,11 @@ export default async function FreeSpotifyPlaylistSubmissionPage() {
               {page.checklist.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </div>
+          <Link className="card" href="/learn/how-to-get-on-spotify-playlists">
+            <h3>How to get on Spotify playlists</h3>
+            <p>Editorial pitching, algorithmic playlists and independent curators, with Spotify’s actual rules.</p>
+            <span className="card-link">Read the guide →</span>
+          </Link>
           <Link className="card" href="/learn/how-we-review-playlist-submissions">
             <h3>How review works</h3>
             <p>What curators listen for, and what accept, hold and decline mean.</p>
