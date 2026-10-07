@@ -59,3 +59,12 @@ test('landing and hub social metadata have their own image routes', () => {
     assert.equal((social.twitter as any).card,'summary_large_image');
   }
 });
+
+test('known legacy status copy is corrected without rewriting other history', async () => {
+  const { publicStatusDetail } = await import('../../supabase/functions/_shared/public-status');
+  const legacy='Your track entered the BVSS FVM review queue and may also be routed to approved independent curators when there is a strong fit.';
+  assert.doesNotMatch(publicStatusDetail(legacy)!,/independent curators/);
+  assert.match(publicStatusDetail(legacy)!,/curator playlists you opted into/);
+  assert.equal(publicStatusDetail('Each curator decides independently.'),'Each curator decides independently.');
+  assert.equal(publicStatusDetail(null),null);
+});

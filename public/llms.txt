@@ -11,7 +11,7 @@ Canonical website: https://bvssfvm.com
 - /never-alone — official release page for Middle Child - Never Alone (feat. lowly sunday)
 - /licensing — music licensing and sync information
 - /playlists — active human-curated electronic playlists from BVSS FVM and verified network curators
-- /curators — verified independent curator directory
+- /curators — verified playlist curator directory, including the in-house CuratorOS team
 - /curators/apply — Curator Network Beta application
 - /learn — first-party editorial guides on genres, playlist curation, and submissions
 - /submit — first-party artist submission and optional private delivery flow
