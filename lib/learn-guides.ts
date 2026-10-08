@@ -513,6 +513,7 @@ export const guides: LearnGuide[] = [
       { question: 'Is playlist submission part of Spotify promotion?', answer: 'Yes, when the playlists fit your song and have real listeners. Submission to BVSS FVM and CuratorOS playlists is free and human reviewed, with no guaranteed placement.' },
     ],
     related: [
+      { href: '/learn/release-radar', label: 'How to get on Release Radar', detail: 'Eligibility, timing and limits.' },
       { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial, algorithmic and independent routes.' },
       { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Zero-cost Spotify tactics, release by release.' },
       { href: '/learn/how-to-get-more-spotify-streams', label: 'Get more Spotify streams', detail: 'Real listeners who come back.' },
@@ -669,6 +670,7 @@ export const guides: LearnGuide[] = [
       { question: 'Is submitting to independent curators the same as pitching Spotify?', answer: 'No. Independent curators run their own playlists. Their decision has nothing to do with Spotify’s editors, and you should still pitch editors yourself for unreleased songs.' },
     ],
     related: [
+      { href: '/learn/release-radar', label: 'How to get on Release Radar', detail: 'Eligibility, timing and limits.' },
       { href: '/learn/spotify-promotion', label: 'How to promote a song on Spotify', detail: 'The complete strategy, start to finish.' },
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'What our curators listen for and what accept, hold and decline mean.' },
@@ -781,6 +783,7 @@ export const guides: LearnGuide[] = [
       { question: 'Is submitting to playlists free?', answer: 'Many playlist curators accept free submissions. Every playlist in the BVSS FVM and in-house CuratorOS network does. Free submission means a free review, not guaranteed placement.' },
     ],
     related: [
+      { href: '/learn/release-radar', label: 'How to get on Release Radar', detail: 'Eligibility, timing and limits.' },
       { href: '/learn/spotify-promotion', label: 'How to promote a song on Spotify', detail: 'The complete strategy, start to finish.' },
       { href: '/learn/free-music-promotion', label: 'Free music promotion, every channel', detail: 'A zero-budget plan beyond Spotify.' },
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
@@ -1794,6 +1797,138 @@ export const guides: LearnGuide[] = [
       { href: '/learn/find-spotify-playlist-curators', label: 'Find Spotify playlist curators', detail: 'Check fit before you submit.' },
       { href: '/learn/how-we-review-playlist-submissions', label: 'How we review submissions', detail: 'Accept, hold or decline, step by step.' },
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Submit free; every decline comes with a reason.' },
+    ],
+  },
+  {
+    slug: 'release-radar',
+    topic: 'Spotify Promotion',
+    published: '2026-10-08',
+    updated: '2026-10-08',
+    seoTitle: 'How to Get on Release Radar: Eligibility, Timing & Limits',
+    title: 'How to Get on Release Radar',
+    description: 'How Spotify’s Release Radar works for artists: who gets your release, what pitching changes, the 7-day timing, eligibility, limits and how to measure it.',
+    eyebrow: 'Spotify promotion · Release Radar',
+    lead: 'Release Radar is the one personalized Spotify playlist with a documented way for artists to influence it, and that influence is narrow: it decides which of your songs your followers get, and when. This guide covers what Spotify documents about Release Radar and stops there.',
+    sections: [
+      {
+        heading: 'What Release Radar is',
+        paragraphs: [
+          'Release Radar is a personalized playlist of new releases that Spotify updates every Friday. Every listener gets their own version.',
+          'Spotify says it orders the songs by release date and by how much it predicts each listener will like them, based on their past listening. The order can shift slightly from day to day.',
+        ],
+      },
+      {
+        heading: 'Who gets your music in Release Radar',
+        paragraphs: [
+          'Spotify says your followers get songs from your new release in their Release Radar. Listeners also get new music from artists they listen to and artists Spotify thinks they will like, but followers are the route Spotify documents for artists.',
+          'Each listener’s playlist is personal. Spotify’s documentation does not say that every follower will see your release, or that the ones who see it will play it. It does set these limits:',
+        ],
+        bullets: [
+          'One song per artist per listener each week.',
+          'A listener who has already played a song will not get it again, though another song from the same release can appear.',
+          'A song can be included for up to 4 weeks for a listener who has not heard it.',
+        ],
+      },
+      {
+        heading: 'What pitching changes',
+        paragraphs: [
+          'Pitching decides which song. Spotify says that if you pitch a song, it will include that song in your followers’ Release Radar, and that if you do not pitch, it picks which songs from your release to include.',
+          'The pitch is the same one you send to Spotify’s editors in Spotify for Artists: one eligible, unreleased song at a time. It does not guarantee an editorial placement, and editors are a separate decision. The editorial side is covered in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).',
+        ],
+      },
+      {
+        heading: 'The seven-day rule, precisely',
+        paragraphs: [
+          'Spotify documents two separate 7-day lines. One is about the pitch, the other about delivery. Neither says editorial pitching closes 7 days before release.',
+        ],
+        table: {
+          caption: 'Release Radar timing, as Spotify documents it',
+          columns: ['Situation', 'What Spotify documents'],
+          rows: [
+            ['You pitch at least 7 days before release day', 'The pitched song is the one used for your followers’ Release Radar'],
+            ['You deliver your music at least 7 days before release', 'Your music can be on Release Radar in the first week'],
+            ['The song is unreleased and you are closer than 7 days', 'Eligibility for pitching depends on the song being unreleased. Spotify does not document what happens to the Release Radar choice for a later pitch, so do not count on it.'],
+            ['The song is already out', 'It is no longer eligible for pitching'],
+          ],
+        },
+        callout: {
+          kind: 'note',
+          title: 'Leave room for your distributor',
+          body: 'Spotify asks for delivery at least 7 days before release. Your distributor needs its own processing time before that, so deliver well ahead and pitch as soon as the song appears in Spotify for Artists.',
+        },
+      },
+      {
+        heading: 'What happens if you do not pitch',
+        paragraphs: [
+          'Your followers can still get your release. Spotify says it picks which songs from your release go into your followers’ Release Radar. What you give up is the choice of song, and the chance to put that song in front of Spotify’s editors.',
+        ],
+      },
+      {
+        heading: 'Eligibility and exclusions',
+        paragraphs: [],
+        bullets: [
+          'Release Radar counts songs where you are the main or a featured artist. Remixer credits do not count.',
+          'Remixes are included.',
+          'Not included: Various Artists releases, re-releases of songs already on Spotify, and some alternate versions such as acoustic, karaoke or live tracks.',
+          'The pitch has its own rules: one unreleased song at a time, and not compilations or songs where you are only the featured artist.',
+        ],
+      },
+      {
+        heading: 'How long a song can stay eligible',
+        paragraphs: [
+          'Up to 4 weeks for a listener who has not played it. Once a listener plays it, it will not come back for them, though another song from the same release may. Each new release opens a new window, which is one reason a steady release rhythm matters.',
+        ],
+      },
+      {
+        heading: 'What artists cannot control',
+        paragraphs: [],
+        bullets: [
+          'Which followers open Release Radar, or whether they play your song.',
+          'Where your song sits in each listener’s list. Spotify orders it by release date and predicted taste.',
+          'Whether listening in Release Radar leads to other personalized playlists. Spotify does not publish any such link.',
+          'A number of streams. Nobody can honestly promise one.',
+        ],
+      },
+      {
+        heading: 'How to measure Release Radar in Spotify for Artists',
+        paragraphs: [
+          'Spotify says the Playlists tab in your song’s stats shows the playlists it is on, including Release Radar. In source of streams, Release Radar plays sit under personalized playlists, alongside Discover Weekly, Radio and other mixes.',
+          'The Playlists view lists a playlist once at least 3 of your listeners have played your music there, and it covers the last 12 months. What those numbers can and cannot tell you is in [playlist promotion: what you can measure](/learn/playlist-promotion).',
+        ],
+      },
+      {
+        heading: 'Release Radar checklist',
+        paragraphs: [],
+        steps: [
+          { title: 'Grow followers first', body: 'Release Radar starts from your followers. Ask listeners to follow you on Spotify wherever you share music. [Real-listener growth](/learn/how-to-get-more-spotify-streams) covers how.' },
+          { title: 'Deliver early', body: 'Get the release to your distributor well before release day, so it reaches Spotify at least 7 days ahead.' },
+          { title: 'Pitch the right song', body: 'Pitch one eligible, unreleased song at least 7 days before release day so it is the song your followers get.' },
+          { title: 'Check the credits', body: 'Make sure you are credited as main or featured artist. Remixer credits do not count.' },
+          { title: 'Check after Friday', body: 'Look at your song’s Playlists tab and source of streams once the new Release Radar is out.' },
+          { title: 'Plan the next release', body: 'Each release is a new Release Radar window. See [how to promote a song on Spotify](/learn/spotify-promotion) for the full plan and [free Spotify promotion](/learn/free-spotify-promotion) for the free tools.' },
+        ],
+        callout: { kind: 'submit' },
+      },
+    ],
+    faq: [
+      { question: 'Can I pay to get on Release Radar?', answer: 'No. Release Radar is personalized and built by Spotify. The documented artist input is the free pitch in Spotify for Artists.' },
+      { question: 'Will all my followers get my new song?', answer: 'Spotify says your followers get songs from your new release in Release Radar, but each listener’s playlist is personal, and Spotify does not say every follower will see or play it.' },
+      { question: 'What if I pitch less than 7 days before release?', answer: 'An unreleased song can still be eligible to pitch. Spotify ties the Release Radar song choice to pitching at least 7 days ahead, and asks for delivery at least 7 days ahead for the first week, so pitch as early as you can.' },
+      { question: 'Does Release Radar lead to Discover Weekly?', answer: 'Spotify does not publish any such link, and nobody can honestly promise one.' },
+      { question: 'How long does a song stay in Release Radar?', answer: 'Up to 4 weeks for a listener who has not played it.' },
+    ],
+    related: [
+      { href: '/learn/spotify-promotion', label: 'How to promote a song on Spotify', detail: 'The full release-by-release plan.' },
+      { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial, algorithmic and independent routes.' },
+      { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools.' },
+      { href: '/learn/how-to-get-more-spotify-streams', label: 'Get more Spotify streams', detail: 'Grow real listeners and followers.' },
+    ],
+    sources: [
+      { label: 'Getting music on Release Radar', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/getting-music-on-release-radar/', accessed: '2026-10-08' },
+      { label: 'Pitching music and videos to Spotify playlist editors', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/pitching-music-and-videos-to-playlist-editors/', accessed: '2026-10-08' },
+      { label: 'Types of Spotify playlists', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/types-of-spotify-playlists/', accessed: '2026-10-08' },
+      { label: 'Source of streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/source-of-streams/', accessed: '2026-10-08' },
+      { label: 'Seeing playlists you’re added to', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/seeing-playlists-your-music-is-on/', accessed: '2026-10-08' },
     ],
   }
 ];
