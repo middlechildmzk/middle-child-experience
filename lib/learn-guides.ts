@@ -513,6 +513,7 @@ export const guides: LearnGuide[] = [
       { question: 'Is playlist submission part of Spotify promotion?', answer: 'Yes, when the playlists fit your song and have real listeners. Submission to BVSS FVM and CuratorOS playlists is free and human reviewed, with no guaranteed placement.' },
     ],
     related: [
+      { href: '/learn/discover-weekly', label: 'Discover Weekly for artists', detail: 'What you can and cannot control.' },
       { href: '/learn/release-radar', label: 'How to get on Release Radar', detail: 'Eligibility, timing and limits.' },
       { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial, algorithmic and independent routes.' },
       { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Zero-cost Spotify tactics, release by release.' },
@@ -670,6 +671,7 @@ export const guides: LearnGuide[] = [
       { question: 'Is submitting to independent curators the same as pitching Spotify?', answer: 'No. Independent curators run their own playlists. Their decision has nothing to do with Spotify’s editors, and you should still pitch editors yourself for unreleased songs.' },
     ],
     related: [
+      { href: '/learn/discover-weekly', label: 'Discover Weekly for artists', detail: 'What you can and cannot control.' },
       { href: '/learn/release-radar', label: 'How to get on Release Radar', detail: 'Eligibility, timing and limits.' },
       { href: '/learn/spotify-promotion', label: 'How to promote a song on Spotify', detail: 'The complete strategy, start to finish.' },
       { href: '/free-spotify-playlist-submission', label: 'Free Spotify playlist submission', detail: 'Every open playlist in our network, with filters and a free submit button.' },
@@ -1351,6 +1353,7 @@ export const guides: LearnGuide[] = [
       { question: 'How long until a placement shows up in my stats?', answer: 'Streams appear in your source-of-streams data, and the playlist appears in the Playlists view once at least 3 of your listeners have played your music there.' },
     ],
     related: [
+      { href: '/learn/discover-weekly', label: 'Discover Weekly for artists', detail: 'What you can and cannot control.' },
       { href: '/learn/spotify-promotion', label: 'How to promote a song on Spotify', detail: 'The complete strategy, start to finish.' },
       { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'The routes onto editorial, algorithmic and independent playlists.' },
       { href: '/learn/how-to-pitch-playlist-curators', label: 'How to pitch playlist curators', detail: 'Templates and why curators pass.' },
@@ -1449,6 +1452,7 @@ export const guides: LearnGuide[] = [
       { question: 'Is submitting to playlists a good way to get streams?', answer: 'It can be, when the playlist fits your song and has real listeners. Submission to BVSS FVM and CuratorOS playlists is free; placement is decided by curators and never sold.' },
     ],
     related: [
+      { href: '/learn/discover-weekly', label: 'Discover Weekly for artists', detail: 'What you can and cannot control.' },
       { href: '/learn/spotify-promotion', label: 'How to promote a song on Spotify', detail: 'The complete strategy, start to finish.' },
       { href: '/learn/playlist-promotion', label: 'Playlist promotion: what you can measure', detail: 'Read your stats and the limits of attribution.' },
       { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools, release by release.' },
@@ -1885,7 +1889,7 @@ export const guides: LearnGuide[] = [
         bullets: [
           'Which followers open Release Radar, or whether they play your song.',
           'Where your song sits in each listener’s list. Spotify orders it by release date and predicted taste.',
-          'Whether listening in Release Radar leads to other personalized playlists. Spotify does not publish any such link.',
+          'Whether listening in Release Radar leads to other personalized playlists. Spotify does not publish any such link; see [Discover Weekly: what artists can and cannot control](/learn/discover-weekly).',
           'A number of streams. Nobody can honestly promise one.',
         ],
       },
@@ -1918,6 +1922,7 @@ export const guides: LearnGuide[] = [
       { question: 'How long does a song stay in Release Radar?', answer: 'Up to 4 weeks for a listener who has not played it.' },
     ],
     related: [
+      { href: '/learn/discover-weekly', label: 'Discover Weekly for artists', detail: 'What you can and cannot control.' },
       { href: '/learn/spotify-promotion', label: 'How to promote a song on Spotify', detail: 'The full release-by-release plan.' },
       { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial, algorithmic and independent routes.' },
       { href: '/learn/free-spotify-promotion', label: 'Free Spotify promotion', detail: 'Spotify’s free artist tools.' },
@@ -1929,6 +1934,161 @@ export const guides: LearnGuide[] = [
       { label: 'Types of Spotify playlists', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/types-of-spotify-playlists/', accessed: '2026-10-08' },
       { label: 'Source of streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/source-of-streams/', accessed: '2026-10-08' },
       { label: 'Seeing playlists you’re added to', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/seeing-playlists-your-music-is-on/', accessed: '2026-10-08' },
+    ],
+  },
+  {
+    slug: 'discover-weekly',
+    topic: 'Spotify Promotion',
+    published: '2026-10-08',
+    updated: '2026-10-08',
+    seoTitle: 'Discover Weekly for Artists: What You Can and Cannot Control',
+    title: 'Discover Weekly: What Artists Can and Cannot Control',
+    description: 'What Spotify says about Discover Weekly and personalized playlists, the signals it discusses, what artists can influence indirectly, and the myths to ignore.',
+    eyebrow: 'Spotify promotion · Personalized playlists',
+    lead: 'There is no way to submit a song to Discover Weekly, and no published formula for getting on it. This page explains what Spotify does say about personalized playlists, what that means you can and cannot influence as an artist, and which popular claims to ignore.',
+    sections: [
+      {
+        heading: 'What Discover Weekly is',
+        paragraphs: [
+          'Discover Weekly is one of Spotify’s personalized playlists. Spotify says personalized playlists are unique to each listener and are created by its algorithms, which look at factors like what the person is listening to and when. They carry a “Made for” byline with the listener’s name.',
+          'So there is no single Discover Weekly playlist. There are as many versions as there are listeners.',
+        ],
+      },
+      {
+        heading: 'Why there is no submission form',
+        paragraphs: [
+          'Because each Discover Weekly is built for one listener, there is nothing to pitch. The pitch in Spotify for Artists goes to Spotify’s editors and, with the right timing, decides which song your followers get in [Release Radar](/learn/release-radar). Spotify does not describe any way to pitch Discover Weekly.',
+          'That also means nobody can sell you a Discover Weekly placement. Treat any offer that claims to as a red flag; our [scams guide](/learn/spotify-promotion-scams) explains why.',
+        ],
+      },
+      {
+        heading: 'What Spotify publicly says about personalized playlists',
+        paragraphs: [
+          'Spotify says personalized playlists are built by algorithms from what each person listens to and when, and that for some personalized playlists its editors pick the pool of songs the algorithms select from. In its explanation of recommendations, it says it aims to recommend songs listeners have a high probability of enjoying, and that in some cases commercial considerations can influence recommendations.',
+          'It does not say which signals Discover Weekly uses, or how any signal is weighted.',
+        ],
+      },
+      {
+        heading: 'Signals Spotify publicly discusses',
+        paragraphs: [
+          'In its explanation of how recommendations work, Spotify names these categories of signals:',
+        ],
+        bullets: [
+          'A listener’s actions, such as searching, listening, skipping and saving to Your Library, which shape Spotify’s read of their taste.',
+          'Information the listener shares, such as general location, device, language, age and who they follow.',
+          'Trends, and the general tastes and behaviors of listeners.',
+          'Characteristics of the content itself, such as genre and release date.',
+        ],
+        callout: {
+          kind: 'note',
+          title: 'Categories, not a formula',
+          body: 'Spotify tells us categories of signals used in personalization; it does not publish a formula an artist can execute to earn Discover Weekly placement. Every signal above describes what listeners do, not a target an artist can hit.',
+        },
+      },
+      {
+        heading: 'What artists can influence indirectly',
+        paragraphs: [
+          'You cannot act on Discover Weekly directly. You can affect who hears your music and whether they come back, which is the listening Spotify describes. Spotify’s own artist advice, in its Fans Also Like article, is to encourage fans to stream, save and add your music to their playlists.',
+        ],
+        bullets: [
+          'Reach real listeners who like your genre. Fans who genuinely enjoy the music are the only kind of listening worth having. [How to grow real listening](/learn/how-to-get-more-spotify-streams).',
+          'Get your metadata right. Genre and release date are among the content characteristics Spotify mentions, so accurate details at delivery matter.',
+          'Build followers and keep releasing. Followers get your new music in Release Radar, and each release is a new chance to be heard.',
+          'Choose playlists that fit. A placement in front of the right listeners helps them find you, but Spotify does not say it leads to Discover Weekly.',
+        ],
+      },
+      {
+        heading: 'What artists cannot control',
+        paragraphs: [],
+        bullets: [
+          'Whether any particular listener gets your song in Discover Weekly.',
+          'How Spotify weighs any signal. It publishes no thresholds for saves, skips or streams.',
+          'Timing. Spotify documents no window after release for personalized pickup.',
+          'Knock-on effects. Spotify does not say that editorial or independent placements lead to Discover Weekly.',
+        ],
+      },
+      {
+        heading: 'Editorial, independent and personalized playlists are different',
+        paragraphs: [
+          'The three kinds of playlist are decided by different people or systems, so the way in is different for each. The full routes are in [how to get on Spotify playlists](/learn/how-to-get-on-spotify-playlists).',
+        ],
+        table: {
+          caption: 'Who decides, and how you get considered',
+          columns: ['Playlist', 'Who decides', 'How you get considered'],
+          rows: [
+            ['Editorial', 'Spotify’s editors', 'Pitch one eligible, unreleased song in Spotify for Artists'],
+            ['Independent', 'Whoever runs the playlist', 'Their published submission route; check fit first'],
+            ['Release Radar (personalized)', 'Spotify, for each of your followers', 'A pitch at least 7 days before release picks the song'],
+            ['Discover Weekly and other personalized playlists', 'Spotify’s algorithms, for each listener', 'No pitch exists'],
+          ],
+        },
+      },
+      {
+        heading: 'How to see whether Discover Weekly is sending streams',
+        paragraphs: [
+          'In Spotify for Artists, source of streams groups Discover Weekly with Release Radar, Radio, Autoplay, Daily Mix and other personalized sources as programmed streams. A rise there suggests Spotify is recommending your music to more listeners. It does not tell you why.',
+          'How to read source of streams, and where attribution stops, is covered in [playlist promotion: what you can measure](/learn/playlist-promotion).',
+        ],
+      },
+      {
+        heading: 'Myths to ignore',
+        paragraphs: [],
+        table: {
+          caption: 'Common Discover Weekly claims and what is actually known',
+          columns: ['Claim', 'What is actually known'],
+          rows: [
+            ['A certain save rate gets you on Discover Weekly', 'Spotify publishes no save-rate threshold.'],
+            ['You need a set number of streams in the first 48 hours', 'Spotify publishes no stream count or time window.'],
+            ['Low skip rates unlock the algorithm', 'Spotify lists skipping among taste signals, with no threshold or rule.'],
+            ['Independent playlist placements push you into Discover Weekly', 'Spotify documents no such link.'],
+            ['An editorial placement leads straight to algorithmic pickup', 'Spotify documents no such link; editorial and personalized playlists are decided differently.'],
+            ['You can pay for a Discover Weekly spot', 'Spotify offers no such service. See [promotion scams](/learn/spotify-promotion-scams).'],
+          ],
+        },
+      },
+      {
+        heading: 'What about Discovery Mode?',
+        paragraphs: [
+          'Discovery Mode is a separate marketing tool in Spotify for Artists. Artists and labels mark songs as priorities, and Spotify adds that signal to the algorithms behind certain personalized listening. Spotify says it “increases the likelihood of the selected songs being recommended, but does not guarantee it.”',
+          'Spotify lists its contexts as Spotify Radio, Autoplay and Spotify Mixes (Daily, Artist, Mood, Decade and Genre Mixes). Discover Weekly is not on that list, so Discovery Mode is not a way to submit to Discover Weekly. Spotify also says it is not active in editorial playlists.',
+          'There is no upfront fee. Spotify charges a commission, a percentage of revenue on streams of the song in Discovery Mode contexts, deducted from future statements; streams elsewhere are commission-free. It is available to eligible artists whose distributor participates, and to labels through Spotify.',
+        ],
+      },
+      {
+        heading: 'Practical next steps',
+        paragraphs: [],
+        steps: [
+          { title: 'Grow real listening', body: 'Reach people who genuinely like your genre and give them reasons to come back. [Get more Spotify streams without bots](/learn/how-to-get-more-spotify-streams).' },
+          { title: 'Use Release Radar properly', body: 'Build followers and pitch each release on time. [How to get on Release Radar](/learn/release-radar).' },
+          { title: 'Get placements that fit', body: 'Independent playlists with the right listeners help people find you. The [Playlist Fit Checker](/tools/playlist-fit-checker) shows which of ours fit.' },
+          { title: 'Watch source of streams', body: 'Track personalized streams release by release, without reading more into them than they show.' },
+          { title: 'Keep the full plan in view', body: '[How to promote a song on Spotify](/learn/spotify-promotion) puts every piece in order.' },
+        ],
+        callout: { kind: 'submit' },
+      },
+    ],
+    faq: [
+      { question: 'How do I get on Discover Weekly?', answer: 'There is no submission route. Spotify builds it for each listener from their activity. What you can do is reach real listeners who like your genre, build followers and keep releasing.' },
+      { question: 'How many streams do I need for Discover Weekly?', answer: 'Spotify does not publish a number, so anyone quoting one is guessing.' },
+      { question: 'Does Release Radar lead to Discover Weekly?', answer: 'Spotify does not document any link between them.' },
+      { question: 'Is Discovery Mode a way onto Discover Weekly?', answer: 'No. Spotify lists Discovery Mode contexts as Radio, Autoplay and certain Mixes, and says it does not guarantee recommendations.' },
+      { question: 'Can I see streams from Discover Weekly?', answer: 'They are counted with other personalized sources in source of streams in Spotify for Artists.' },
+    ],
+    related: [
+      { href: '/learn/spotify-promotion', label: 'How to promote a song on Spotify', detail: 'The full release-by-release plan.' },
+      { href: '/learn/how-to-get-on-spotify-playlists', label: 'How to get on Spotify playlists', detail: 'Editorial, algorithmic and independent routes.' },
+      { href: '/learn/playlist-promotion', label: 'Playlist promotion: what you can measure', detail: 'Source of streams and its limits.' },
+      { href: '/learn/how-to-get-more-spotify-streams', label: 'Get more Spotify streams', detail: 'Legitimate listener growth.' },
+      { href: '/learn/spotify-promotion-scams', label: 'Spotify promotion scams', detail: 'What not to pay for.' },
+    ],
+    sources: [
+      { label: 'Understanding recommendations on Spotify', publisher: 'Spotify', href: 'https://www.spotify.com/us/safetyandprivacy/understanding-recommendations', accessed: '2026-10-08' },
+      { label: 'Types of Spotify playlists', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/types-of-spotify-playlists/', accessed: '2026-10-08' },
+      { label: 'Source of streams', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/source-of-streams/', accessed: '2026-10-08' },
+      { label: 'Fans Also Like', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/fans-also-like/', accessed: '2026-10-08' },
+      { label: 'Discovery Mode', publisher: 'Spotify for Artists', href: 'https://artists.spotify.com/discovery-mode', accessed: '2026-10-08' },
+      { label: 'Discovery Mode contexts', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/discovery-mode-contexts/', accessed: '2026-10-08' },
+      { label: 'Getting music on Release Radar', publisher: 'Spotify for Artists Support', href: 'https://support.spotify.com/us/artists/article/getting-music-on-release-radar/', accessed: '2026-10-08' },
     ],
   }
 ];
