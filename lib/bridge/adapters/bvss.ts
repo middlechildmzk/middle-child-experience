@@ -30,6 +30,7 @@
 import '../server-only';
 
 import {
+  hasVerifiedLivePlacement,
   makeProvenance,
   mapNativeStatus,
   normalize,
@@ -585,11 +586,13 @@ export function normalizeMetricSnapshot(
 }
 
 /* ------------------------------------------------------------------ */
-/* Placements — `bvss_playlist_placements` is schema-only (0 rows     */
-/* live 2026-09-28), so this normalizer is defensive: it maps only    */
-/* fields present on the row and leaves the rest undefined. Revisit   */
-/* once the first placement rows land.                                */
-/* ------------------------------------------------------------------ */
+/* BVSS network placements, read-only.
+ *
+ * A curator's acceptance is NOT evidence of a live playlist add. Match the
+ * native 2026-10 lifecycle fields (status, verified_live_at, observation
+ * source and snapshot) before showing "verified live" or real position/date.
+ * The unchanged raw source row remains available for audits.
+ * ------------------------------------------------------------------ */
 
 export function normalizePlacementRow(
   row: Record<string, unknown>,
@@ -599,20 +602,39 @@ export function normalizePlacementRow(
   const num = (key: string): number | undefined =>
     typeof row[key] === 'number' ? (row[key] as number) : undefined;
   const id = str('id') ?? 'unknown-placement';
+  const nativeStatus = str('status') ?? 'unknown';
+  const observedLive = hasVerifiedLivePlacement({
+    status: nativeStatus,
+    playlist_id: str('playlist_id') ?? '',
+    spotify_track_id: str('spotify_track_id') ?? null,
+    verified_live_at: str('verified_live_at') ?? null,
+    observed_track_id: str('observed_track_id') ?? null,
+    verification_source: str('verification_source') ?? null,
+    verification_evidence: row['verification_evidence'],
+  });
+  // This is a display state, not a claim that the bridge independently
+  // verified a provider response. Raw status and evidence are preserved.
+  const verificationState = observedLive
+    ? 'verified_live'
+    : nativeStatus === 'live'
+      ? 'unverified_live_claim'
+      : nativeStatus;
   return normalize<Placement>(
     {
       id,
       playlist_id: str('playlist_id'),
       playlist_name: str('playlist_name'),
       external_playlist_id: str('external_playlist_id'),
-      track_id: str('track_id'),
-      release_id: str('release_id'),
-      track_position: num('track_position'),
-      added_at: str('added_at'),
-      removed_at: str('removed_at'),
-      follower_count_at_placement: num('follower_count_at_placement'),
-      evidence_uri: str('evidence_uri'),
-      verification_state: str('verification_state'),
+      // spotify_track_id is NOT the ArtistOS canonical Track.id. Keep it
+      // in raw until identity linking is approved; no invented track FK.
+      track_id: undefined,
+      release_id: undefined,
+      track_position: observedLive ? num('actual_position') : undefined,
+      added_at: observedLive ? str('placed_at') : undefined,
+      removed_at: nativeStatus === 'removed' ? str('removed_at') : undefined,
+      follower_count_at_placement: undefined,
+      evidence_uri: undefined,
+      verification_state: verificationState,
     },
     makeProvenance({
       source_system: 'bvss',
@@ -620,7 +642,9 @@ export function normalizePlacementRow(
       source_ref: 'bvss_playlist_placements',
       authority: 'source-of-record',
       updated_at: str('updated_at'),
-      note: 'placement schema unconfirmed — 0 rows live 2026-09-28',
+      note: observedLive
+        ? 'Source-recorded playlist observation. Bridge display check is not an independent provider verification.'
+        : 'Not verified live: keep acceptance, schedule, and pending verification separate from observed placement.',
     }),
     row,
   );
