@@ -16,6 +16,7 @@ import {
 } from '../../lib/bridge-contract';
 
 const base = { fan_id: 'f1', workspace_id: 'w1' } as const;
+const scope = { fanId: base.fan_id, workspaceId: base.workspace_id } as const;
 
 test('every shared entity has exactly one write authority', () => {
   for (const [key, own] of Object.entries(SUITE_OWNERSHIP)) {
@@ -56,28 +57,28 @@ test('explicit email opt-in with policy version allows email', () => {
   const r: ConsentRecord[] = [
     { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-10-01T00:00:00Z' },
   ];
-  assert.deepEqual(canSendMarketing(r, 'email', { suppressed: false }), { allowed: true, reason: 'consented' });
+  assert.deepEqual(canSendMarketing(r, 'email', { ...scope, suppressed: false }), { allowed: true, reason: 'consented' });
 });
 
 test('email consent never authorizes SMS', () => {
   const r: ConsentRecord[] = [
     { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-10-01T00:00:00Z' },
   ];
-  assert.equal(canSendMarketing(r, 'sms', { suppressed: false }).reason, 'no_consent_record');
+  assert.equal(canSendMarketing(r, 'sms', { ...scope, suppressed: false }).reason, 'no_consent_record');
 });
 
 test('suppression beats consent', () => {
   const r: ConsentRecord[] = [
     { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-10-01T00:00:00Z' },
   ];
-  assert.equal(canSendMarketing(r, 'email', { suppressed: true }).reason, 'suppressed');
+  assert.equal(canSendMarketing(r, 'email', { ...scope, suppressed: true }).reason, 'suppressed');
 });
 
 test('imported legacy list permission requires reconfirmation', () => {
   const r: ConsentRecord[] = [
     { ...base, consent_type: 'email_marketing', basis: 'imported_legacy', granted: true, policy_version: null, recorded_at: '2026-07-12T00:00:00Z' },
   ];
-  assert.equal(canSendMarketing(r, 'email', { suppressed: false }).reason, 'reconfirmation_required');
+  assert.equal(canSendMarketing(r, 'email', { ...scope, suppressed: false }).reason, 'reconfirmation_required');
 });
 
 test('the latest record wins, so a later withdrawal blocks contact', () => {
@@ -85,14 +86,50 @@ test('the latest record wins, so a later withdrawal blocks contact', () => {
     { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-09-01T00:00:00Z' },
     { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: false, policy_version: 'v1', recorded_at: '2026-10-01T00:00:00Z' },
   ];
-  assert.equal(canSendMarketing(r, 'email', { suppressed: false }).reason, 'consent_withdrawn');
+  assert.equal(canSendMarketing(r, 'email', { ...scope, suppressed: false }).reason, 'consent_withdrawn');
 });
 
 test('explicit opt-in without a policy version fails closed', () => {
   const r: ConsentRecord[] = [
     { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, recorded_at: '2026-10-01T00:00:00Z' },
   ];
-  assert.equal(canSendMarketing(r, 'email', { suppressed: false }).reason, 'missing_policy_version');
+  assert.equal(canSendMarketing(r, 'email', { ...scope, suppressed: false }).reason, 'missing_policy_version');
+});
+
+test('one fan cannot inherit a different fan\'s marketing permission', () => {
+  const r: ConsentRecord[] = [
+    { fan_id: 'another-fan', workspace_id: 'w1', consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-10-01T00:00:00Z' },
+  ];
+  assert.deepEqual(canSendMarketing(r, 'email', { ...scope, suppressed: false }), { allowed: false, reason: 'identity_mismatch' });
+});
+
+test('a mixed-workspace consent collection fails closed', () => {
+  const r: ConsentRecord[] = [
+    { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-10-01T00:00:00Z' },
+    { fan_id: 'f1', workspace_id: 'w2', consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-10-02T00:00:00Z' },
+  ];
+  assert.equal(canSendMarketing(r, 'email', { ...scope, suppressed: false }).reason, 'identity_mismatch');
+});
+
+test('invalid timestamps fail closed rather than hide a withdrawal', () => {
+  const r: ConsentRecord[] = [
+    { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-10-01T00:00:00Z' },
+    { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: false, policy_version: 'v1', recorded_at: 'not-a-time' },
+  ];
+  assert.equal(canSendMarketing(r, 'email', { ...scope, suppressed: false }).reason, 'invalid_consent_timestamp');
+});
+
+test('withdrawal wins a same-timestamp conflict regardless of record order', () => {
+  const grant: ConsentRecord = { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-10-01T00:00:00Z' };
+  const revoke: ConsentRecord = { ...grant, granted: false };
+  assert.equal(canSendMarketing([grant, revoke], 'email', { ...scope, suppressed: false }).reason, 'consent_withdrawn');
+  assert.equal(canSendMarketing([revoke, grant], 'email', { ...scope, suppressed: false }).reason, 'consent_withdrawn');
+});
+
+test('blank fan or workspace identity never permits marketing', () => {
+  const grant: ConsentRecord = { ...base, consent_type: 'email_marketing', basis: 'explicit_opt_in', granted: true, policy_version: 'v1', recorded_at: '2026-10-01T00:00:00Z' };
+  assert.equal(canSendMarketing([grant], 'email', { ...scope, fanId: '', suppressed: false }).reason, 'identity_mismatch');
+  assert.equal(canSendMarketing([grant], 'email', { ...scope, workspaceId: '', suppressed: false }).reason, 'identity_mismatch');
 });
 
 test('artist verification needs state, evidence and a decider', () => {
