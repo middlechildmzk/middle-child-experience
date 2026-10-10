@@ -278,7 +278,8 @@ export interface ContactDecision {
     | 'reconfirmation_required'
     | 'missing_policy_version'
     | 'identity_mismatch'
-    | 'invalid_consent_timestamp';
+    | 'invalid_consent_timestamp'
+    | 'contact_unverified';
 }
 
 const CHANNEL_CONSENT: Record<MarketingChannel, ConsentType> = {
@@ -295,15 +296,16 @@ const CHANNEL_CONSENT: Record<MarketingChannel, ConsentType> = {
  * - Imported legacy permission never qualifies on its own: the fan must
  *   reconfirm through an explicit opt-in first.
  * - An explicit opt-in must carry the policy/copy version it agreed to.
+ * - Contact ownership must be confirmed by an authenticated server-side check.
  */
 export function canSendMarketing(
   records: readonly ConsentRecord[],
   channel: MarketingChannel,
-  opts: { suppressed: boolean; fanId: string; workspaceId: string },
+  opts: { suppressed: boolean; contactVerified: boolean; fanId: string; workspaceId: string },
 ): ContactDecision {
   // The server-side caller must resolve suppression and the fan's records
   // under an authenticated workspace; never trust client-supplied records.
-  if (opts.suppressed) return { allowed: false, reason: 'suppressed' };
+  if (opts.suppressed !== false) return { allowed: false, reason: 'suppressed' };
   if (
     !opts.fanId.trim() ||
     !opts.workspaceId.trim() ||
@@ -331,6 +333,9 @@ export function canSendMarketing(
   if (!latest.policy_version) {
     return { allowed: false, reason: 'missing_policy_version' };
   }
+  // Consent and contact ownership are different facts. Imported/unverified
+  // addresses must not be eligible even after a form was submitted.
+  if (opts.contactVerified !== true) return { allowed: false, reason: 'contact_unverified' };
   return { allowed: true, reason: 'consented' };
 }
 
@@ -397,5 +402,13 @@ export interface ArtistVerification {
 
 /** A verification counts only when verified with evidence and a decider. */
 export function isVerifiedArtist(v: ArtistVerification | undefined): boolean {
-  return Boolean(v && v.state === 'verified' && v.evidence_ref && v.decided_by);
+  return Boolean(
+    v &&
+    v.state === 'verified' &&
+    v.evidence_ref?.trim() &&
+    v.decided_by?.trim() &&
+    v.decided_by !== v.claimant_user_id &&
+    v.decided_at &&
+    Number.isFinite(Date.parse(v.decided_at))
+  );
 }
