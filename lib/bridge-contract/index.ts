@@ -70,3 +70,6 @@ export {
   isVerifiedArtist,
   writeAuthorityFor,
 } from './suite';
+
+export { decodeStoredConsentEvidence } from './consent-evidence';
+export type { ConsentEvidenceResult, StoredFanConsentRow } from './consent-evidence';
