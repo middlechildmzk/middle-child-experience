@@ -246,7 +246,10 @@ export type ConsentType =
   | 'analytics';
 
 /**
- * How the permission was obtained.
+ * How the permission was obtained. This is a DERIVED contract field, NOT a
+ * column in live fan_consents. A trusted server adapter must derive it from
+ * validated evidence and policy provenance; unknown/imported evidence MUST
+ * never be promoted to explicit_opt_in.
  * - explicit_opt_in: captured by a consent form with recorded copy version
  * - imported_legacy: came in with a list import; no per-person evidence
  */
@@ -273,7 +276,9 @@ export interface ContactDecision {
     | 'no_consent_record'
     | 'consent_withdrawn'
     | 'reconfirmation_required'
-    | 'missing_policy_version';
+    | 'missing_policy_version'
+    | 'identity_mismatch'
+    | 'invalid_consent_timestamp';
 }
 
 const CHANNEL_CONSENT: Record<MarketingChannel, ConsentType> = {
@@ -294,16 +299,30 @@ const CHANNEL_CONSENT: Record<MarketingChannel, ConsentType> = {
 export function canSendMarketing(
   records: readonly ConsentRecord[],
   channel: MarketingChannel,
-  opts: { suppressed: boolean },
+  opts: { suppressed: boolean; fanId: string; workspaceId: string },
 ): ContactDecision {
+  // The server-side caller must resolve suppression and the fan's records
+  // under an authenticated workspace; never trust client-supplied records.
   if (opts.suppressed) return { allowed: false, reason: 'suppressed' };
+  if (
+    !opts.fanId.trim() ||
+    !opts.workspaceId.trim() ||
+    records.some((r) => r.fan_id !== opts.fanId || r.workspace_id !== opts.workspaceId)
+  ) {
+    return { allowed: false, reason: 'identity_mismatch' };
+  }
+  if (records.some((r) => !Number.isFinite(Date.parse(r.recorded_at)))) {
+    return { allowed: false, reason: 'invalid_consent_timestamp' };
+  }
   const type = CHANNEL_CONSENT[channel];
   const latest = records
     .filter((r) => r.consent_type === type)
-    .reduce<ConsentRecord | undefined>(
-      (acc, r) => (!acc || Date.parse(r.recorded_at) > Date.parse(acc.recorded_at) ? r : acc),
-      undefined,
-    );
+    .reduce<ConsentRecord | undefined>((acc, r) => {
+      if (!acc) return r;
+      const delta = Date.parse(r.recorded_at) - Date.parse(acc.recorded_at);
+      // When timestamps tie, a withdrawal takes precedence over a grant.
+      return delta > 0 || (delta === 0 && acc.granted && !r.granted) ? r : acc;
+    }, undefined);
   if (!latest) return { allowed: false, reason: 'no_consent_record' };
   if (!latest.granted) return { allowed: false, reason: 'consent_withdrawn' };
   if (latest.basis !== 'explicit_opt_in') {
