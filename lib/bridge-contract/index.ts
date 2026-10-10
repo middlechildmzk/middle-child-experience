@@ -42,3 +42,31 @@ export {
 } from './helpers';
 
 export type { StatusSource } from './helpers';
+
+export type {
+  ArtistEvent,
+  ArtistEventSource,
+  ArtistEventStatus,
+  ArtistVerification,
+  ConsentBasis,
+  ConsentRecord,
+  ConsentType,
+  ContactDecision,
+  EntityOwnership,
+  MarketingChannel,
+  OwnershipStatus,
+  SmartLink,
+  SmartLinkDestination,
+  SuiteEntity,
+  SuiteProduct,
+  VerificationMethod,
+  VerificationState,
+  WriteAuthorityDecision,
+} from './suite';
+
+export {
+  SUITE_OWNERSHIP,
+  canSendMarketing,
+  isVerifiedArtist,
+  writeAuthorityFor,
+} from './suite';
