@@ -73,3 +73,6 @@ export {
 
 export { decodeStoredConsentEvidence } from './consent-evidence';
 export type { ConsentEvidenceResult, StoredFanConsentRow } from './consent-evidence';
+
+export { hasVerifiedLivePlacement } from './placement-verification';
+export type { NetworkPlacementEvidence } from './placement-verification';
